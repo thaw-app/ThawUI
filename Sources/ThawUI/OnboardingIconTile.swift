@@ -4,6 +4,7 @@
 //
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
+//  Floe changes © 2026 René Jiménez, under the same license.
 //
 //
 //  Thaw 3's SettingsPaneIconTile without its pane, so an app gives the glyph and the hue.

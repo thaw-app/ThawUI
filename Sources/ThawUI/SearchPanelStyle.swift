@@ -4,6 +4,7 @@
 //
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
+//  Floe changes © 2026 René Jiménez, under the same license.
 //
 //
 //  The launcher face of Thaw 3's menu bar search panel (Panels/Search and UI/Views/SectionedList),

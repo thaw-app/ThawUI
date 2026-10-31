@@ -2,7 +2,7 @@
 //  PointerRest.swift
 //  Project: Thaw
 //
-//  Copyright (Thaw) © 2026 Thaw
+//  Copyright (Thaw) © 2026 René Jiménez
 //  Licensed under the GNU GPLv3
 
 import AppKit
@@ -11,6 +11,8 @@ import SwiftUI
 /// Where the pointer rested when the panel opened or a key was last pressed. A row that the keys or
 /// a new list slide under a pointer that has not moved since is not marked as hovered.
 public final class PointerRest {
+    public init() {}
+
     /// How far the pointer has to move, in points, before rows under it are marked again.
     public static let slack: CGFloat = 2
 
