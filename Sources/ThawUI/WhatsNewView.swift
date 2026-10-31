@@ -15,7 +15,10 @@ public nonisolated struct WhatsNewStrings: Sendable {
     public var releaseSubtitle: @Sendable (_ date: Text, _ facts: String) -> Text
     public var noRelease: @Sendable (_ channel: Text, _ appName: String) -> Text
     public var loadFailed: @Sendable (_ appName: String) -> LocalizedStringResource
+    /// Fetching is off and there is nothing to show.
     public var fetchingOff: LocalizedStringResource
+    /// Fetching is off, so the notes shown are the last copy fetched.
+    public var fetchingOffCached: LocalizedStringResource
     public var updateReady: LocalizedStringResource
     public var cachedCopy: LocalizedStringResource
     public var fullChangelog: LocalizedStringResource
@@ -30,6 +33,7 @@ public nonisolated struct WhatsNewStrings: Sendable {
         noRelease: @escaping @Sendable (_ channel: Text, _ appName: String) -> Text,
         loadFailed: @escaping @Sendable (_ appName: String) -> LocalizedStringResource,
         fetchingOff: LocalizedStringResource,
+        fetchingOffCached: LocalizedStringResource,
         updateReady: LocalizedStringResource,
         cachedCopy: LocalizedStringResource,
         fullChangelog: LocalizedStringResource,
@@ -43,6 +47,7 @@ public nonisolated struct WhatsNewStrings: Sendable {
         self.noRelease = noRelease
         self.loadFailed = loadFailed
         self.fetchingOff = fetchingOff
+        self.fetchingOffCached = fetchingOffCached
         self.updateReady = updateReady
         self.cachedCopy = cachedCopy
         self.fullChangelog = fullChangelog
@@ -189,7 +194,7 @@ public struct WhatsNewView: View {
     private var sourceNotice: some View {
         switch source {
         case .disabled:
-            Text(strings.fetchingOff)
+            Text(strings.fetchingOffCached)
                 .font(ThawType.body)
                 .foregroundStyle(.secondary)
         case .cached:

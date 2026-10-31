@@ -20,6 +20,7 @@ struct SuppliedStringsTests {
         noRelease: { channel, appName in Text("No \(channel) for \(appName)") },
         loadFailed: { "\($0) failed" },
         fetchingOff: "Fetching off",
+        fetchingOffCached: "Fetching off, cached",
         updateReady: "Ready",
         cachedCopy: "Cached",
         fullChangelog: "All notes",
@@ -40,6 +41,7 @@ struct SuppliedStringsTests {
         let view = WhatsNewView(info: Self.info, strings: Self.whatsNew)
         #expect(view.strings.fullChangelog == "All notes")
         #expect(view.strings.fetchingOff == "Fetching off")
+        #expect(view.strings.fetchingOffCached == "Fetching off, cached")
         #expect(String(localized: view.strings.releaseTitle("3.1")) == "News in 3.1")
         #expect(String(localized: view.strings.loadFailed("App")) == "App failed")
         #expect(String(localized: view.strings.channelName(.beta)) == "Testing")
