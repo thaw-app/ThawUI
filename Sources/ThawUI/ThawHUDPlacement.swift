@@ -29,6 +29,12 @@ public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable, Sendab
     /// rounded display corner would otherwise clip the capsule.
     public static let edgeInset: CGFloat = 16
 
+    /// The smallest capsule, so a one-word label does not shrink to a dot.
+    public static let minimumSize = CGSize(width: 120, height: 34)
+
+    /// The space between the menu bar and the capsule.
+    public static let gap: CGFloat = 8
+
     /// The capsule's left edge for a capsule width wide on screenFrame.
     ///
     /// Pure math over the frame, so all three cases are decidable without a
@@ -42,5 +48,33 @@ public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable, Sendab
         case .trailing:
             screenFrame.maxX - width - Self.edgeInset
         }
+    }
+
+    /// The capsule's size for content that wants fitting: at least the minimum, and never wider
+    /// than the screen less both edge insets, so long text truncates instead of running off a display.
+    public static func size(fitting: CGSize, screenFrame: CGRect) -> CGSize {
+        let widest = max(minimumSize.width, screenFrame.width - edgeInset * 2)
+        return CGSize(
+            width: min(max(fitting.width, minimumSize.width), widest),
+            height: max(fitting.height, minimumSize.height)
+        )
+    }
+
+    /// The menu bar's height on a screen: the strip between the top of its frame and the top of its
+    /// visible frame. A full-screen space hides the bar and leaves no strip, so fallback stands in.
+    public static func menuBarHeight(screenFrame: CGRect, visibleFrame: CGRect, fallback: CGFloat) -> CGFloat {
+        let strip = screenFrame.maxY - visibleFrame.maxY
+        return strip > 0 ? strip : fallback
+    }
+
+    /// Places the capsule just below the menu bar, in AppKit's bottom-left-origin coordinates.
+    public func frame(fitting: CGSize, screenFrame: CGRect, menuBarHeight: CGFloat) -> CGRect {
+        let size = Self.size(fitting: fitting, screenFrame: screenFrame)
+        return CGRect(
+            x: originX(screenFrame: screenFrame, width: size.width),
+            y: screenFrame.maxY - menuBarHeight - Self.gap - size.height,
+            width: size.width,
+            height: size.height
+        )
     }
 }

@@ -29,7 +29,9 @@ import SwiftUI
 @MainActor
 public enum ThawHUD {
     /// How tall the menu bar is on a screen. An app that can read it more exactly sets this.
-    public static var menuBarHeight: (NSScreen) -> CGFloat = { $0.frame.maxY - $0.visibleFrame.maxY }
+    public static var menuBarHeight: (NSScreen) -> CGFloat = { screen in
+        ThawHUDPlacement.menuBarHeight(screenFrame: screen.frame, visibleFrame: screen.visibleFrame, fallback: NSStatusBar.system.thickness)
+    }
 
     /// How long a confirmation stays up. Long enough to read two words after
     /// the eye moves to it, short enough that it is gone before it becomes
@@ -44,14 +46,14 @@ public enum ThawHUD {
     /// arrives before the previous one has expired.
     private static var dismissal: Task<Void, Never>?
 
-    /// Shows a confirmation capsule and dismisses it after duration.
+    /// Shows a confirmation capsule and dismisses it after displayDuration.
     ///
     /// - Parameters:
     ///   - symbol: An SF Symbol name. It carries the verb at a glance, before
-    ///     the text is read.
-    ///   - text: One to four words describing what just happened ("Zen on",
-    ///     "Hidden items shown"). The capsule sizes to its text, so longer
-    ///     copy belongs in a notification.
+    ///     the text is read. Nil for text alone.
+    ///   - text: What just happened, best in one to four words ("Zen on",
+    ///     "Hidden items shown"). The capsule sizes to its text up to the
+    ///     width of the screen and truncates past that.
     ///   - screen: The display to show the capsule on, or nil to follow the
     ///     pointer, where a gesture just happened. Event-driven callers pass
     ///     a screen because the event can land while the pointer is on
@@ -60,11 +62,14 @@ public enum ThawHUD {
     ///     Confirmations use the center, where the eye already is.
     ///     Event-driven callers pass the user's choice, because an
     ///     unrequested banner in the center of a wide display covers the work.
+    ///   - displayDuration: How long it stays up. A caller whose text runs to a
+    ///     sentence gives it longer.
     public static func show(
-        symbol: String,
+        symbol: String? = nil,
         text: LocalizedStringResource,
         on screen: NSScreen? = nil,
-        placement: ThawHUDPlacement = .center
+        placement: ThawHUDPlacement = .center,
+        displayDuration: Duration = ThawHUD.duration
     ) {
         dismissal?.cancel()
 
@@ -77,11 +82,13 @@ public enum ThawHUD {
 
         let host = NSHostingView(rootView: ThawHUDCard(symbol: symbol, text: text))
         panel.contentView = host
-        panel.setFrame(frame(for: host, on: screen, placement: placement), display: true)
-        panel.orderFront(nil)
+        let frame = placement.frame(fitting: host.fittingSize, screenFrame: screen.frame, menuBarHeight: menuBarHeight(screen))
+        panel.setFrame(frame, display: true)
+        // Regardless of which app is active: a confirmation often arrives while another one is in front.
+        panel.orderFrontRegardless()
 
         dismissal = Task {
-            try? await Task.sleep(for: duration)
+            try? await Task.sleep(for: displayDuration)
             guard !Task.isCancelled else { return }
             dismiss()
         }
@@ -92,28 +99,6 @@ public enum ThawHUD {
     public static func dismiss() {
         panel?.orderOut(nil)
         panel = nil
-    }
-
-    /// Places the capsule just below the menu bar, at placement along it.
-    ///
-    /// Under the bar rather than mid-screen because that is where the change
-    /// happened: the eye is already at the top of the display when a menu bar
-    /// verb runs. The width comes from the hosting view's fitting size, so a
-    /// two-word label gets a two-word capsule.
-    private static func frame(
-        for host: NSView,
-        on screen: NSScreen,
-        placement: ThawHUDPlacement
-    ) -> NSRect {
-        let fitting = host.fittingSize
-        let size = CGSize(width: max(fitting.width, 120), height: max(fitting.height, 34))
-        let gap: CGFloat = 8
-        return NSRect(
-            x: placement.originX(screenFrame: screen.frame, width: size.width),
-            y: screen.frame.maxY - menuBarHeight(screen) - gap - size.height,
-            width: size.width,
-            height: size.height
-        )
     }
 
     private static func makePanel() -> NSPanel {
@@ -141,25 +126,29 @@ public enum ThawHUD {
     }
 }
 
-/// The capsule itself: symbol beside text, on the shared panel glass so it
-/// reads as Thaw's chrome rather than as an OS alert.
+/// The capsule itself: an optional symbol beside text, on the shared panel glass
+/// so it reads as Thaw's chrome rather than as an OS alert.
 private struct ThawHUDCard: View {
-    let symbol: String
+    let symbol: String?
     let text: LocalizedStringResource
 
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: symbol)
-                .font(ThawType.symbol.weight(.semibold))
-                .foregroundStyle(.secondary)
+            if let symbol {
+                Image(systemName: symbol)
+                    .font(ThawType.symbol.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
             Text(text)
                 .font(ThawType.heading)
                 .foregroundStyle(.primary)
                 .lineLimit(1)
+                .truncationMode(.tail)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 9)
-        .fixedSize()
+        // The width stays free so text wider than the screen truncates inside the capsule.
+        .fixedSize(horizontal: false, vertical: true)
         .thawGlass(.panel, in: Capsule(style: .continuous))
         // The panel is non-activating and ignores the mouse; VoiceOver reaches
         // the same state through the settings pane and the menu bar itself.

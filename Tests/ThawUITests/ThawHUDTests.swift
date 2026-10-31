@@ -58,4 +58,17 @@ struct ThawHUDTests {
         ThawHUD.dismiss()
         #expect(hudPanels().filter { !before.contains(ObjectIdentifier($0)) }.isEmpty, "dismissing twice is harmless")
     }
+
+    @Test("Text alone shows a capsule, and a line wider than the screen stays inside it")
+    func symbolIsOptionalAndWidthCapped() throws {
+        let screen = try #require(NSScreen.screens.first)
+        ThawHUD.dismiss()
+        let before = Set(hudPanels().map(ObjectIdentifier.init))
+
+        ThawHUD.show(text: LocalizedStringResource(stringLiteral: String(repeating: "A long sentence. ", count: 200)), on: screen)
+        let frame = try #require(hudPanels().first { !before.contains(ObjectIdentifier($0)) }?.frame)
+        ThawHUD.dismiss()
+
+        #expect(frame.width <= screen.frame.width - 2 * ThawHUDPlacement.edgeInset)
+    }
 }

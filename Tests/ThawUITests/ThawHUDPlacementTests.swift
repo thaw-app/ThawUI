@@ -67,4 +67,52 @@ struct ThawHUDPlacementTests {
         #expect(ThawHUDPlacement.leading.originX(screenFrame: narrow, width: wide) == ThawHUDPlacement.edgeInset)
         #expect(ThawHUDPlacement.center.originX(screenFrame: narrow, width: wide) < narrow.minX)
     }
+
+    @Test("A short label still gets the minimum capsule")
+    func minimumSize() {
+        let size = ThawHUDPlacement.size(fitting: CGSize(width: 40, height: 20), screenFrame: primary)
+        #expect(size == ThawHUDPlacement.minimumSize)
+    }
+
+    @Test("The capsule sizes to its text")
+    func sizesToText() {
+        let size = ThawHUDPlacement.size(fitting: CGSize(width: 310, height: 40), screenFrame: primary)
+        #expect(size == CGSize(width: 310, height: 40))
+    }
+
+    @Test("Text wider than the screen is capped inside the edge insets")
+    func capsToScreen() {
+        let size = ThawHUDPlacement.size(fitting: CGSize(width: 4054, height: 34), screenFrame: primary)
+        #expect(size.width == 1920 - 2 * ThawHUDPlacement.edgeInset)
+    }
+
+    @Test("A screen narrower than the minimum keeps the minimum width")
+    func narrowScreen() {
+        let narrow = CGRect(x: 0, y: 0, width: 100, height: 100)
+        let size = ThawHUDPlacement.size(fitting: CGSize(width: 500, height: 34), screenFrame: narrow)
+        #expect(size.width == ThawHUDPlacement.minimumSize.width)
+    }
+
+    @Test("The menu bar's height is the strip above the visible frame")
+    func menuBarStrip() {
+        let visible = CGRect(x: 0, y: 70, width: 1920, height: 973)
+        #expect(ThawHUDPlacement.menuBarHeight(screenFrame: primary, visibleFrame: visible, fallback: 24) == 37)
+    }
+
+    @Test("A hidden menu bar falls back to the given height")
+    func hiddenMenuBar() {
+        #expect(ThawHUDPlacement.menuBarHeight(screenFrame: primary, visibleFrame: primary, fallback: 24) == 24)
+    }
+
+    @Test("The frame sits just below the menu bar")
+    func frameBelowBar() {
+        let frame = ThawHUDPlacement.center.frame(fitting: CGSize(width: 200, height: 36), screenFrame: primary, menuBarHeight: 37)
+        #expect(frame == CGRect(x: 860, y: 1080 - 37 - ThawHUDPlacement.gap - 36, width: 200, height: 36))
+    }
+
+    @Test("A capped capsule stays on its screen at every placement", arguments: ThawHUDPlacement.allCases)
+    func cappedStaysOnScreen(placement: ThawHUDPlacement) {
+        let frame = placement.frame(fitting: CGSize(width: 9000, height: 34), screenFrame: primary, menuBarHeight: 24)
+        #expect(primary.contains(frame))
+    }
 }
