@@ -19,7 +19,7 @@ public struct SearchQueryField<Accessory: View>: View {
     public var isRefused = false
     @ViewBuilder public var accessory: Accessory
     @FocusState private var isFocused: Bool
-    @Environment(\.searchFieldShape) private var fieldShape
+    @Environment(\.searchFieldCorners) private var fieldCorners
     @Environment(\.fieldPieceOutline) private var pieceOutline
     @Environment(\.searchFieldBeam) private var beam
 
@@ -66,16 +66,16 @@ public struct SearchQueryField<Accessory: View>: View {
                     // On the glass and under the text: the glass draws itself behind what it is given.
                     .background {
                         if !isRefused, beam != .off {
-                            SearchFieldBeamView(outline: fieldShape.outline, beam: beam, part: .spill)
+                            SearchFieldBeamView(outline: fieldCorners.outline, beam: beam, part: .spill)
                         }
                     }
-                    .thawGlass(.field(isFocused: isFocused), in: fieldShape.outline)
+                    .thawGlass(.field(isFocused: isFocused), in: fieldCorners.outline)
                     .overlay {
                         // A refusal's red takes the beam's place, so the one cue is not lost in the other.
                         if isRefused {
-                            fieldShape.outline.strokeBorder(Color(nsColor: .systemRed), lineWidth: 1.5)
+                            fieldCorners.outline.strokeBorder(Color(nsColor: .systemRed), lineWidth: 1.5)
                         } else if beam != .off {
-                            SearchFieldBeamView(outline: fieldShape.outline, beam: beam)
+                            SearchFieldBeamView(outline: fieldCorners.outline, beam: beam)
                         }
                     }
                     .padding(.horizontal, ThawSpacing.inset)
@@ -298,7 +298,7 @@ public struct SearchPanelButtonStyle: ButtonStyle {
         configuration.label
             .frame(height: 22)
             .frame(minWidth: 22)
-            .padding(3)
+            .padding(ThawSpacing.capsuleInset)
             .opacity(configuration.isPressed ? 0.7 : 1.0)
     }
 }

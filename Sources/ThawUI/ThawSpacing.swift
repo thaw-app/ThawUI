@@ -7,8 +7,7 @@
 
 import CoreGraphics
 
-/// Shared spacing steps. New code uses these; existing literals move over when their file is touched, never
-/// in a sweep. A literal between two steps rounds to the nearer one.
+/// Shared spacing steps. New code uses these, and a literal between two steps rounds to the nearer one.
 public enum ThawSpacing {
     /// A hairline gap: badge insets, the space between a glyph and its frame.
     public static let hairline: CGFloat = 2

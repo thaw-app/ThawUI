@@ -16,9 +16,8 @@ public struct SettingsSearchKeyboard {
     let move: (_ offset: Int) -> Void
     let submit: () -> Void
 
-    /// isSearching holds the arrows while a search runs, so they are the sidebar's and the pages' otherwise. The labels name
-    /// the actions on the up and down arrows. move moves the highlight by this many results, negative for up. submit opens
-    /// the highlighted result, on Return.
+    /// isSearching holds the arrow keys during a search; otherwise the sidebar and pages get them. The labels name their
+    /// actions. move shifts the highlight by a result count, negative for up. submit opens that result on Return.
     public init(
         isSearching: Bool,
         previousLabel: LocalizedStringResource,

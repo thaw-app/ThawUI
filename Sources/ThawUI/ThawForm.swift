@@ -41,7 +41,7 @@ public struct ThawForm<Content: View>: View {
                     .accessibilityAddTraits(.isHeader)
                     .padding(.top, SettingsDetailLayout.titleTopInset)
                     .padding(.horizontal, SettingsDetailLayout.titleHorizontalInset)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, ThawSpacing.inset)
             }
 
             Form {

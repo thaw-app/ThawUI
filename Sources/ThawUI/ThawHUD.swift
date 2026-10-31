@@ -28,10 +28,9 @@ public enum ThawHUD {
 
     /// Shows a confirmation capsule and dismisses it after displayDuration.
     ///
-    /// The symbol is an SF Symbol name, or nil for text alone. The text is what just happened, best in one to four words.
-    /// The capsule truncates it at the screen's width. The screen is the display, or nil to follow the pointer. Event-driven
-    /// callers pass one: the pointer may be elsewhere. For placement, confirmations use the center. Event-driven callers pass
-    /// the user's choice: a banner there covers the work. The display duration is longer for text that runs to a sentence.
+    /// The text says what just happened, best in one to four words; give a sentence a longer duration. The capsule truncates
+    /// it at the screen's width. With no screen it follows the pointer; event-driven callers pass one, as the pointer may be
+    /// elsewhere, and the user's placement choice, as a banner in the center covers the work.
     public static func show(
         symbol: String? = nil,
         text: LocalizedStringResource,
@@ -97,7 +96,7 @@ private struct ThawHUDCard: View {
     let text: LocalizedStringResource
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ThawSpacing.base) {
             if let symbol {
                 Image(systemName: symbol)
                     .font(ThawType.symbol.weight(.semibold))
@@ -109,7 +108,7 @@ private struct ThawHUDCard: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ThawSpacing.gutter)
         .padding(.vertical, 9)
         // The width stays free so text wider than the screen truncates inside the capsule.
         .fixedSize(horizontal: false, vertical: true)

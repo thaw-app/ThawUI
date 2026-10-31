@@ -40,8 +40,8 @@ public struct AboutSettingsPane: View {
     @State private var copyFeedbackTask: Task<Void, Never>?
     @State private var menuAnchor = MoreMenuAnchor()
 
-    /// The more menu is the actions' menu, as groups with a separator between them. With no items, the button does not show.
-    /// The updates card is nil for a build that cannot update, which has no card.
+    /// The more menu holds the actions, in groups split by separators; with no items its button doesn't show.
+    /// A build that cannot update passes nil for the updates card.
     public init(
         appName: String,
         version: AboutVersionDetails,
@@ -335,32 +335,6 @@ enum AboutMoreMenu {
             }
         }
         return menu
-    }
-}
-
-@MainActor
-private final class ClosureMenuItem: NSMenuItem {
-    private let handler: @MainActor () -> Void
-
-    init(title: String, handler: @escaping @MainActor () -> Void) {
-        self.handler = handler
-        super.init(title: title, action: #selector(run), keyEquivalent: "")
-        target = self
-    }
-
-    /// AppKit's initializers are nonisolated, and so must be what stands in for them here.
-    @available(*, unavailable)
-    override nonisolated init(title _: String, action _: Selector?, keyEquivalent _: String) {
-        fatalError("init(title:action:keyEquivalent:) has not been implemented")
-    }
-
-    @available(*, unavailable)
-    required nonisolated init(coder _: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    @objc private func run() {
-        handler()
     }
 }
 

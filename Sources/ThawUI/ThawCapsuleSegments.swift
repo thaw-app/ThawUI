@@ -100,7 +100,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
             HStack(spacing: ThawSpacing.tight) {
                 if let systemImage = segment.systemImage {
                     Image(systemName: systemImage)
-                        .font(.system(size: 13, weight: weight))
+                        .font(ThawType.symbol.weight(weight))
                         .foregroundStyle(style)
                 }
                 if sizing.showsTitles {
