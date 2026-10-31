@@ -298,6 +298,8 @@ public struct ShortcutHintButton<Hint: View>: View {
 
 /// Compact, uniformly sized styling shared by every bottom bar button.
 public struct SearchPanelButtonStyle: ButtonStyle {
+    public init() {}
+
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .frame(height: 22)
