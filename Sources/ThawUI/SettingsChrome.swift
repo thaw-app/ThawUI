@@ -5,7 +5,6 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 //
-//  Floe changes © 2026 René Jiménez, under the same license.
 //
 //  Ported to Floe from Thaw 3's SettingsView, and moved out of
 //  AboutSettingsPane.swift since the rest of Floe uses them too.

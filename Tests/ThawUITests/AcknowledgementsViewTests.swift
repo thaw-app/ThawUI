@@ -2,7 +2,7 @@
 //  AcknowledgementsViewTests.swift
 //  Project: Thaw
 //
-//  Copyright (Thaw) © 2026 René Jiménez
+//  Copyright (Thaw) © 2026 Thaw
 //  Licensed under the GNU GPLv3
 
 import AppKit
