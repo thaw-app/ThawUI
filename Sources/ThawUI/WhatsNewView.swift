@@ -138,6 +138,8 @@ public struct WhatsNewView: View {
             // Fetched when the Privacy switch allows it, otherwise the last
             // fetched copy; nothing is bundled. Only version 3 releases show.
             let loaded = await ChangelogDocument.load(allowFetch: allowFetch, info: info)
+            // A newer task owns the state now; this load's result is stale.
+            guard !Task.isCancelled else { return }
             releases = loaded.document.map { ChangelogDocument.displayReleases(in: $0, majorVersion: info.shownMajorVersion) } ?? []
             source = loaded.source
             if let update = pendingUpdateVersion, releases.contains(where: { $0.version == update }) {
