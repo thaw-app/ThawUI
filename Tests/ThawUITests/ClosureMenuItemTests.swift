@@ -24,15 +24,15 @@ struct ClosureMenuItemTests {
     }
 
     @Test func anItemCanStartOff() {
-        #expect(!ClosureMenuItem(title: "Paste", isEnabled: false) {}.isEnabled)
+        #expect(!ClosureMenuItem(title: "Paste", isEnabled: false) { /* These tests only read its state. */ }.isEnabled)
     }
 
     @Test func aMenuKeepsEachItemAsItWasMade() {
         // Without an application a menu's update asks no item and turns every one off.
         _ = NSApplication.shared
         let menu = NSMenu()
-        let off = ClosureMenuItem(title: "Paste", isEnabled: false) {}
-        let on = ClosureMenuItem(title: "Copy") {}
+        let off = ClosureMenuItem(title: "Paste", isEnabled: false) { /* These tests only read its state. */ }
+        let on = ClosureMenuItem(title: "Copy") { /* These tests only read its state. */ }
         menu.addItem(off)
         menu.addItem(on)
         menu.update()
@@ -42,7 +42,7 @@ struct ClosureMenuItemTests {
     }
 
     @Test func anItemAnswersOnlyForItself() {
-        let off = ClosureMenuItem(title: "Paste", isEnabled: false) {}
+        let off = ClosureMenuItem(title: "Paste", isEnabled: false) { /* These tests only read its state. */ }
         #expect(!off.validateMenuItem(off))
         #expect(off.validateMenuItem(NSMenuItem()))
     }

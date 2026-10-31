@@ -70,7 +70,7 @@ struct ThawSettingsShellTests {
                 Color.clear
             } toolbar: {
                 ToolbarItem(placement: .primaryAction) {
-                    Button("More") {}
+                    Button("More") { /* Only its presence in the toolbar is tested. */ }
                 }
             }
         )

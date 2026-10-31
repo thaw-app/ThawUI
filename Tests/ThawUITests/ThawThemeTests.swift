@@ -20,7 +20,7 @@ struct ThawThemeTests {
             rows: [.page("general"), .page("about")],
             current: "general",
             colors: colors,
-            select: { _ in },
+            select: { _ in /* Only drawn here, never clicked. */ },
             title: { Text(verbatim: $0) },
             icon: { _ in Image(systemName: "gear") }
         )
