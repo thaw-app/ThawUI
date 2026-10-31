@@ -25,6 +25,7 @@ public enum SettingsWindowBackground: Equatable {
 
     /// Sets the color AppKit fills the window with before SwiftUI draws, so a resize never
     /// flashes grey at the edges. The window keeps following macOS between light and dark.
+    @MainActor
     public func apply(to window: NSWindow) {
         window.appearance = nil
         window.backgroundColor = self == .black ? Self.blackInDarkMode : .windowBackgroundColor
