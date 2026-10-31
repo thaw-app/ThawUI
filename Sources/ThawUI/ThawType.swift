@@ -25,6 +25,9 @@ public enum ThawType {
     /// Detail copy one step under body. .callout, 12pt at the default size; call sites add their own weight.
     public static let detail = Font.system(.callout)
 
+    /// A small label over a value, or a line under a heading. .subheadline, 11pt at the default size.
+    public static let sublabel = Font.subheadline
+
     /// A standing note under a control, between detail and caption.
     public static let footnote = Font.footnote
 
