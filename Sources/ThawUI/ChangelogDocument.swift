@@ -147,14 +147,31 @@ public nonisolated struct ChangelogDocument {
     /// fetching off, only the cache is read.
     @concurrent
     public static func load(allowFetch: Bool, info: ThawAppInfo) async -> (document: ChangelogDocument?, source: Source) {
+        await load(allowFetch: allowFetch, cacheFolder: info.cacheFolderName) {
+            await fetchedText(from: info.changelogURL)
+        }
+    }
+
+    /// The load itself, with the fetch supplied so a test needs no network.
+    @concurrent
+    static func load(
+        allowFetch: Bool,
+        cacheFolder: String?,
+        fetch: @Sendable () async -> String?
+    ) async -> (document: ChangelogDocument?, source: Source) {
         guard allowFetch else {
-            return (cachedText(folder: info.cacheFolderName).map(parse), .disabled)
+            return (cachedText(folder: cacheFolder).map(parse), .disabled)
         }
-        if let text = await fetchedText(from: info.changelogURL) {
-            saveCachedText(text, folder: info.cacheFolderName)
-            return (parse(text), .fetched)
+        // A response with no releases, like a captive portal's page, counts as
+        // a failed fetch, so it never replaces the good copy.
+        if let text = await fetch() {
+            let document = parse(text)
+            if !document.releases.isEmpty {
+                saveCachedText(text, folder: cacheFolder)
+                return (document, .fetched)
+            }
         }
-        if let text = cachedText(folder: info.cacheFolderName) {
+        if let text = cachedText(folder: cacheFolder) {
             return (parse(text), .cached)
         }
         return (nil, .unavailable)
@@ -173,7 +190,7 @@ public nonisolated struct ChangelogDocument {
 
     /// The cached fetch lives in Caches: it is regenerable from the network
     /// and must not count against the user's backups.
-    private static func cachedTextURL(folder: String?) -> URL? {
+    static func cachedTextURL(folder: String?) -> URL? {
         let caches = FileManager.default
             .urls(for: .cachesDirectory, in: .userDomainMask)
             .first
