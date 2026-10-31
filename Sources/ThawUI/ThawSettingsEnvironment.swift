@@ -8,11 +8,8 @@
 import SwiftUI
 
 extension EnvironmentValues {
-    /// Whether explanatory captions below settings rows are shown.
-    ///
-    /// Defaults to true so surfaces outside the settings window (such as
-    /// the standalone appearance editor) keep their captions regardless of
-    /// the "Show setting descriptions" preference.
+    /// Whether explanatory captions below settings rows are shown. True by default so surfaces
+    /// outside the settings window keep their captions regardless of the preference.
     @Entry public var settingsDescriptionsVisible: Bool = true
 
     /// A title a ThawForm draws over itself; hosts like the What's New window set it.
@@ -26,8 +23,7 @@ public enum SettingsDetailLayout {
     /// Comfortable reading width for settings groups. Title and form share this
     /// column so they stay aligned when the window grows.
     public static let columnMaxWidth: CGFloat = 748
-    /// Offset from the window top under the transparent unified toolbar.
-    /// Intentionally well below the ~60pt safe-area push.
+    /// Offset from the window top under the transparent unified toolbar, well below the ~60pt safe-area push.
     public static let titleTopInset: CGFloat = 28
 
     /// Leading inset aligned with grouped form section cards / headers.

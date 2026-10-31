@@ -14,14 +14,12 @@ import Testing
 @MainActor
 @Suite("ChangelogDocument degradation")
 struct ChangelogDocumentDegradationTests {
-    /// The plain-text characters of an AttributedString bullet, for
-    /// asserting content independent of inline styling runs.
+    /// A bullet's characters, so assertions ignore inline styling runs.
     private func plain(_ text: AttributedString) -> String {
         String(text.characters)
     }
 
-    /// The plain text of a block, so a prose block and a callout assert the
-    /// same way.
+    /// The plain text of a block, so a prose block and a callout assert the same way.
     private func plain(_ block: ChangelogDocument.Block) -> String {
         switch block {
         case let .text(text):
@@ -31,7 +29,6 @@ struct ChangelogDocumentDegradationTests {
         }
     }
 
-    /// A callout's parts joined with newlines.
     private func plain(_ callout: ChangelogDocument.Callout) -> String {
         callout.parts.map { part in
             switch part {
@@ -96,8 +93,7 @@ struct ChangelogDocumentDegradationTests {
         """)
 
         let bullet = document.releases[0].sections[0].themes[0].bullets[0]
-        // The markup characters are consumed by inline parsing; the visible
-        // text keeps the words themselves.
+        // Inline parsing consumes the markup characters and keeps the words.
         #expect(plain(bullet) == "Supports bold, italic, code, and links.")
     }
 
@@ -140,9 +136,8 @@ struct ChangelogDocumentDegradationTests {
 
     @Test("a '####' theme with no open section is dropped; the release survives")
     func themeWithoutSectionKeepsRelease() {
-        // A theme header before any ### section has nothing to attach to.
-        // The parser drops the orphan header but must keep the release; the
-        // bullets that follow degrade into the release intro.
+        // A theme header before any ### section has nothing to attach to, so it's dropped.
+        // The release must survive, and the bullets that follow degrade into its intro.
         let document = ChangelogDocument.parse("""
         ## [1.0.0]
 

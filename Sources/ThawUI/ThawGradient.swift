@@ -15,10 +15,8 @@ public nonisolated struct ThawGradient: Codable, Hashable, Sendable {
     ///   encoded representation. Renaming it invalidates stored settings.
     public var stops: [ColorStop]
 
-    /// The direction the stops run in, in degrees, as Floe counts them: 0 is
-    /// top to bottom, 90 leading to trailing, 180 bottom to top.
-    ///
-    /// - Important: Encoded under its property name, like stops.
+    /// Direction of the stops in degrees: 0 is top to bottom, 90 leading to trailing, 180 bottom to top.
+    /// Encoded under its property name, like stops.
     public var angle: Double
 
     public init(stops: [ColorStop] = [], angle: Double = ThawGradient.horizontalAngle) {
@@ -105,10 +103,7 @@ public nonisolated struct ThawGradient: Codable, Hashable, Sendable {
         }
     }
 
-    /// - Parameters:
-    ///   - colorSpace: An RGB space to sample and return the color in.
-    ///     Non-RGB spaces, and nil, fall back to extended Display P3.
-    ///   - option: Options that adjust how the components are combined.
+    /// - Parameter colorSpace: An RGB space to sample and return the color in; non-RGB spaces and nil fall back to extended Display P3.
     @MainActor
     public func averageColor(
         using colorSpace: CGColorSpace? = nil,
@@ -336,8 +331,6 @@ private struct BoundedMemo<Key: Hashable, Value> {
 }
 
 extension CGImage {
-    /// Adjustments to how averageColor(using:alphaThreshold:option:) treats
-    /// the pixels it reads.
     public nonisolated struct ColorAveragingOption: OptionSet, Sendable {
         public let rawValue: Int
 
@@ -345,8 +338,7 @@ extension CGImage {
             self.rawValue = rawValue
         }
 
-        /// Report the average as fully opaque rather than averaging the alpha
-        /// component alongside the color components.
+        /// Reports the average as fully opaque.
         public static let ignoreAlpha = ColorAveragingOption(rawValue: 1)
     }
 }

@@ -7,11 +7,8 @@
 
 import SwiftUI
 
-/// Glass alert banner for settings form rows.
-///
-/// Uses the same Liquid Glass chrome as ThawSlider, tinted with
-/// tint (defaults to Color.accentColor) so notices pick up the
-/// app/system accent, or an explicit info/warning color.
+/// Glass alert banner for settings form rows, in the same Liquid Glass chrome as ThawSlider.
+/// tint defaults to Color.accentColor, so notices pick up the accent or an explicit info/warning color.
 public struct SettingsWarningPill: View {
     private let title: LocalizedStringResource?
     private let message: LocalizedStringResource
@@ -38,10 +35,8 @@ public struct SettingsWarningPill: View {
         secondaryAction = nil
     }
 
-    /// Title + supporting message, with up to two trailing actions.
-    ///
-    /// The second action is an alternative route to the same outcome, drawn
-    /// as tinted text so there is still one obvious thing to press.
+    /// Title + supporting message, with up to two trailing actions. The second is an alternative
+    /// route to the same outcome, drawn as tinted text so there is still one obvious thing to press.
     public init(
         title: LocalizedStringResource,
         message: LocalizedStringResource,
@@ -65,9 +60,8 @@ public struct SettingsWarningPill: View {
     public var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Image(systemName: systemImage)
-                // Hierarchical, not a white glyph on a tinted disc: white
-                // disappears on the light tints warnings use (yellow,
-                // orange), and the tint itself carries the meaning.
+                // Hierarchical: white disappears on the light tints warnings use
+                // (yellow, orange), and the tint itself carries the meaning.
                 .symbolRenderingMode(.hierarchical)
                 .foregroundStyle(tint)
                 .font(.title2)

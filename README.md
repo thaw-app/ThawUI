@@ -4,11 +4,11 @@ The SwiftUI controls and styles shared by [Thaw](https://github.com/thaw-app/Tha
 
 Depends only on SwiftUI, AppKit, Foundation, CoreGraphics, Combine, Carbon (for
 key codes and the system's reserved shortcuts), and CompactSlider. It knows
-nothing about app state, the settings model, or the menu bar, which is what
-keeps it usable from more than one app.
+nothing about app state, the settings model, or the menu bar, so more than one
+app can use it.
 
-`ThawWindow` is not here on purpose. It takes Thaw's `AppState` and reads the
-app's display name, so it stays in Thaw.
+`ThawWindow` stays in Thaw because it takes Thaw's `AppState` and reads the
+app's display name.
 
 ## Strings
 

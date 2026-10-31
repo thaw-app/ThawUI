@@ -5,8 +5,7 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
-/// Orders Thaw's version strings, such as 3.0.0-alpha.9 and 3.0.0-alpha.10, by semantic-version precedence.
-///
+/// Orders version strings, such as 3.0.0-alpha.9 and 3.0.0-alpha.10, by semantic-version precedence.
 /// Numbers compare as numbers, so alpha.9 comes before alpha.10, and a prerelease comes before its release.
 public nonisolated enum ReleaseVersionOrder {
     /// Whether lhs is an earlier release than rhs.

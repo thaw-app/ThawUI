@@ -7,10 +7,8 @@
 
 import SwiftUI
 
-/// A one-line hint for something the user has not done yet.
-///
-/// One line, dismissed forever, on an accent-washed card so it reads as a
-/// note, not a warning. No queue or sequencing; teaching more is onboarding's job.
+/// A one-line hint for something the user has not done yet, dismissed forever, on an accent-washed
+/// card so it reads as a note. No queue or sequencing; teaching more is onboarding's job.
 public struct ThawFirstRunHint: View {
     private let image: Image
     private let title: Text?
@@ -26,8 +24,7 @@ public struct ThawFirstRunHint: View {
     ///   - text: The one sentence. It wraps rather than truncating, so a
     ///     narrow window still shows the whole instruction.
     ///   - dismissLabel: The close button's help and VoiceOver name.
-    ///   - actionTitle: The one thing the hint suggests doing, when there is
-    ///     one. A suggestion, unlike a warning, reads as a hint with a button.
+    ///   - actionTitle: The one thing the hint suggests doing, when there is one.
     ///   - action: Runs when the suggestion is taken.
     ///   - onDismiss: Called when the close button is pressed. The caller
     ///     records the dismissal; the view holds no state of its own.
@@ -99,9 +96,8 @@ public struct ThawFirstRunHint: View {
         .padding(.vertical, ThawSpacing.row)
         .thawGlass(.accent(.accentColor), in: RoundedRectangle(cornerRadius: ThawRadius.card, style: .continuous))
         .frame(maxWidth: .infinity, alignment: .leading)
-        // Same discipline as the warning pill: inside a grouped form the
-        // glass card is the row, so the form must not draw one of its own
-        // behind it. A no-op anywhere else.
+        // Inside a grouped form the glass card is the row, so the form must
+        // not draw one of its own behind it. A no-op anywhere else.
         .listRowBackground(Color.clear)
     }
 }

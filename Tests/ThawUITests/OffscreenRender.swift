@@ -25,7 +25,6 @@ final class OffscreenRender<Content: View> {
         host.layoutSubtreeIfNeeded()
     }
 
-    /// The view's pixels as they are drawn now.
     func pixels() throws -> Data {
         host.layoutSubtreeIfNeeded()
         let bitmap = try #require(host.bitmapImageRepForCachingDisplay(in: host.bounds))
@@ -34,12 +33,8 @@ final class OffscreenRender<Content: View> {
         return Data(bytes: bytes, count: bitmap.bytesPerRow * bitmap.pixelsHigh)
     }
 
-    /// Lets SwiftUI apply pending updates until condition holds, or until
-    /// timeout passes. Returns whether it held.
-    ///
-    /// SwiftUI says nothing when it has applied an update, so this checks
-    /// between run-loop turns. The default bound is far past any update, so a
-    /// busy machine slows a passing test rather than failing it.
+    /// Lets SwiftUI apply pending updates until condition holds or timeout passes; returns whether it held.
+    /// Polls because SwiftUI doesn't signal applied updates. The long default keeps a busy machine from failing a passing test.
     @discardableResult
     func settle(within timeout: Duration = .seconds(30), until condition: () -> Bool) async -> Bool {
         let deadline = ContinuousClock.now.advanced(by: timeout)

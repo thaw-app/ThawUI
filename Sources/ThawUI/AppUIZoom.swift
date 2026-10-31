@@ -57,12 +57,8 @@ public struct AppUIZoomModifier: ViewModifier {
     }
 }
 
-/// Propose the unscaled viewport so forms reflow and keep their scrollbars
-/// within the window. A scale effect alone would clip the enlarged content.
-///
-/// Sizes are rounded to whole points both ways. At a scale like 1.1 the raw
-/// values never come back to where they started (x / 1.1 * 1.1 != x), and the
-/// window re-laid out Settings pass after pass until AppKit aborted.
+/// Proposes the unscaled viewport so forms reflow inside the window; a scale effect alone clips them.
+/// Sizes round to whole points: at 1.1, x / 1.1 * 1.1 != x, and Settings re-lays out until AppKit aborts.
 private struct ZoomLayout: Layout {
     let scale: CGFloat
 
@@ -90,9 +86,8 @@ private struct ZoomLayout: Layout {
 
 public struct AppUIZoomControls: View {
     @AppStorage(AppUIZoom.defaultsKey) private var percent = 100
-    /// Off inside a toolbar item: one that carries a keyboardShortcut is
-    /// vended with focused values every layout pass, and AppKit refuses the
-    /// 406th constraints pass. The app menu's copy keeps the shortcuts.
+    /// Off inside a toolbar item: one with a keyboardShortcut is vended with focused values every layout
+    /// pass, and AppKit refuses the 406th constraints pass. The app menu's copy keeps the shortcuts.
     public var showsShortcuts: Bool
     let strings: AppUIZoomStrings
 

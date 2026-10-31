@@ -19,7 +19,6 @@ public nonisolated enum SearchFieldShape: String, Codable, CaseIterable, Identif
         rawValue
     }
 
-    /// The corner radius for a field of a given height.
     public func cornerRadius(height: CGFloat) -> CGFloat {
         switch self {
         case .rounded: ThawRadius.control

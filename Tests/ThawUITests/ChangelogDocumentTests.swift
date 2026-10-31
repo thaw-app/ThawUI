@@ -9,21 +9,17 @@ import Foundation
 import Testing
 @testable import ThawUI
 
-/// Characterization for ChangelogDocument.parse(_:), the deliberately
-/// small Keep-a-Changelog parser behind the What's New sheet. These tests pin
-/// the parser's known shape (releases, sections, themes, bullets) and its
-/// degradation behavior on input it does not recognize.
+/// Pins ChangelogDocument.parse(_:), the small Keep-a-Changelog parser behind the What's New sheet:
+/// its shape (releases, sections, themes, bullets) and how it degrades on input it doesn't recognize.
 @MainActor
 @Suite("ChangelogDocument parsing")
 struct ChangelogDocumentTests {
-    /// The plain-text characters of an AttributedString bullet, for
-    /// asserting content independent of inline styling runs.
+    /// A bullet's characters, so assertions ignore inline styling runs.
     private func plain(_ text: AttributedString) -> String {
         String(text.characters)
     }
 
-    /// The plain text of a block, so a prose block and a callout assert the
-    /// same way.
+    /// The plain text of a block, so a prose block and a callout assert the same way.
     private func plain(_ block: ChangelogDocument.Block) -> String {
         switch block {
         case let .text(text):
@@ -33,7 +29,6 @@ struct ChangelogDocumentTests {
         }
     }
 
-    /// A callout's parts joined with newlines.
     private func plain(_ callout: ChangelogDocument.Callout) -> String {
         callout.parts.map { part in
             switch part {

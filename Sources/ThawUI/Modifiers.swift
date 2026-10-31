@@ -23,11 +23,9 @@ public nonisolated struct Modifiers: OptionSet, Codable, Hashable, Sendable {
 }
 
 public nonisolated extension Modifiers {
-    /// All modifiers in the order displayed by the system,
-    /// according to Apple's style guide.
+    /// All modifiers in the order displayed by the system, according to Apple's style guide.
     static let canonicalOrder = [control, option, shift, command]
 
-    /// A symbolic string representation of the modifiers.
     var symbolicValue: String {
         var result = ""
         if contains(.control) {
@@ -45,7 +43,6 @@ public nonisolated extension Modifiers {
         return result
     }
 
-    /// Cocoa flags.
     var nsEventFlags: NSEvent.ModifierFlags {
         var result: NSEvent.ModifierFlags = []
         if contains(.control) {
@@ -63,7 +60,6 @@ public nonisolated extension Modifiers {
         return result
     }
 
-    /// CoreGraphics flags.
     var cgEventFlags: CGEventFlags {
         var result: CGEventFlags = []
         if contains(.control) {
@@ -81,7 +77,6 @@ public nonisolated extension Modifiers {
         return result
     }
 
-    /// Raw Carbon flags.
     var carbonFlags: Int {
         var result = 0
         if contains(.control) {

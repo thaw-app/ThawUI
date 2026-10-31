@@ -10,11 +10,9 @@ import Foundation
 import Testing
 @testable import ThawUI
 
-/// Where on a display the recording watch's banners land;
-/// RecordingWatchScreenTests covers which display.
+/// Where along the top of a display a HUD lands.
 @Suite("HUD placement")
 struct ThawHUDPlacementTests {
-    /// A 1920×1080 primary display.
     private let primary = CGRect(x: 0, y: 0, width: 1920, height: 1080)
     /// A display left of the primary, so its frame has a negative origin.
     private let leftOfPrimary = CGRect(x: -2560, y: 0, width: 2560, height: 1440)

@@ -112,9 +112,8 @@ public struct AcknowledgementsContent {
 
 /// Reads the notices a licenses page can show.
 public nonisolated enum AcknowledgementsDocument {
-    /// The RTF at a URL with document colors stripped, text and background, so it follows
-    /// the current appearance instead of shipping the RTF's black-on-white. Parsing is not free, so
-    /// an app keeps the result in a static.
+    /// The RTF at a URL with its text and background colors stripped, so it follows the current
+    /// appearance. Parsing is not free, so an app keeps the result in a static.
     public static func load(from url: URL?) -> AttributedString? {
         guard
             let url, let document = try? NSAttributedString(

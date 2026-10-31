@@ -57,9 +57,7 @@ public nonisolated struct WhatsNewStrings: Sendable {
     }
 }
 
-/// The release-notes reader: a ReadingPage whose path is the releases,
-/// whose title is the selected release, and whose body is that release's
-/// notes. Reuses ChangelogDocument for parsing.
+/// The release-notes reader: a ReadingPage whose path is the releases, and whose title and body are the selected release's.
 public struct WhatsNewView: View {
     @Environment(\.openURL) private var openURL
     private let info: ThawAppInfo
@@ -81,7 +79,7 @@ public struct WhatsNewView: View {
     }
 
     @State private var selectedVersion: String?
-    /// Every Thaw 3 release, newest first; the path shows the chosen channel's.
+    /// Every shown release, newest first; the path shows the chosen channel's.
     @State private var releases: [ChangelogDocument.Release] = []
     /// Opens on the running build's channel, so the newest notes for this Mac come first.
     @State private var channel: UpdateChannel
@@ -140,8 +138,7 @@ public struct WhatsNewView: View {
             .buttonStyle(.settingsGlass)
         }
         .task(id: TaskKey(fetch: allowFetch, update: pendingUpdateVersion)) {
-            // Fetched when the Privacy switch allows it, otherwise the last
-            // fetched copy; nothing is bundled. Only version 3 releases show.
+            // Fetched when the Privacy switch allows it, otherwise the last fetched copy; nothing is bundled.
             let loaded = await ChangelogDocument.load(allowFetch: allowFetch, info: info)
             // A newer task owns the state now; this load's result is stale.
             guard !Task.isCancelled else { return }
@@ -157,7 +154,7 @@ public struct WhatsNewView: View {
         }
     }
 
-    /// Tabs, not a segmented control: ThawUI's style guard keeps segmented controls off Settings pages.
+    /// Tabs: ThawUI's style guard keeps segmented controls off Settings pages.
     private var channelPicker: some View {
         ThawTabStrip(
             selection: Binding(

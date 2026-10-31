@@ -181,7 +181,6 @@ public struct AboutMenuItem {
 @MainActor
 public protocol AboutUpdatesModel: AutomaticUpdateSwitches, Observable {
     var updateChannel: UpdateChannel { get set }
-    /// Whether a manual check can begin now.
     var canCheckNow: Bool { get }
     var lastUpdateCheckDate: Date? { get }
     func checkForUpdates()

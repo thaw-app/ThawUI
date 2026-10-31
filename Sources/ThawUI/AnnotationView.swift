@@ -16,15 +16,7 @@ public struct AnnotationView<Parent: View, Content: View, ForegroundStyle: Shape
     private let parent: Parent
     private let content: Content
 
-    /// Creates an annotation view with a parent and content view.
-    ///
-    /// - Parameters:
-    ///   - alignment: The alignment of the content view in relation to the parent view.
-    ///   - spacing: The spacing between the parent and content view.
-    ///   - font: The font to apply to the content view's environment.
-    ///   - foregroundStyle: The foreground style to apply to the content view's environment.
-    ///   - parent: The parent view of the annotation.
-    ///   - content: The content view of the annotation.
+    /// Creates an annotation view. The font and foreground style apply to the content view's environment.
     public init(
         alignment: HorizontalAlignment = .leading,
         spacing: CGFloat = .annotationDefaultSpacing,
@@ -41,7 +33,6 @@ public struct AnnotationView<Parent: View, Content: View, ForegroundStyle: Shape
         self.content = content()
     }
 
-    /// Creates an annotation view whose content is the text for titleKey.
     public init(
         _ titleKey: LocalizedStringResource,
         alignment: HorizontalAlignment = .leading,
@@ -117,16 +108,8 @@ public struct AnnotationView<Parent: View, Content: View, ForegroundStyle: Shape
     }
 }
 
-/// An annotation that shows one line and keeps the rest behind an info button.
-///
-/// A paragraph under a control turns a row into body copy, and a few of them
-/// make a pane read as prose with switches in it. Cutting the text is the
-/// wrong fix, since for several controls it is the only explanation. So one
-/// line always shows and the rest moves behind the same info.circle popover
-/// PlatformLimitationsNotice uses, collapsed until someone asks.
-///
-/// The summary has to fit one line at the settings window's default width. If
-/// it does not, it is not a summary and the split is in the wrong place.
+/// One line of annotation with the rest behind an info.circle popover, collapsed until someone asks.
+/// The summary has to fit one line at the settings window's default width.
 private struct DeferredAnnotation<Parent: View, ForegroundStyle: ShapeStyle>: View {
     let summary: LocalizedStringResource
     let more: LocalizedStringResource
@@ -156,8 +139,7 @@ private struct DeferredAnnotation<Parent: View, ForegroundStyle: ShapeStyle>: Vi
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    /// Sized to the annotation's own font rather than the body size, so the
-    /// glyph sits on the grey line instead of outweighing it.
+    /// Sized to the annotation's own font, so the glyph doesn't outweigh the grey line.
     private var moreButton: some View {
         Button {
             isShowingMore = true
@@ -180,13 +162,7 @@ private struct DeferredAnnotation<Parent: View, ForegroundStyle: ShapeStyle>: Vi
 
 extension View {
     /// Adds the given view as an annotation below this view.
-    ///
-    /// - Parameters:
-    ///   - alignment: The guide for aligning the annotation content horizontally with this view.
-    ///   - spacing: The vertical spacing between this view and the annotation content.
-    ///   - font: The font to apply to the annotation content's environment.
-    ///   - foregroundStyle: The foreground style to apply to the annotation content's environment.
-    ///   - content: A view builder that creates the annotation content.
+    /// The font and foreground style apply to the annotation content's environment.
     public func annotation(
         alignment: HorizontalAlignment = .leading,
         spacing: CGFloat = .annotationDefaultSpacing,
@@ -207,13 +183,7 @@ extension View {
     }
 
     /// Adds the given text as an annotation below this view.
-    ///
-    /// - Parameters:
-    ///   - titleKey: The string key to display as text below this view.
-    ///   - alignment: The guide for aligning the annotation content horizontally with this view.
-    ///   - spacing: The vertical spacing between this view and the annotation content.
-    ///   - font: The font to apply to the annotation content's environment.
-    ///   - foregroundStyle: The foreground style to apply to the annotation content's environment.
+    /// The font and foreground style apply to the annotation content's environment.
     public func annotation(
         _ titleKey: LocalizedStringResource,
         alignment: HorizontalAlignment = .leading,
@@ -232,21 +202,13 @@ extension View {
         }
     }
 
-    /// Adds a one-line annotation below this view and defers the rest of the
-    /// explanation to an info button beside it.
-    ///
-    /// Reach for this instead of annotation(_:alignment:spacing:font:foregroundStyle:)
-    /// whenever the copy wraps past a single line at the settings window's
-    /// default width. See DeferredAnnotation for why.
+    /// Adds a one-line annotation below this view, with the rest behind an info button beside it.
+    /// Use it when the copy wraps past one line at the settings window's default width.
     ///
     /// - Parameters:
     ///   - titleKey: The one line that always shows below this view.
     ///   - more: The rest of the explanation, shown in a popover on request.
     ///   - moreLabel: The info button's help and VoiceOver name.
-    ///   - alignment: The guide for aligning the annotation horizontally with this view.
-    ///   - spacing: The vertical spacing between this view and the annotation.
-    ///   - font: The font to apply to the annotation's environment.
-    ///   - foregroundStyle: The foreground style to apply to the annotation's environment.
     public func annotation(
         _ titleKey: LocalizedStringResource,
         more: LocalizedStringResource,

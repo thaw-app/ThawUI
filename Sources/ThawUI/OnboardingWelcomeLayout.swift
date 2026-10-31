@@ -6,8 +6,6 @@
 //  Licensed under the GNU GPLv3
 //  Floe changes © 2026 René Jiménez, under the same license.
 //
-//
-//  The frame both apps' welcome screens share, with what each one says left to the app.
 
 import SwiftUI
 

@@ -5,10 +5,6 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 //  Floe changes © 2026 René Jiménez, under the same license.
-//
-//
-//  Thaw 3's settings search views, on the app's own groups and entries. The highlight the arrow
-//  keys move, the scroll that follows it and the header that scrolls with the results are Floe's.
 
 import SwiftUI
 
@@ -32,7 +28,7 @@ public struct SettingsSearchResultText {
 // MARK: - SettingsSearchResultsList
 
 /// Scrollable, grouped search results for the settings window, under a header that scrolls with them.
-/// The groups and entries are the app's own, as are their index and ranking.
+/// The groups and entries, and their index and ranking, are the host app's.
 public struct SettingsSearchResultsList<ResultGroup: Identifiable, Entry: Identifiable, Icon: View, Header: View>: View {
     private let groups: [ResultGroup]
     private let entries: (ResultGroup) -> [Entry]
@@ -204,7 +200,6 @@ public struct SettingsSearchResultRow: View {
                     .multilineTextAlignment(.leading)
                     .lineLimit(2)
 
-                // Section says where the row lives, description what it does.
                 if let section = text.section {
                     section
                         .font(.caption)
@@ -266,7 +261,7 @@ struct SettingsSearchResultButtonStyle: ButtonStyle {
 
 // MARK: - SettingsSearchResultCount
 
-/// How many results a search found. A count makes a long list read as bounded, and tells the
+/// How many results a search found, which makes a long list read as bounded and tells the
 /// reader whether narrowing the query is worth it.
 public struct SettingsSearchResultCount: View {
     private let text: Text

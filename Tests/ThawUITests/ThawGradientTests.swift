@@ -10,12 +10,8 @@ import Foundation
 import Testing
 @testable import ThawUI
 
-/// Covers the stored form of ThawGradient and the way its angle reaches the
-/// pixels.
-///
-/// The angle arrived after gradients were already on disk, so a gradient
-/// without the key must still decode, and decode as the left-to-right fill
-/// it always painted. Floe mirrors the angle, so its meaning is pinned too.
+/// Covers ThawGradient's stored form and how its angle reaches the pixels.
+/// A gradient saved without the angle key must decode as a left-to-right fill. Floe mirrors the angle, so its meaning is pinned too.
 @MainActor
 @Suite("Thaw gradient")
 struct ThawGradientTests {

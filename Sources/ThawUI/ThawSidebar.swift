@@ -76,12 +76,11 @@ public struct ThawSidebarColors: Equatable {
     }
 }
 
-/// A settings sidebar: groups of pages under small uppercase headings, stepped through with the arrow keys
-/// once it has focus. No row shows as selected while showsSelection is false, so that during a search a
-/// click on any row, the current page's included, can end it.
+/// A settings sidebar of grouped pages, stepped through with the arrow keys once focused. With showsSelection
+/// false no row looks selected, so during a search a click on any row, the current page's included, can end it.
 ///
-/// Rows of its own, not a List: a List draws its own selection, and its Sections crash AppKit
-/// on macOS 27.0 and 27.2 (a freed row view in sizeLastColumnToFit).
+/// Hand-built rows: a List draws its own selection, and its Sections crash AppKit on macOS 27.0 and 27.2
+/// (a freed row view in sizeLastColumnToFit).
 public struct ThawSidebar<Page: Hashable, Icon: View>: View {
     public typealias Row = ThawSidebarRow<Page>
 

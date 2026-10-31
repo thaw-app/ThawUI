@@ -41,7 +41,7 @@ public nonisolated struct ThawAppInfo: Sendable {
     }
 }
 
-/// Sparkle appcast channels Thaw publishes to.
+/// Sparkle appcast channels.
 public nonisolated enum UpdateChannel: String, CaseIterable, Identifiable, Sendable {
     /// Default channel (no sparkle:channel in the appcast).
     case stable
@@ -60,9 +60,8 @@ public nonisolated enum UpdateChannel: String, CaseIterable, Identifiable, Senda
         rawValue
     }
 
-    /// Sparkle channel names to allow in addition to the default channel.
-    /// Alpha also takes betas: a beta is a later build than the alphas before
-    /// it, and releases are tagged with one channel each.
+    /// Sparkle channel names to allow in addition to the default channel. Alpha also takes betas:
+    /// a beta is a later build than the alphas before it, and releases are tagged with one channel each.
     public var allowedSparkleChannels: Set<String> {
         switch self {
         case .stable:

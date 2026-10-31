@@ -14,7 +14,7 @@ private struct WindowReaderView: NSViewRepresentable {
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             if let action {
-                // Wrap the action in a Task to prevent SwiftUI update conflicts.
+                // In a Task to prevent SwiftUI update conflicts.
                 Task {
                     action(window)
                 }
@@ -37,10 +37,6 @@ private struct WindowReaderView: NSViewRepresentable {
 
 extension View {
     /// Adds an action to perform when the view's window changes.
-    ///
-    /// - Parameter action: The action to perform when the view's window
-    ///   changes. The closure passes the new window as a parameter. The
-    ///   new window can be nil.
     public func onWindowChange(perform action: @escaping (_ window: NSWindow?) -> Void) -> some View {
         background {
             WindowReaderView(action: action)

@@ -7,11 +7,8 @@
 
 import SwiftUI
 
-/// Shared empty / loading / error placeholder for a pane, list, or panel with
-/// nothing to show.
-///
-/// A centered symbol or spinner, a title, and an optional caption. No glass,
-/// background or border: empty states sit on a surface.
+/// Empty, loading or error placeholder for a pane, list or panel: a symbol or spinner, a title and
+/// an optional caption. No glass, background or border: empty states sit on a surface.
 public struct ThawEmptyState: View {
     private let systemImage: String
     private let title: LocalizedStringResource

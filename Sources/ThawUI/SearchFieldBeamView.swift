@@ -7,10 +7,8 @@
 
 import SwiftUI
 
-/// Draws the beam inside an outline: each side's colour seen through a window that runs along the border, as a
-/// hairline, a glow into the field and a glint. The still parts are drawn once for the field's size, and Core
-/// Animation runs the windows round, so the launcher does no work while the beam goes round. With Reduce Motion the
-/// window stands still.
+/// Draws the beam inside an outline as a hairline, a glow into the field and a glint. Core Animation runs the
+/// windows, so the launcher does no work while the beam goes round. With Reduce Motion the window stands still.
 public struct SearchFieldBeamView<Outline: InsettableShape>: View {
     /// The beam is drawn in two layers, one over the field and one under its text.
     public init(
@@ -128,7 +126,7 @@ public struct SearchFieldBeamView<Outline: InsettableShape>: View {
                             .stroke(isDark ? Color.white.opacity(0.3) : Color.black.opacity(0.14), lineWidth: 2)
                             .blur(radius: 5 * Self.reach)
                     }
-                    // A band along the border, not the whole field: the middle is the text's.
+                    // A band along the border: the middle is the text's.
                     .mask(outline.stroke(lineWidth: 32 * Self.reach).blur(radius: 12 * Self.reach))
                 )
             }

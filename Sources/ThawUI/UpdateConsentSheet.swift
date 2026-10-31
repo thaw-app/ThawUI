@@ -95,8 +95,7 @@ public struct UpdateConsentSheet: View {
             }
         }
         .padding(20)
-        // A minimum, not a width: both buttons and the body copy are
-        // translated, and several languages run past 380 with a hard frame.
+        // Minimum only: the buttons and body copy are translated, and several languages run past 380.
         .frame(minWidth: 380)
     }
 }

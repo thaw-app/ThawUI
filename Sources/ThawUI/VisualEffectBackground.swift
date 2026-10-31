@@ -8,9 +8,8 @@
 import AppKit
 import SwiftUI
 
-/// A behind-window blend that also makes its window non-opaque, used as the
-/// onboarding ground. SwiftUI has no behind-window blend, so this is not a
-/// ThawGlass tier; content drawn over it uses .thawGlass(_:in:).
+/// A behind-window blend that makes its window non-opaque, for the onboarding ground. SwiftUI has no
+/// behind-window blend, so this isn't a ThawGlass tier; content over it uses .thawGlass(_:in:).
 public struct VisualEffectBackground: NSViewRepresentable {
     public init() {}
 

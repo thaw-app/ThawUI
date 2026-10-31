@@ -9,14 +9,8 @@ import SwiftUI
 
 // MARK: - ChangelogDocument
 
-/// The release notes, fetched from the Thaw repository's changelog and parsed
-/// just far enough to render: `## [version]` releases, `###` sections,
-/// `####` themes, `-` bullets and numbered steps, with inline markdown.
-///
-/// Deliberately not a general markdown engine. The changelog follows Keep a
-/// Changelog with a known shape; anything unrecognized degrades to plain
-/// paragraph text rather than failing the panel. Content is not localized,
-/// release notes ship as written, like the acknowledgements document.
+/// Release notes from a Keep a Changelog file, not localized. Parses `## [version]` releases, `###` sections,
+/// `####` themes, `-` bullets, numbered steps and inline markdown. Other prose before a release's first section becomes a paragraph; the rest is dropped.
 public nonisolated struct ChangelogDocument {
     /// One block of release prose: plain text, or a GitHub alert.
     public enum Block {
@@ -24,14 +18,12 @@ public nonisolated struct ChangelogDocument {
         case callout(Callout)
     }
 
-    /// A GitHub alert: `> [!WARNING]` and the `>` lines under it. Rendered as
-    /// the design's one emphasis surface rather than as a plain quote.
+    /// A GitHub alert: `> [!WARNING]` and the `>` lines under it. Rendered as the design's one emphasis surface.
     public struct Callout {
         public enum Kind: String, CaseIterable, Sendable {
             case note, tip, important, warning, caution
 
-            /// The kind a `> [!WARNING]` marker names, or `nil` for any other
-            /// line.
+            /// The kind a `> [!WARNING]` marker names, or `nil` for any other line.
             public init?(marker line: String) {
                 guard line.hasPrefix(">") else { return nil }
                 let inner = line.dropFirst().trimmingCharacters(in: .whitespaces)
@@ -56,14 +48,12 @@ public nonisolated struct ChangelogDocument {
 
     public struct Release {
         public var version: String
-        /// The release day from a `## [version] - YYYY-MM-DD` heading, or
-        /// `nil` when the heading carries none.
+        /// The release day from a `## [version] - YYYY-MM-DD` heading, if it has one.
         public var date: Date?
         /// The bold `**macOS 27 only · Build 108 · …**` line under the heading,
         /// shown beside the date rather than as the first paragraph.
         public var facts: String?
-        /// Prose paragraphs, alerts and intro bullets ahead of the first
-        /// section.
+        /// Prose paragraphs, alerts and intro bullets ahead of the first section.
         public var intro: [Block] = []
         /// Image links ahead of the first section, rendered from bundled
         /// images so the page never fetches anything.
@@ -71,21 +61,16 @@ public nonisolated struct ChangelogDocument {
         public var sections: [Section] = []
     }
 
-    /// An image link written as `[![alt](image.ext)](url)`. The image is a
-    /// file in the app bundle, named by its file name; the link is always
-    /// `https`.
+    /// An image link written as `[![alt](image.ext)](url)`. The image is a file in the app bundle,
+    /// named by its file name; the link is always `https`.
     public struct Badge: Equatable {
         public var alt: String
         public var imageFileName: String
         public var url: URL
     }
 
-    /// Reads the optional date after a release heading's closing bracket.
-    /// Keep a Changelog writes it as ` - YYYY-MM-DD`; anything else after the
-    /// bracket is ignored rather than failing the heading.
-    ///
-    /// Anchored at local midnight: UTC midnight renders a day early west of
-    /// Greenwich.
+    /// Reads the optional ` - YYYY-MM-DD` after a release heading's closing bracket, ignoring anything else there.
+    /// Anchored at local midnight: UTC midnight renders a day early west of Greenwich.
     private static func releaseDate(in heading: String) -> Date? {
         guard let bracket = heading.firstIndex(of: "]") else {
             return nil
@@ -143,9 +128,8 @@ public nonisolated struct ChangelogDocument {
         case unavailable
     }
 
-    /// Loads the changelog: from the repository when `allowFetch` is on,
-    /// falling back to the last successful fetch. When the Privacy pane turns
-    /// fetching off, only the cache is read.
+    /// Loads the changelog from the repository, falling back to the last successful fetch.
+    /// With `allowFetch` off, as the Privacy pane can set it, only the cache is read.
     @concurrent
     public static func load(allowFetch: Bool, info: ThawAppInfo) async -> (document: ChangelogDocument?, source: Source) {
         await load(allowFetch: allowFetch, cacheFolder: info.cacheFolderName) {
@@ -226,9 +210,8 @@ public nonisolated struct ChangelogDocument {
     /// `[![alt](image)](url)` on a line of its own.
     private static nonisolated(unsafe) let badgePattern = /^\[!\[(?<alt>[^\]]*)\]\((?<image>[^)]+)\)\]\((?<url>[^)]+)\)$/
 
-    /// A badge's link when it is `https`, its only accepted scheme. The file is
-    /// fetched and a click hands the link to `openURL`, so any other scheme
-    /// could open a local file or launch another app.
+    /// A badge's link when it is `https`. The file is fetched and a click hands the link to `openURL`,
+    /// so any other scheme could open a local file or launch another app.
     private static func badgeURL(_ string: String) -> URL? {
         guard
             let url = URL(string: string), url.scheme?.lowercased() == "https", url.host() != nil
@@ -276,9 +259,8 @@ public nonisolated struct ChangelogDocument {
             document.releases.append(release)
         }
 
-        // Prose ahead of a release's first section becomes an intro
-        // paragraph; prose anywhere else, including the file preamble, is
-        // dropped.
+        // Prose ahead of a release's first section becomes an intro paragraph; prose anywhere else,
+        // including the file preamble, is dropped.
         func flushParagraph() {
             guard let paragraph = pendingParagraph else { return }
             pendingParagraph = nil
@@ -410,8 +392,3 @@ public nonisolated struct ChangelogDocument {
         return document
     }
 }
-
-// MARK: - ChangelogView
-
-// In-app release notes, presented as a sheet from the About pane, the
-// sibling of AcknowledgementsView.

@@ -8,8 +8,7 @@
 import Testing
 import ThawUI
 
-/// Imports ThawUI plainly, not with `@testable`, so this file sees what an app
-/// sees and stops compiling if the modifier's init stops being public.
+/// Imports ThawUI without `@testable`, so this stops compiling if the modifier's init stops being public.
 @MainActor
 @Suite("App UI zoom modifier")
 struct AppUIZoomModifierTests {

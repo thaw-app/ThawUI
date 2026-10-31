@@ -250,7 +250,7 @@ public final class BeamLayerView: NSView {
         return total
     }
 
-    /// Samples describe the curve, not a frame cap. Interpolation lets the compositor follow its actual cadence.
+    /// Samples describe the curve and don't cap the frame rate. Interpolation lets the compositor follow its cadence.
     private static func interpolated(_ keyPath: String, over duration: Double, at frameRate: Float, value: (Double) -> Double) -> CAKeyframeAnimation {
         let steps = max(1, Int((duration * 120).rounded()))
         let animation = CAKeyframeAnimation(keyPath: keyPath)

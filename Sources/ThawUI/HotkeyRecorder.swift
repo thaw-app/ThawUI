@@ -12,7 +12,6 @@ import SwiftUI
 
 // MARK: - HotkeyRecorderStrings
 
-/// The text of a hotkey recorder.
 public nonisolated struct HotkeyRecorderStrings: Sendable {
     public var typeShortcut: LocalizedStringResource
     public var recordShortcut: LocalizedStringResource
@@ -53,24 +52,14 @@ public nonisolated struct HotkeyRecorderStrings: Sendable {
 
 // MARK: - HotkeyRecorder
 
-/// A two-part control that shows an assigned key combination and lets the user
-/// type a new one.
-///
-/// The wider half carries the current combination and starts a recording; the
-/// square half next to it cancels a recording in progress, or clears the
-/// combination when there is nothing to cancel.
-///
-/// The app owns the hotkey: it gives the combination as a binding and stands
-/// its hotkeys down from `onRecordingChange`, so the combination being replaced
-/// cannot fire while the replacement is being typed.
+/// A two-part control that shows an assigned key combination and lets the user type a new one.
+/// The app owns the hotkey and stands its hotkeys down from `onRecordingChange`, so the old combination can't fire.
 public struct HotkeyRecorder<Label: View>: View {
     /// What the control is showing at the moment.
     private enum Phase {
         /// Waiting for the user to type a combination.
         case listening
-        /// A combination is assigned.
         case assigned(KeyCombination)
-        /// No combination is assigned.
         case empty
     }
 
@@ -209,8 +198,7 @@ public struct HotkeyRecorder<Label: View>: View {
 
 // MARK: - KeyCapture
 
-/// Intercepts the next key press on behalf of a recorder and turns it into a
-/// key combination.
+/// Intercepts the next key press on behalf of a recorder and turns it into a key combination.
 @MainActor
 @Observable
 final class KeyCapture {
@@ -280,11 +268,8 @@ final class KeyCapture {
         return nil
     }
 
-    /// Works out what an intercepted key press means.
-    ///
-    /// Escape backs out of the recording. Everything else needs a modifier that
-    /// is not Shift, since a global hotkey on an unmodified key would swallow
-    /// ordinary typing everywhere.
+    /// Escape backs out of the recording. Everything else needs a modifier other than Shift,
+    /// since a global hotkey on an unmodified key would swallow ordinary typing everywhere.
     func consider(_ keyCombination: KeyCombination) {
         guard !keyCombination.modifiers.isEmpty, keyCombination.modifiers != .shift else {
             if keyCombination.key == .escape {

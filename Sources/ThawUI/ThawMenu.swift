@@ -13,14 +13,7 @@ public struct ThawMenu<Title: View, Label: View, Content: View>: View {
     private let content: Content
     private let primaryAction: (() -> Void)?
 
-    /// Creates a menu with the given content, title, and label.
-    ///
-    /// - Parameters:
-    ///   - content: A group of menu items.
-    ///   - title: A view to display inside the menu.
-    ///   - label: A view to display as an external label for the menu.
-    ///   - primaryAction: An optional action invoked when the menu button is
-    ///     clicked (items still open via the menu indicator).
+    /// - Parameter primaryAction: Invoked when the menu button is clicked; items still open via the menu indicator.
     public init(
         primaryAction: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content,
@@ -33,12 +26,6 @@ public struct ThawMenu<Title: View, Label: View, Content: View>: View {
         self.primaryAction = primaryAction
     }
 
-    /// Creates a menu with the given content, title, and label key.
-    ///
-    /// - Parameters:
-    ///   - labelKey: A string key for the menu's external label.
-    ///   - content: A group of menu items.
-    ///   - title: A view to display inside the menu.
     public init(
         _ labelKey: LocalizedStringResource,
         @ViewBuilder content: () -> Content,

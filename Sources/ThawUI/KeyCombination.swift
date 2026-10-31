@@ -15,17 +15,12 @@ public nonisolated struct KeyCombination: Hashable, Sendable {
     public let key: KeyCode
     public let modifiers: Modifiers
 
-    /// A string representation for the key combination suitable
-    /// for display.
-    ///
     /// - Parameter spaceName: The app's word for the space bar.
     @MainActor
     public func displayValue(spaceName: String) -> String {
         modifiers.symbolicValue + " " + key.stringValue(spaceName: spaceName).capitalized
     }
 
-    /// Returns a Boolean value that indicates whether this key
-    /// combination is reserved for system use.
     @MainActor
     public var isSystemReserved: Bool {
         Self.systemReservedKeyCombinations().contains(self)

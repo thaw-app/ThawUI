@@ -29,7 +29,6 @@ public protocol PermissionPresentable {
 
 // MARK: - PermissionStrings
 
-/// The text of the permission views.
 public nonisolated struct PermissionStrings: Sendable {
     public var optional: LocalizedStringResource
     public var granted: LocalizedStringResource
@@ -51,11 +50,8 @@ public nonisolated struct PermissionStrings: Sendable {
 
 // MARK: - PermissionLabel
 
-/// A permission's icon, name, and requirement badge.
-///
-/// Every surface that offers a permission names it the same way, down to the
-/// badge wording. Only the type scale differs: onboarding sets its own so the
-/// cards read as headings, while a settings row inherits the form's.
+/// A permission's icon, name, and requirement badge. Only the type scale differs: onboarding sets
+/// its own so the cards read as headings, while a settings row inherits the form's.
 public struct PermissionLabel: View {
     /// Where the requirement badge sits.
     public enum BadgePlacement: Sendable {
@@ -63,10 +59,8 @@ public struct PermissionLabel: View {
         case adjacent
         /// At the trailing edge of the available width.
         case trailing
-        /// On its own line under the title. The card layout uses this: a
-        /// narrow column turns a trailing badge into a long gap between the
-        /// name and the tag, and an adjacent one crowds a heading that
-        /// already wraps.
+        /// On its own line under the title, for the card layout: in a narrow column a trailing badge
+        /// leaves a long gap after the name, and an adjacent one crowds a heading that already wraps.
         case below
     }
 
@@ -130,11 +124,8 @@ public struct PermissionLabel: View {
 
 // MARK: - PermissionStatusControl
 
-/// A permission's state and the one control that changes it.
-///
-/// Granted is deliberately not a disabled button. A control that cannot be
-/// pressed still reads as something the user is meant to press, and the whole
-/// point of this state is that there is nothing left to do.
+/// A permission's state and the one control that changes it. Granted isn't a disabled button: one that
+/// cannot be pressed still reads as something to press, and here there is nothing left to do.
 public struct PermissionStatusControl: View {
     /// How much room the control should take.
     public enum Layout: Sendable {

@@ -6,9 +6,6 @@
 //  Licensed under the GNU GPLv3
 //  Floe changes © 2026 René Jiménez, under the same license.
 //
-//
-//  Thaw 3's SettingsPaneIconTile without its pane, so an app gives the glyph and the hue.
-//  The accent default and the symbol initializer are Floe's.
 
 import SwiftUI
 
@@ -34,8 +31,7 @@ public struct OnboardingIconTile: View {
             .fill(tint.gradient)
             .frame(width: side, height: side)
             .overlay {
-                // Resizable + scaled-to-fit inside a fixed inset box, not
-                // font-sized: SF Symbol intrinsic proportions vary per glyph,
+                // Resizable and scaled to fit a fixed inset box: SF Symbol proportions vary per glyph,
                 // and font sizing lets wide or tall symbols overflow the tile.
                 image
                     .resizable()

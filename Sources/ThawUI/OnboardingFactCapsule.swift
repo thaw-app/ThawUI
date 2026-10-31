@@ -7,9 +7,8 @@
 
 import SwiftUI
 
-/// One short fact in a glass capsule, as the welcome and permission screens
-/// show them in a row. Long translations scale rather than wrap, so every
-/// capsule in a row keeps the same height; spoken carries the fuller claim.
+/// One short fact in a glass capsule. Long translations scale rather than wrap, so every capsule
+/// in a row keeps the same height; spoken carries the fuller claim.
 public struct OnboardingFactCapsule: View {
     private let symbol: String
     private let label: Text

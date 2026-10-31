@@ -22,7 +22,7 @@ public struct OnboardingPrimaryButton<Label: View>: View {
         Button(action: action) {
             label
                 .font(ThawType.heading)
-                // A minimum, not a width: the titles are translated and a fixed width clips the longer ones.
+                // A minimum: the titles are translated and a fixed width clips the longer ones.
                 .frame(minWidth: 140, minHeight: 34)
         }
         .buttonStyle(.thawProminent)

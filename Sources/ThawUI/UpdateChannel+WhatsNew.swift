@@ -7,9 +7,8 @@
 
 import Foundation
 
-/// What's New lists one channel at a time, Stable included, and a release
-/// belongs to the channel its version's prerelease tag names: alpha is Alpha,
-/// beta or rc is Beta, and no tag is Stable.
+/// A release belongs to the channel its version's prerelease tag names:
+/// alpha is Alpha, beta or rc is Beta, and no tag is Stable.
 nonisolated extension UpdateChannel {
     public init(version: String) {
         let tag = ReleaseVersionOrder.prereleaseTag(of: version)?.lowercased() ?? ""

@@ -9,10 +9,6 @@ import SwiftUI
 
 extension View {
     /// Performs the given action when the view's frame changes.
-    ///
-    /// - Parameters:
-    ///   - coordinateSpace: The space used to measure the frame.
-    ///   - action: Receives the new frame.
     public func onFrameChange(
         in coordinateSpace: some CoordinateSpaceProtocol = .local,
         perform action: @escaping (CGRect) -> Void
@@ -25,10 +21,6 @@ extension View {
     }
 
     /// Updates the given binding when the view's frame changes.
-    ///
-    /// - Parameters:
-    ///   - coordinateSpace: The space used to measure the frame.
-    ///   - binding: Receives the new frame.
     public func onFrameChange(
         in coordinateSpace: some CoordinateSpaceProtocol = .local,
         update binding: Binding<CGRect>

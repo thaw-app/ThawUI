@@ -8,8 +8,7 @@
 import SwiftUI
 
 /// The settings sidebar's touches, for every list: the shared icon box, the selected fill and the group headings.
-/// The panel's lists keep their own glass selection and share the rest. ThawUI's thawKeyboardList gives a list the
-/// arrow keys.
+/// The panel's lists keep their own glass selection. thawKeyboardList gives a list the arrow keys.
 public enum ListStyle {
     /// The box every row's icon sits in, so the names line up whatever the icon.
     public static let iconBox: CGFloat = 18

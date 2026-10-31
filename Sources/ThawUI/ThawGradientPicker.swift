@@ -30,12 +30,8 @@ public nonisolated struct ThawGradientPickerStrings: Sendable {
 
 // MARK: - ThawGradientPicker
 
-/// A labeled control for editing the color stops of an ThawGradient.
-///
-/// Click the track to add a stop, drag to move, double-click to spread
-/// evenly; selecting a handle opens the shared color panel. Handles take
-/// keyboard focus: space selects, arrows move (option for fine steps),
-/// delete removes, escape releases the panel.
+/// Edits a ThawGradient's stops: click the track to add, drag to move, double-click to spread evenly, select to open the color panel.
+/// On a focused handle, space selects, arrows move (option for fine steps), delete removes, escape releases the panel.
 public struct ThawGradientPicker: View {
     @Binding private var gradient: ThawGradient
 
@@ -46,14 +42,7 @@ public struct ThawGradientPicker: View {
     /// The index of the stop the color panel is currently editing.
     @State private var selectedStop: Int?
 
-    /// Creates a gradient picker labeled by a string.
-    ///
-    /// - Parameters:
-    ///   - labelKey: A description of what the gradient is for.
-    ///   - gradient: The gradient the picker edits.
-    ///   - strings: VoiceOver's words for the stops.
-    ///   - supportsOpacity: Whether the color panel offers an opacity
-    ///     control while a stop is selected.
+    /// - Parameter supportsOpacity: Whether the color panel offers an opacity control while a stop is selected.
     public init(
         _ labelKey: LocalizedStringResource,
         gradient: Binding<ThawGradient>,
@@ -83,31 +72,21 @@ public struct ThawGradientPicker: View {
 
 // MARK: - ThawGradientTrack
 
-/// The interactive body of the picker.
-///
-/// The track previews the gradient, hosts a handle for every stop, and
-/// owns the shared color panel for as long as a stop stays selected.
+/// Previews the gradient, hosts a handle per stop, and owns the color panel while a stop is selected.
 private struct ThawGradientTrack: View {
-    /// The width of a stop handle, in points.
     private static let handleWidth: CGFloat = 10
 
-    /// The size of the gradient preview.
     private static let trackSize = CGSize(width: 200, height: 24)
 
-    /// The corner radius of the gradient preview.
     private static let trackCornerRadius: CGFloat = 6
 
-    /// How close to the midpoint a stop has to land before it snaps to
-    /// dead center. Shared with the handles, which apply the same snap
-    /// while dragging.
+    /// How close to the midpoint a stop must land to snap to center. Handles apply it while dragging too.
     static let centerSnapTolerance: CGFloat = 0.025
 
-    /// Whether the color panel offers an opacity control.
     let supportsOpacity: Bool
 
     let strings: ThawGradientPickerStrings
 
-    /// The gradient being edited.
     @Binding var gradient: ThawGradient
 
     /// The index of the stop the color panel is editing.
@@ -124,7 +103,6 @@ private struct ThawGradientTrack: View {
 
     @Environment(\.isEnabled) private var isEnabled
 
-    /// Whether a stop is selected, meaning the color panel is in play.
     private var hasSelection: Bool {
         selection != nil
     }
@@ -133,8 +111,7 @@ private struct ThawGradientTrack: View {
         RoundedRectangle(cornerRadius: Self.trackCornerRadius, style: .continuous)
     }
 
-    /// A hairline at the midpoint of the track, showing where a stop
-    /// snaps to.
+    /// A hairline at the track's midpoint, where a stop snaps.
     private var centerTick: some View {
         Rectangle()
             .frame(width: 1, height: 6)
@@ -157,9 +134,7 @@ private struct ThawGradientTrack: View {
             .frame(width: Self.trackSize.width, height: Self.trackSize.height)
             .thawShadow(.control)
             .onTapGesture(count: 2, perform: spaceStopsEvenly)
-            // On the track rather than the handle: key presses climb from
-            // the focused handle, and these two both settle track-level
-            // state (the selection, and the color panel it owns).
+            // On the track: key presses climb from the focused handle, and both settle track-level state.
             .onKeyPress(.delete) {
                 guard hasSelection else {
                     return .ignored
@@ -175,9 +150,7 @@ private struct ThawGradientTrack: View {
                 hideColorPanel()
                 return .handled
             }
-            // Keyboard routes to the two edits that otherwise need a mouse
-            // (a click on bare track adds a stop, a double-click spreads
-            // them), reached from the focused handle.
+            // Keyboard routes to the two mouse-only edits: adding a stop and spreading them.
             .onKeyPress(keys: ["+", "=", "e"]) { press in
                 switch press.key {
                 case "+", "=":
@@ -197,8 +170,7 @@ private struct ThawGradientTrack: View {
                 spaceStopsEvenly()
             }
             .onChange(of: gradient) { previous, current in
-                // A gradient with nothing in it has no handles left to
-                // click, so there would be no way back out of it.
+                // An empty gradient has no handles left to click, so there would be no way back.
                 if current.stops.isEmpty {
                     gradient = previous
                 }
@@ -225,8 +197,7 @@ private struct ThawGradientTrack: View {
             .grayscale(isEnabled ? 0 : 1)
     }
 
-    /// A transparent layer beneath the handles that turns a click on bare
-    /// track into a new stop.
+    /// Turns a click on bare track into a new stop.
     private func insertionSurface(in geometry: GeometryProxy) -> some View {
         Color.clear
             .contentShape(trackShape)
@@ -250,8 +221,7 @@ private struct ThawGradientTrack: View {
         }
     }
 
-    /// Appends a stop at location, colored to match whatever the
-    /// gradient already renders there, and selects it.
+    /// Appends a stop colored to match the gradient at location, and selects it.
     private func insertStop(at location: CGFloat) {
         let clamped = location.clamped(to: 0 ... 1)
         let location = abs(clamped - 0.5) <= Self.centerSnapTolerance ? 0.5 : clamped
@@ -262,10 +232,7 @@ private struct ThawGradientTrack: View {
         selection = gradient.stops.indices.last
     }
 
-    /// Adds a stop without a pointer position to aim with.
-    ///
-    /// Lands halfway to the next stop on the right, so repeats subdivide;
-    /// with nothing selected it takes the midpoint.
+    /// Lands halfway to the next stop on the right, so repeats subdivide; with nothing selected, the midpoint.
     private func insertStopFromKeyboard() {
         guard let index = liveSelection else {
             insertStop(at: 0.5)
@@ -279,7 +246,6 @@ private struct ThawGradientTrack: View {
         insertStop(at: (start + next) / 2)
     }
 
-    /// Drops the selected stop, leaving nothing selected.
     private func removeSelectedStop() {
         let index = liveSelection
         selection = nil
@@ -289,8 +255,7 @@ private struct ThawGradientTrack: View {
         gradient.stops.remove(at: index)
     }
 
-    /// Spreads the stops from one end of the track to the other at equal
-    /// intervals, preserving their left-to-right order.
+    /// Spreads the stops evenly across the track, keeping their left-to-right order.
     private func spaceStopsEvenly() {
         switch gradient.stops.count {
         case 0:
@@ -351,8 +316,7 @@ private struct ThawGradientTrack: View {
         colorPanelObservers = observers
     }
 
-    /// The index of the selected stop, or nil when nothing is selected
-    /// or the selection has fallen out of range.
+    /// Nil when nothing is selected or the selection has fallen out of range.
     private var liveSelection: Int? {
         guard let selection, gradient.stops.indices.contains(selection) else {
             return nil
@@ -360,7 +324,6 @@ private struct ThawGradientTrack: View {
         return selection
     }
 
-    /// The selected stop's color, expressed for the color panel.
     private var selectedColor: NSColor? {
         liveSelection.flatMap { NSColor(cgColor: gradient.stops[$0].color) }
     }
@@ -396,12 +359,10 @@ private struct ThawGradientTrack: View {
 
 /// A draggable capsule marking one stop's position along the track.
 private struct ThawGradientStopHandle: View {
-    /// How far one arrow key moves a stop along the track, as a fraction of
-    /// its length: twenty presses cross it end to end.
+    /// One arrow press, as a fraction of the track: twenty presses cross it.
     private static let nudge: CGFloat = 0.05
 
-    /// The same, holding option, fine enough to land on a value a drag
-    /// would have to be very steady to hit.
+    /// The same with option held, for values a drag would have to be very steady to hit.
     private static let fineNudge: CGFloat = 0.01
 
     let strings: ThawGradientPickerStrings
@@ -491,7 +452,6 @@ private struct ThawGradientStopHandle: View {
         }
     }
 
-    /// Where the handle for stop sits within the track.
     private func center(of stop: ThawGradient.ColorStop) -> CGPoint {
         CGPoint(
             x: geometry.size.width * stop.location,
@@ -503,8 +463,7 @@ private struct ThawGradientStopHandle: View {
         selection = isSelected ? nil : index
     }
 
-    /// Moves the stop by delta for the keyboard. No center snap: keys land on
-    /// exact values, and snapping would make 0.5 unreachable.
+    /// Moves the stop by delta for the keyboard. No center snap: keys land on exact values.
     private func nudge(by delta: CGFloat) {
         guard let stop else {
             return
@@ -538,8 +497,7 @@ private struct ThawGradientStopHandle: View {
 // MARK: - Window Visibility
 
 private extension View {
-    /// Clears selection whenever the window hosting this view stops
-    /// being visible, so a hidden picker does not keep the color panel.
+    /// Clears selection when the hosting window hides, so a hidden picker doesn't keep the color panel.
     func deselectingWhenWindowHides(_ selection: Binding<Int?>) -> some View {
         modifier(DeselectWhenWindowHides(selection: selection))
     }

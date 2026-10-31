@@ -25,9 +25,8 @@ public struct ReadingPathItem: Identifiable, Equatable {
 
 // MARK: - ReadingPage
 
-/// The scaffold behind the app's long-form windows: a path along the top, a
-/// large title, the body in one column, and outbound links, on the settings
-/// glass. It also chromes the host window.
+/// The scaffold behind long-form windows: a path along the top, a large title, the body in one column,
+/// and outbound links, on the settings glass. It also chromes the host window.
 public struct ReadingPage<Content: View, Links: View>: View {
     @Environment(\.dismiss) private var dismiss
 
@@ -136,9 +135,8 @@ public struct ReadingPage<Content: View, Links: View>: View {
 
     // MARK: Path
 
-    /// The stops as a slash-separated path, the app's name at its head. The
-    /// active stop is printed in full weight with a dot beneath it; the rest
-    /// read as links. Past visiblePathCount the remainder fold into a menu.
+    /// The stops as a slash-separated path, the app's name at its head. The active stop is in full weight
+    /// with a dot beneath; the rest read as links, and past visiblePathCount they fold into a menu.
     private var pathRow: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(verbatim: appName)
@@ -230,7 +228,7 @@ public enum ReadingPageType {
     public static let body = ThawType.body
     public static let heading = ThawType.heading
     public static let lineSpacing: CGFloat = 6
-    /// Wide on purpose: the page is the window, not a column inside it.
+    /// Wide because the page is the window.
     public static let columnWidth: CGFloat = 960
     public static let horizontalInset: CGFloat = 56
 }

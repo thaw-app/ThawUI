@@ -5,10 +5,6 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 //  Floe changes © 2026 René Jiménez, under the same license.
-//
-//
-//  Ported to Floe from Thaw 3's SettingsView, and moved out of
-//  AboutSettingsPane.swift since the rest of Floe uses them too.
 
 import AppKit
 import SwiftUI
@@ -42,9 +38,8 @@ public struct BehindWindowMaterialBackground: NSViewRepresentable {
     }
 }
 
-/// The system glass button, unmodified: its own padding and shape, so a
-/// Settings button looks like one in System Settings and follows macOS as the
-/// style changes. Kept as a name so call sites say what they mean.
+/// The system glass button, unmodified, so a Settings button looks like one
+/// in System Settings and follows macOS as the style changes.
 extension PrimitiveButtonStyle where Self == GlassButtonStyle {
     public static var settingsGlass: GlassButtonStyle {
         .glass

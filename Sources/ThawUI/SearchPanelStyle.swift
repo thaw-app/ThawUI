@@ -5,16 +5,10 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 //  Floe changes © 2026 René Jiménez, under the same license.
-//
-//
-//  The launcher face of Thaw 3's menu bar search panel (Panels/Search and UI/Views/SectionedList),
-//  ported to Floe as standalone views: query field metrics, palette row metrics, the row background
-//  with its selection and hover washes, section headings, and key caps. The palette row can also
-//  draw the characters a query matched in a stronger weight.
 
 import SwiftUI
 
-/// Thaw's inspector query field: .title2 text in an interactive glass capsule, inset from the panel's
+/// Query field: .title2 text in an interactive glass capsule, inset from the panel's
 /// edges, that reads one step more solid while it has focus.
 public struct SearchQueryField<Accessory: View>: View {
     public let prompt: String
@@ -131,7 +125,7 @@ public enum PanelRow {
     public static let inset = ThawSpacing.base
 }
 
-/// Thaw's palette row: icon, name, and a quieter second line when it says something the name doesn't.
+/// Palette row: icon, name, and a quieter second line when it says something the name doesn't.
 public struct PaletteRow<Icon: View, Trailing: View>: View {
     public let title: String
     public let subtitle: String?
@@ -184,7 +178,7 @@ public struct PaletteRow<Icon: View, Trailing: View>: View {
     }
 }
 
-/// The selection and hover washes from Thaw's SectionedList rows.
+/// The selection and hover washes from SectionedList rows.
 public struct SearchRowBackground: ViewModifier {
     public let selected: Bool
     @State private var isHovering = false
@@ -225,7 +219,7 @@ extension EnvironmentValues {
     @Entry public var searchRowCornerRadius: CGFloat = ThawRadius.control
 }
 
-/// A flat key cap, not glass: glass per cap on the panel's glass refracts.
+/// A flat key cap: glass per cap on the panel's glass refracts.
 public struct KeyCapView: View {
     private let text: String?
     private let systemImage: String?

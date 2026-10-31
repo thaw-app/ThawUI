@@ -13,14 +13,12 @@ import Testing
 @MainActor
 @Suite("ChangelogDocument release parts")
 struct ChangelogDocumentReleasePartsTests {
-    /// The plain-text characters of an AttributedString bullet, for
-    /// asserting content independent of inline styling runs.
+    /// A bullet's characters, so assertions ignore inline styling runs.
     private func plain(_ text: AttributedString) -> String {
         String(text.characters)
     }
 
-    /// The plain text of a block, so a prose block and a callout assert the
-    /// same way.
+    /// The plain text of a block, so a prose block and a callout assert the same way.
     private func plain(_ block: ChangelogDocument.Block) -> String {
         switch block {
         case let .text(text):
@@ -30,7 +28,6 @@ struct ChangelogDocumentReleasePartsTests {
         }
     }
 
-    /// A callout's parts joined with newlines.
     private func plain(_ callout: ChangelogDocument.Callout) -> String {
         callout.parts.map { part in
             switch part {

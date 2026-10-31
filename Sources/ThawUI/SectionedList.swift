@@ -9,10 +9,8 @@ import SwiftUI
 
 // MARK: - SectionedList
 
-/// A scrollable list of items broken up by section.
-///
-/// Section headers are modeled as non-selectable items, so keyboard navigation
-/// steps over them while arrowing through the selectable rows between them.
+/// A scrollable list of items broken up by section. Section headers are non-selectable items,
+/// so keyboard navigation steps over them.
 public struct SectionedList<ItemID: Hashable, ItemContent: View>: View {
     @Binding public var selection: ItemID?
     @Binding public var items: [SectionedListItem<ItemID, ItemContent>]
@@ -23,8 +21,6 @@ public struct SectionedList<ItemID: Hashable, ItemContent: View>: View {
 
     private var contentPadding: CGFloat = 0
 
-    /// Creates a sectioned list with the given selection and items.
-    ///
     /// While isEditing is true, the list stops handling arrow and return
     /// keys so a text field elsewhere on screen can have them.
     public init(selection: Binding<ItemID?>, items: Binding<[SectionedListItem<ItemID, ItemContent>]>, openLabel: LocalizedStringResource, isEditing: Bool = false) {
@@ -54,7 +50,6 @@ public struct SectionedList<ItemID: Hashable, ItemContent: View>: View {
         .sectionedListKeys(selection: $selection, items: items, isEnabled: !isEditing)
     }
 
-    /// Sets the padding of the sectioned list's content.
     public func contentPadding(_ length: CGFloat) -> SectionedList {
         var copy = self
         copy.contentPadding = length
@@ -124,8 +119,6 @@ extension View {
 
 // MARK: - SectionedListItem
 
-/// An item in a sectioned list.
-///
 /// Unchecked Sendable because the content view is not Sendable; instances
 /// live only on the main actor.
 public struct SectionedListItem<ID: Hashable, Content: View>: @unchecked Sendable {
@@ -159,9 +152,8 @@ private struct SectionedListItemView<ItemID: Hashable, ItemContent: View>: View 
         selection == item.id
     }
 
-    /// Selection and hover paint the same shape the row is hit-tested
-    /// against. Non-selectable items (section headers) square it off so their
-    /// focus effect spans the full row.
+    /// Selection and hover paint the same shape the row is hit-tested against.
+    /// Section headers square it off so their focus effect spans the full row.
     private var rowShape: RoundedRectangle {
         RoundedRectangle(cornerRadius: item.isSelectable ? ThawRadius.control : 0, style: .continuous)
     }

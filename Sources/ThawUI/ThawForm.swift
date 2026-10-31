@@ -70,9 +70,8 @@ public struct ThawForm<Content: View>: View {
         .accessibilityElement(children: .contain)
     }
 
-    /// Extra inset so grouped cards stay near SettingsDetailLayout.columnMaxWidth
-    /// on wide windows without pinning the scrollbar to that column. Full-width
-    /// forms take none.
+    /// Extra inset so grouped cards stay near SettingsDetailLayout.columnMaxWidth on wide
+    /// windows without pinning the scrollbar to that column. Full-width forms take none.
     private var readingGutter: CGFloat {
         guard readingWidth == .column else { return 0 }
         let available = formWidth - (SettingsDetailLayout.titleHorizontalInset * 2)

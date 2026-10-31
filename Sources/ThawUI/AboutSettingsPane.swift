@@ -13,9 +13,8 @@ import SwiftUI
 
 // MARK: - AboutSettingsPane
 
-/// The About page: who the app is and which build this is, then one card for
-/// updates, then news and help actions. Project links and copyright form a
-/// quiet footer; the app's secondary destinations sit in the actions' menu.
+/// The About page: identity and build, an updates card, news and help actions, and a footer of
+/// project links and copyright. Secondary destinations sit in the actions' menu.
 public struct AboutSettingsPane: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -131,8 +130,8 @@ public struct AboutSettingsPane: View {
     /// it copies the full block a bug report asks for.
     private var details: some View {
         HStack(alignment: .firstTextBaseline, spacing: ThawSpacing.row) {
-            // Label a container, not the selectable text: labeling the AppKit text view
-            // directly recurses until the stack overflows under VoiceOver.
+            // Label a container: labeling the selectable AppKit text view directly recurses until the
+            // stack overflows under VoiceOver.
             Text(verbatim: version.line)
                 .font(ThawType.detail)
                 .monospaced()
@@ -341,7 +340,6 @@ enum AboutMoreMenu {
     }
 }
 
-/// A menu item that runs a closure.
 @MainActor
 private final class ClosureMenuItem: NSMenuItem {
     private let handler: @MainActor () -> Void
@@ -368,9 +366,8 @@ private final class ClosureMenuItem: NSMenuItem {
     }
 }
 
-/// Holds the AppKit view behind the actions button so the menu can be
-/// positioned against the button itself. A reference box keeps the
-/// representable from writing SwiftUI state during a view update.
+/// A reference box for the AppKit view behind the actions button, so the representable
+/// doesn't write SwiftUI state during a view update.
 @MainActor
 private final class MoreMenuAnchor {
     weak var view: NSView?

@@ -7,13 +7,8 @@
 
 import SwiftUI
 
-/// The title and bottom bar the quick-edit popovers (Layout, Appearance) put
-/// around their pane, so the two read as one family.
-///
-/// No glass of its own. The popover already draws its material, and a glass
-/// card inside it layers a second one over the first; the bars sit in the
-/// safe area instead, where the scroll edge effect keeps the content that
-/// scrolls under them legible.
+/// The title and bottom bar the quick-edit popovers (Layout, Appearance) put around their pane.
+/// No glass: it would stack on the popover's material. In the safe area, the scroll edge effect keeps content legible.
 public struct EditorPanelChrome<Content: View, BottomBar: View>: View {
     private let title: LocalizedStringResource
     private let subtitle: LocalizedStringResource?
@@ -52,8 +47,7 @@ public struct EditorPanelChrome<Content: View, BottomBar: View>: View {
         VStack(spacing: ThawSpacing.hairline) {
             Text(title)
                 .font(ThawType.display)
-            // A popover is summoned by a gesture, not navigated to, so it
-            // cannot rely on the Settings sidebar to say what it is for.
+            // A popover has no Settings sidebar to say what it is for.
             if let subtitle {
                 Text(subtitle)
                     .font(ThawType.caption)

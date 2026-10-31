@@ -7,12 +7,8 @@
 
 import Carbon.HIToolbox
 
-/// Representation of a physical key on a keyboard.
-///
-/// The raw value is the platform virtual key code, which identifies where a
-/// key sits on the keyboard rather than what it types. The character a key
-/// produces depends on the active keyboard layout and is resolved separately
-/// by keyEquivalent.
+/// A physical key. The raw value is the platform virtual key code, which identifies where a key sits
+/// rather than what it types; keyEquivalent resolves the character on the active layout.
 public nonisolated struct KeyCode: Codable, Hashable, RawRepresentable, Sendable {
     public let rawValue: Int
 
@@ -171,14 +167,8 @@ public nonisolated struct KeyCode: Codable, Hashable, RawRepresentable, Sendable
 
 // MARK: - Keyboard Layout Lookup
 
-/// Asks the active ASCII-capable keyboard layout what the given virtual key
-/// types when no modifiers are held. On the main actor because macOS aborts the
-/// process when these input source calls overlap on two threads.
-///
-/// - Parameter virtualKey: The virtual key code to translate.
-///
-/// - Returns: The text the key produces, or nil if the layout is
-///   unavailable or the key produces nothing.
+/// What the virtual key types on the active ASCII-capable layout with no modifiers held, or nil if there is none.
+/// On the main actor because macOS aborts the process when these input source calls overlap on two threads.
 @MainActor
 private func layoutText(forVirtualKey virtualKey: UInt16) -> String? {
     guard
@@ -313,17 +303,12 @@ private let keyLabels: [KeyCode: String] = {
 
 @MainActor
 public extension KeyCode {
-    /// The text the key types on the current keyboard layout.
-    ///
-    /// Empty for keys that type nothing, such as the arrow keys.
+    /// The text the key types on the current layout. Empty for keys that type nothing, such as the arrow keys.
     var keyEquivalent: String {
         layoutText(forVirtualKey: UInt16(truncatingIfNeeded: rawValue)) ?? ""
     }
 
-    /// A short label for the key, suitable for display in the interface.
-    ///
-    /// Keys that carry a printed glyph are shown with that glyph; the rest fall
-    /// back to whatever they type on the current layout.
+    /// A short label for the interface: the key's printed glyph, or else what it types on the current layout.
     ///
     /// - Parameter spaceName: The app's word for the space bar, the one label that needs translating.
     func stringValue(spaceName: String) -> String {

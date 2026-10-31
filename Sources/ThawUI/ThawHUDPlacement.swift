@@ -8,25 +8,16 @@
 import CoreGraphics
 
 /// Where along the top of a display a ThawHUD capsule sits.
-///
-/// Confirmations do not need this: they answer a gesture the user just made
-/// and are already being looked for, so the center is the right place and the
-/// only place. Announcements do. The recording watch's banners arrive
-/// unrequested and land on a display the user may not be facing, and the
-/// center of a wide display is also where the thing being worked on usually
-/// is, the one spot a banner is most likely to be in the way of.
+/// Unrequested banners can avoid the center of a wide display, where the work usually is.
 public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable, Sendable {
-    /// Under the left end of the menu bar, past the application menus.
+    /// Under the left end of the menu bar.
     case leading
-    /// Under the middle of the menu bar. What every HUD caller gets unless it
-    /// asks otherwise.
+    /// Under the middle of the menu bar; the default.
     case center
-    /// Under the right end of the menu bar, nearest the status items the
-    /// camera and microphone indicators appear in themselves.
+    /// Under the right end of the menu bar, nearest the status items.
     case trailing
 
-    /// How far the off-center cases stay clear of the screen's edge, where a
-    /// rounded display corner would otherwise clip the capsule.
+    /// Clearance from the screen's edge for the off-center cases; a rounded corner would clip the capsule.
     public static let edgeInset: CGFloat = 16
 
     /// The smallest capsule, so a one-word label does not shrink to a dot.
@@ -35,10 +26,6 @@ public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable, Sendab
     /// The space between the menu bar and the capsule.
     public static let gap: CGFloat = 8
 
-    /// The capsule's left edge for a capsule width wide on screenFrame.
-    ///
-    /// Pure math over the frame, so all three cases are decidable without a
-    /// display attached.
     public func originX(screenFrame: CGRect, width: CGFloat) -> CGFloat {
         switch self {
         case .leading:
@@ -50,8 +37,7 @@ public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable, Sendab
         }
     }
 
-    /// The capsule's size for content that wants fitting: at least the minimum, and never wider
-    /// than the screen less both edge insets, so long text truncates instead of running off a display.
+    /// At least the minimum, and never wider than the screen less both edge insets, so long text truncates.
     public static func size(fitting: CGSize, screenFrame: CGRect) -> CGSize {
         let widest = max(minimumSize.width, screenFrame.width - edgeInset * 2)
         return CGSize(
