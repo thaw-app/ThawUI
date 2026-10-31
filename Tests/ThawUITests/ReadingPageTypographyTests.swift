@@ -7,7 +7,6 @@
 
 import Testing
 @testable import ThawUI
-import ThawUI
 
 @MainActor
 @Suite("Reading page typography")

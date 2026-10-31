@@ -107,10 +107,8 @@ struct SettingsSearchViewsTests {
             result: { SettingsSearchResultText(title: Text(verbatim: $0.id)) },
             groupIcon: { _ in EmptyView() },
             header: {
-                GeometryReader { _ in
-                    let _ = (drewHeader = true)
-                    SettingsSearchResultCount(Text(verbatim: "3 results"))
-                }
+                DrawProbe { drewHeader = true }
+                SettingsSearchResultCount(Text(verbatim: "3 results"))
             }
         )
         _ = Self.draw(list)
@@ -155,5 +153,15 @@ struct SettingsSearchViewsTests {
         }
         .settingsSearchField(text: .constant("query"), placement: .sidebar, prompt: "Look", findLabel: "Seek", keyboard: withKeyboard ? keyboard : nil)
         #expect(Self.draw(view).fittingSize.width > 0)
+    }
+}
+
+/// Reports that SwiftUI asked for its body, which a list draws only with its header.
+private struct DrawProbe: View {
+    let onDraw: () -> Void
+
+    var body: some View {
+        onDraw()
+        return Color.clear.frame(width: 1, height: 1)
     }
 }

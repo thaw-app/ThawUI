@@ -84,7 +84,9 @@ struct OnboardingPiecesTests {
 
     @Test("The welcome layout draws its parts at the window's size")
     func welcomeLayout() {
-        let layout = OnboardingWelcomeLayout(continueTitle: Text(verbatim: "Next"), onContinue: {}) {
+        let layout = OnboardingWelcomeLayout(continueTitle: Text(verbatim: "Next")) {
+            // A step with nothing to do when it continues.
+        } hero: {
             OnboardingIconTile(symbol: "star", side: 96)
         } copy: {
             OnboardingHeader(title: Text(verbatim: "Welcome"), message: Text(verbatim: "Glad you came"))

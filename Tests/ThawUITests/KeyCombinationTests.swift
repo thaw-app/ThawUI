@@ -175,15 +175,15 @@ struct KeyCombinationTests {
     func savedForm() throws {
         let combination = KeyCombination(key: .space, modifiers: [.control, .option])
         let data = try JSONEncoder().encode(combination)
-        #expect(String(decoding: data, as: UTF8.self) == "[49,3]")
+        #expect(String(bytes: data, encoding: .utf8) == "[49,3]")
         #expect(try decode("[49,3]") == combination)
     }
 
     @Test("Key codes and modifiers keep their saved raw values")
     func savedRawValues() throws {
-        #expect(try String(decoding: JSONEncoder().encode(KeyCode.a), as: UTF8.self) == "0")
-        #expect(try String(decoding: JSONEncoder().encode(KeyCode.f1), as: UTF8.self) == "122")
-        #expect(try String(decoding: JSONEncoder().encode(Modifiers.command), as: UTF8.self) == "8")
+        #expect(try String(bytes: JSONEncoder().encode(KeyCode.a), encoding: .utf8) == "0")
+        #expect(try String(bytes: JSONEncoder().encode(KeyCode.f1), encoding: .utf8) == "122")
+        #expect(try String(bytes: JSONEncoder().encode(Modifiers.command), encoding: .utf8) == "8")
         #expect(Modifiers.control.rawValue == 1)
         #expect(Modifiers.option.rawValue == 2)
         #expect(Modifiers.shift.rawValue == 4)

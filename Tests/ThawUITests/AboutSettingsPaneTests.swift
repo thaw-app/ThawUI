@@ -207,10 +207,12 @@ struct AboutSettingsPaneTests {
     func menuActions() {
         var opened: [URL] = []
         var ran = 0
-        let menu = AboutMoreMenu.make(groups: [[
-            AboutMenuItem("Link", systemImage: "globe", url: Self.url),
-            AboutMenuItem("Run", systemImage: "star") { ran += 1 },
-        ]]) { opened.append($0) }
+        let menu = AboutMoreMenu.make(groups: [
+            [
+                AboutMenuItem("Link", systemImage: "globe", url: Self.url),
+                AboutMenuItem("Run", systemImage: "star") { ran += 1 },
+            ],
+        ]) { opened.append($0) }
         menu.performActionForItem(at: 0)
         menu.performActionForItem(at: 1)
         #expect(opened == [Self.url])

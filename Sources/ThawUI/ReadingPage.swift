@@ -21,7 +21,6 @@ public struct ReadingPathItem: Identifiable, Equatable {
         self.id = id
         self.label = label
     }
-
 }
 
 // MARK: - ReadingPage

@@ -144,7 +144,6 @@ public struct SectionedListItem<ID: Hashable, Content: View>: @unchecked Sendabl
         self.isSelectable = isSelectable
         self.action = action
     }
-
 }
 
 // MARK: - SectionedListItemView
