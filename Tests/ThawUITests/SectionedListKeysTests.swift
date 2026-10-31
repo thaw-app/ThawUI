@@ -19,9 +19,11 @@ struct SectionedListKeysTests {
 
     @Test("Plain arrows step through the rows, keypad and function flags included")
     func plainArrowsStep() {
+        // Arrow keys report the function flag; SwiftUI deprecated its name, not the flag.
+        let functionFlag = EventModifiers(rawValue: 64)
         #expect(SectionedListNavigation.command(for: .downArrow, modifiers: []) == .init(step: 1))
         #expect(SectionedListNavigation.command(for: .upArrow, modifiers: []) == .init(step: -1))
-        #expect(SectionedListNavigation.command(for: .downArrow, modifiers: [.numericPad, .function]) == .init(step: 1))
+        #expect(SectionedListNavigation.command(for: .downArrow, modifiers: [.numericPad, functionFlag]) == .init(step: 1))
         #expect(SectionedListNavigation.command(for: .upArrow, modifiers: .capsLock) == .init(step: -1))
     }
 
