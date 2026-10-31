@@ -29,16 +29,6 @@ public nonisolated enum SearchFieldBeam: String, Codable, CaseIterable, Identifi
         rawValue
     }
 
-    public var title: String {
-        switch self {
-        case .off: String(localized: "Off", comment: "No beam around the search field.")
-        case .colorful: String(localized: "Colorful", comment: "A beam around the search field in every colour.")
-        case .mono: String(localized: "Mono", comment: "A beam around the search field in greys alone.")
-        case .ocean: String(localized: "Ocean", comment: "A beam around the search field in blues and violets.")
-        case .sunset: String(localized: "Sunset", comment: "A beam around the search field in oranges, pinks and reds.")
-        }
-    }
-
     /// The same places for every set: along the top, down the left, along the bottom and down the right.
     private static let places: [(center: UnitPoint, radii: CGSize)] = [
         (UnitPoint(x: 0.3, y: 0), CGSize(width: 80, height: 30)),

@@ -38,6 +38,8 @@ public struct ReadingPage<Content: View, Links: View>: View {
     public var visiblePathCount = 5
     public let title: Text
     public var subtitle: Text?
+    /// The menu the path's older stops fold into.
+    public let olderLabel: LocalizedStringResource
     @ViewBuilder public let content: () -> Content
     @ViewBuilder public let links: () -> Links
 
@@ -48,6 +50,7 @@ public struct ReadingPage<Content: View, Links: View>: View {
         visiblePathCount: Int = 5,
         title: Text,
         subtitle: Text? = nil,
+        olderLabel: LocalizedStringResource,
         @ViewBuilder content: @escaping () -> Content,
         @ViewBuilder links: @escaping () -> Links
     ) {
@@ -57,6 +60,7 @@ public struct ReadingPage<Content: View, Links: View>: View {
         self.visiblePathCount = visiblePathCount
         self.title = title
         self.subtitle = subtitle
+        self.olderLabel = olderLabel
         self.content = content
         self.links = links
     }
@@ -161,7 +165,7 @@ public struct ReadingPage<Content: View, Links: View>: View {
                         }
                     }
                 } label: {
-                    Text("Older")
+                    Text(olderLabel)
                         .foregroundStyle(.secondary)
                 }
                 .menuStyle(.borderlessButton)

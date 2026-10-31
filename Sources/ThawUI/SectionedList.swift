@@ -17,6 +17,8 @@ public struct SectionedList<ItemID: Hashable, ItemContent: View>: View {
     @Binding public var selection: ItemID?
     @Binding public var items: [SectionedListItem<ItemID, ItemContent>]
 
+    /// VoiceOver's name for the action that opens a row.
+    public let openLabel: LocalizedStringResource
     public let isEditing: Bool
 
     private var contentPadding: CGFloat = 0
@@ -25,9 +27,10 @@ public struct SectionedList<ItemID: Hashable, ItemContent: View>: View {
     ///
     /// While isEditing is true, the list stops handling arrow and return
     /// keys so a text field elsewhere on screen can have them.
-    public init(selection: Binding<ItemID?>, items: Binding<[SectionedListItem<ItemID, ItemContent>]>, isEditing: Bool = false) {
+    public init(selection: Binding<ItemID?>, items: Binding<[SectionedListItem<ItemID, ItemContent>]>, openLabel: LocalizedStringResource, isEditing: Bool = false) {
         self._selection = selection
         self._items = items
+        self.openLabel = openLabel
         self.isEditing = isEditing
     }
 
@@ -36,7 +39,7 @@ public struct SectionedList<ItemID: Hashable, ItemContent: View>: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     ForEach(items, id: \.id) { item in
-                        SectionedListItemView(selection: $selection, item: item)
+                        SectionedListItemView(selection: $selection, item: item, openLabel: openLabel)
                     }
                 }
                 .onChange(of: selection) {
@@ -151,6 +154,7 @@ private struct SectionedListItemView<ItemID: Hashable, ItemContent: View>: View 
     @State private var isHovering = false
 
     let item: SectionedListItem<ItemID, ItemContent>
+    let openLabel: LocalizedStringResource
 
     private var isSelected: Bool {
         selection == item.id
@@ -205,7 +209,7 @@ private struct SectionedListItemView<ItemID: Hashable, ItemContent: View>: View 
                 item.action?()
             }
         )
-        .accessibilityAction(named: Text("Open")) {
+        .accessibilityAction(named: Text(openLabel)) {
             item.action?()
         }
     }

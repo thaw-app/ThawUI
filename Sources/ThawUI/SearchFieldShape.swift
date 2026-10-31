@@ -19,14 +19,6 @@ public nonisolated enum SearchFieldShape: String, Codable, CaseIterable, Identif
         rawValue
     }
 
-    public var title: String {
-        switch self {
-        case .rounded: String(localized: "Rounded", comment: "A shape for the search field.")
-        case .capsule: String(localized: "Capsule", comment: "A shape for the search field.")
-        case .square: String(localized: "Square", comment: "A shape for the search field.")
-        }
-    }
-
     /// The corner radius for a field of a given height.
     public func cornerRadius(height: CGFloat) -> CGFloat {
         switch self {

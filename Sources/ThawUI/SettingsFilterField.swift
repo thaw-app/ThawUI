@@ -11,14 +11,17 @@ import SwiftUI
 /// the top of the sidebar. Escape and the clear button empty it.
 public struct SettingsFilterField: View {
     public let prompt: LocalizedStringResource
+    public let clearLabel: LocalizedStringResource
     @Binding public var text: String
     @FocusState private var isFocused: Bool
 
     public init(
         prompt: LocalizedStringResource,
+        clearLabel: LocalizedStringResource,
         text: Binding<String>
     ) {
         self.prompt = prompt
+        self.clearLabel = clearLabel
         _text = text
     }
 
@@ -41,7 +44,7 @@ public struct SettingsFilterField: View {
                         .foregroundStyle(.tertiary)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(Text("Clear"))
+                .accessibilityLabel(Text(clearLabel))
             }
         }
         .padding(.horizontal, ThawSpacing.inset)
@@ -58,18 +61,29 @@ public struct SettingsFilterField: View {
 /// What a page's filter shows when nothing matches, in the empty state the rest of Settings uses.
 public struct NoMatchesState: View {
     public let query: String
+    /// Takes the query with its surrounding spaces gone.
+    private let title: (String) -> LocalizedStringResource
+    let caption: LocalizedStringResource
 
     public init(
-        query: String
+        query: String,
+        title: @escaping (_ query: String) -> LocalizedStringResource,
+        caption: LocalizedStringResource
     ) {
         self.query = query
+        self.title = title
+        self.caption = caption
+    }
+
+    var resolvedTitle: LocalizedStringResource {
+        title(query.trimmingCharacters(in: .whitespacesAndNewlines))
     }
 
     public var body: some View {
         ThawEmptyState(
             systemImage: "magnifyingglass",
-            title: "No results for “\(query.trimmingCharacters(in: .whitespacesAndNewlines))”",
-            caption: "Check the spelling or try a shorter term."
+            title: resolvedTitle,
+            caption: caption
         )
     }
 }

@@ -8,6 +8,26 @@
 import Combine
 import SwiftUI
 
+// MARK: - ThawGradientPickerStrings
+
+/// VoiceOver's words for the stops and the actions on them.
+public nonisolated struct ThawGradientPickerStrings: Sendable {
+    public var addStop: LocalizedStringResource
+    public var spaceStopsEvenly: LocalizedStringResource
+    /// Numbered from 1.
+    public var stopName: @Sendable (_ number: Int) -> LocalizedStringResource
+
+    public init(
+        addStop: LocalizedStringResource,
+        spaceStopsEvenly: LocalizedStringResource,
+        stopName: @escaping @Sendable (_ number: Int) -> LocalizedStringResource
+    ) {
+        self.addStop = addStop
+        self.spaceStopsEvenly = spaceStopsEvenly
+        self.stopName = stopName
+    }
+}
+
 // MARK: - ThawGradientPicker
 
 /// A labeled control for editing the color stops of an ThawGradient.
@@ -20,6 +40,7 @@ public struct ThawGradientPicker: View {
     @Binding private var gradient: ThawGradient
 
     private let label: Text
+    let strings: ThawGradientPickerStrings
     private let supportsOpacity: Bool
 
     /// The index of the stop the color panel is currently editing.
@@ -30,10 +51,17 @@ public struct ThawGradientPicker: View {
     /// - Parameters:
     ///   - labelKey: A description of what the gradient is for.
     ///   - gradient: The gradient the picker edits.
+    ///   - strings: VoiceOver's words for the stops.
     ///   - supportsOpacity: Whether the color panel offers an opacity
     ///     control while a stop is selected.
-    public init(_ labelKey: LocalizedStringResource, gradient: Binding<ThawGradient>, supportsOpacity: Bool = true) {
+    public init(
+        _ labelKey: LocalizedStringResource,
+        gradient: Binding<ThawGradient>,
+        strings: ThawGradientPickerStrings,
+        supportsOpacity: Bool = true
+    ) {
         self._gradient = gradient
+        self.strings = strings
         self.supportsOpacity = supportsOpacity
         self.label = Text(labelKey)
     }
@@ -42,6 +70,7 @@ public struct ThawGradientPicker: View {
         LabeledContent {
             ThawGradientTrack(
                 supportsOpacity: supportsOpacity,
+                strings: strings,
                 gradient: $gradient,
                 selection: $selectedStop
             )
@@ -75,6 +104,8 @@ private struct ThawGradientTrack: View {
 
     /// Whether the color panel offers an opacity control.
     let supportsOpacity: Bool
+
+    let strings: ThawGradientPickerStrings
 
     /// The gradient being edited.
     @Binding var gradient: ThawGradient
@@ -159,10 +190,10 @@ private struct ThawGradientTrack: View {
                     return .ignored
                 }
             }
-            .accessibilityAction(named: Text("Add a color stop")) {
+            .accessibilityAction(named: Text(strings.addStop)) {
                 insertStopFromKeyboard()
             }
-            .accessibilityAction(named: Text("Space color stops evenly")) {
+            .accessibilityAction(named: Text(strings.spaceStopsEvenly)) {
                 spaceStopsEvenly()
             }
             .onChange(of: gradient) { previous, current in
@@ -207,6 +238,7 @@ private struct ThawGradientTrack: View {
     private func stopHandles(in geometry: GeometryProxy) -> some View {
         ForEach(gradient.stops.indices, id: \.self) { index in
             ThawGradientStopHandle(
+                strings: strings,
                 gradient: $gradient,
                 selection: $selection,
                 frontmostStop: $frontmostStop,
@@ -372,6 +404,8 @@ private struct ThawGradientStopHandle: View {
     /// would have to be very steady to hit.
     private static let fineNudge: CGFloat = 0.01
 
+    let strings: ThawGradientPickerStrings
+
     @Binding var gradient: ThawGradient
     @Binding var selection: Int?
     @Binding var frontmostStop: Int?
@@ -426,7 +460,7 @@ private struct ThawGradientStopHandle: View {
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text("Color stop \(index + 1)"))
+            .accessibilityLabel(Text(strings.stopName(index + 1)))
             .accessibilityValue(Text(Double(stop?.location ?? 0).formatted(.percent.precision(.fractionLength(0)))))
             .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
             .accessibilityAction { toggleSelection() }

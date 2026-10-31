@@ -130,6 +130,7 @@ public struct AnnotationView<Parent: View, Content: View, ForegroundStyle: Shape
 private struct DeferredAnnotation<Parent: View, ForegroundStyle: ShapeStyle>: View {
     let summary: LocalizedStringResource
     let more: LocalizedStringResource
+    let moreLabel: LocalizedStringResource
     let alignment: HorizontalAlignment
     let spacing: CGFloat
     let font: Font?
@@ -164,8 +165,8 @@ private struct DeferredAnnotation<Parent: View, ForegroundStyle: ShapeStyle>: Vi
             Image(systemName: "info.circle")
         }
         .buttonStyle(.plain)
-        .help("More about this setting")
-        .accessibilityLabel("More about this setting")
+        .help(Text(moreLabel))
+        .accessibilityLabel(Text(moreLabel))
         .popover(isPresented: $isShowingMore, arrowEdge: .bottom) {
             Text(more)
                 .font(ThawType.body)
@@ -241,6 +242,7 @@ extension View {
     /// - Parameters:
     ///   - titleKey: The one line that always shows below this view.
     ///   - more: The rest of the explanation, shown in a popover on request.
+    ///   - moreLabel: The info button's help and VoiceOver name.
     ///   - alignment: The guide for aligning the annotation horizontally with this view.
     ///   - spacing: The vertical spacing between this view and the annotation.
     ///   - font: The font to apply to the annotation's environment.
@@ -248,6 +250,7 @@ extension View {
     public func annotation(
         _ titleKey: LocalizedStringResource,
         more: LocalizedStringResource,
+        moreLabel: LocalizedStringResource,
         alignment: HorizontalAlignment = .leading,
         spacing: CGFloat = .annotationDefaultSpacing,
         font: Font? = .subheadline,
@@ -256,6 +259,7 @@ extension View {
         DeferredAnnotation(
             summary: titleKey,
             more: more,
+            moreLabel: moreLabel,
             alignment: alignment,
             spacing: spacing,
             font: font,

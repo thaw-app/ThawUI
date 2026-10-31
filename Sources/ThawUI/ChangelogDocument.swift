@@ -27,7 +27,7 @@ public nonisolated struct ChangelogDocument {
     /// A GitHub alert: `> [!WARNING]` and the `>` lines under it. Rendered as
     /// the design's one emphasis surface rather than as a plain quote.
     public struct Callout {
-        public enum Kind: String, CaseIterable {
+        public enum Kind: String, CaseIterable, Sendable {
             case note, tip, important, warning, caution
 
             /// The kind a `> [!WARNING]` marker names, or `nil` for any other

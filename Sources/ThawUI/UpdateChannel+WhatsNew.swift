@@ -5,12 +5,12 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
-import SwiftUI
+import Foundation
 
 /// What's New lists one channel at a time, Stable included, and a release
 /// belongs to the channel its version's prerelease tag names: alpha is Alpha,
 /// beta or rc is Beta, and no tag is Stable.
-nonisolated extension UpdateChannel: ThawTab {
+nonisolated extension UpdateChannel {
     public init(version: String) {
         let tag = ReleaseVersionOrder.prereleaseTag(of: version)?.lowercased() ?? ""
         if tag.hasPrefix("alpha") {
@@ -20,10 +20,6 @@ nonisolated extension UpdateChannel: ThawTab {
         } else {
             self = .beta
         }
-    }
-
-    public var title: LocalizedStringResource {
-        localized
     }
 
     public var systemImage: String {

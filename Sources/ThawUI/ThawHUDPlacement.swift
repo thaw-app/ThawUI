@@ -6,7 +6,6 @@
 //  Licensed under the GNU GPLv3
 
 import CoreGraphics
-import SwiftUI
 
 /// Where along the top of a display a ThawHUD capsule sits.
 ///
@@ -42,15 +41,6 @@ public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable {
             screenFrame.midX - width / 2
         case .trailing:
             screenFrame.maxX - width - Self.edgeInset
-        }
-    }
-
-    /// The picker's label for this case.
-    public var localized: LocalizedStringResource {
-        switch self {
-        case .leading: "Top left"
-        case .center: "Top center"
-        case .trailing: "Top right"
         }
     }
 }

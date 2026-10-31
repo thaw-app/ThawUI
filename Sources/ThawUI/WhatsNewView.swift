@@ -7,6 +7,51 @@
 
 import SwiftUI
 
+/// The text of What's New. Each closure fills in values the page only knows when it draws.
+public nonisolated struct WhatsNewStrings: Sendable {
+    public var title: LocalizedStringResource
+    public var releaseTitle: @Sendable (_ version: String) -> LocalizedStringResource
+    /// A release's formatted date with its facts line, when it has both.
+    public var releaseSubtitle: @Sendable (_ date: Text, _ facts: String) -> Text
+    public var noRelease: @Sendable (_ channel: Text, _ appName: String) -> Text
+    public var loadFailed: @Sendable (_ appName: String) -> LocalizedStringResource
+    public var fetchingOff: LocalizedStringResource
+    public var updateReady: LocalizedStringResource
+    public var cachedCopy: LocalizedStringResource
+    public var fullChangelog: LocalizedStringResource
+    public var older: LocalizedStringResource
+    public var channelName: @Sendable (UpdateChannel) -> LocalizedStringResource
+    public var calloutName: @Sendable (ChangelogDocument.Callout.Kind) -> LocalizedStringResource
+
+    public init(
+        title: LocalizedStringResource,
+        releaseTitle: @escaping @Sendable (_ version: String) -> LocalizedStringResource,
+        releaseSubtitle: @escaping @Sendable (_ date: Text, _ facts: String) -> Text,
+        noRelease: @escaping @Sendable (_ channel: Text, _ appName: String) -> Text,
+        loadFailed: @escaping @Sendable (_ appName: String) -> LocalizedStringResource,
+        fetchingOff: LocalizedStringResource,
+        updateReady: LocalizedStringResource,
+        cachedCopy: LocalizedStringResource,
+        fullChangelog: LocalizedStringResource,
+        older: LocalizedStringResource,
+        channelName: @escaping @Sendable (UpdateChannel) -> LocalizedStringResource,
+        calloutName: @escaping @Sendable (ChangelogDocument.Callout.Kind) -> LocalizedStringResource
+    ) {
+        self.title = title
+        self.releaseTitle = releaseTitle
+        self.releaseSubtitle = releaseSubtitle
+        self.noRelease = noRelease
+        self.loadFailed = loadFailed
+        self.fetchingOff = fetchingOff
+        self.updateReady = updateReady
+        self.cachedCopy = cachedCopy
+        self.fullChangelog = fullChangelog
+        self.older = older
+        self.channelName = channelName
+        self.calloutName = calloutName
+    }
+}
+
 /// The release-notes reader: a ReadingPage whose path is the releases,
 /// whose title is the selected release, and whose body is that release's
 /// notes. Reuses ChangelogDocument for parsing.
@@ -15,18 +60,18 @@ public struct WhatsNewView: View {
     private let info: ThawAppInfo
     private let allowFetch: Bool
     private let pendingUpdateVersion: String?
-    private let fetchingOffMessage: LocalizedStringResource
+    let strings: WhatsNewStrings
 
     public init(
         info: ThawAppInfo,
+        strings: WhatsNewStrings,
         allowFetch: Bool = true,
-        pendingUpdateVersion: String? = nil,
-        fetchingOffMessage: LocalizedStringResource = "Fetching release notes is off."
+        pendingUpdateVersion: String? = nil
     ) {
         self.info = info
+        self.strings = strings
         self.allowFetch = allowFetch
         self.pendingUpdateVersion = pendingUpdateVersion
-        self.fetchingOffMessage = fetchingOffMessage
         _channel = State(initialValue: UpdateChannel(version: info.version))
     }
 
@@ -53,7 +98,8 @@ public struct WhatsNewView: View {
             path: channelReleases.map { ReadingPathItem(id: $0.version, label: $0.version) },
             selection: $selectedVersion,
             title: title,
-            subtitle: subtitle
+            subtitle: subtitle,
+            olderLabel: strings.older
         ) {
             if isLoading {
                 ProgressView()
@@ -68,22 +114,22 @@ public struct WhatsNewView: View {
                         sourceNotice
                         releaseBody(release)
                     } else {
-                        Text("There is no \(Text(channel.title)) release of \(info.displayName) yet.")
+                        strings.noRelease(Text(strings.channelName(channel)), info.displayName)
                             .font(ReadingPageType.body)
                             .foregroundStyle(.secondary)
                     }
                 }
             } else if source == .disabled {
-                Text(fetchingOffMessage)
+                Text(strings.fetchingOff)
                     .font(ReadingPageType.body)
                     .foregroundStyle(.secondary)
             } else {
-                Text("\(info.displayName) couldn’t load the release notes.")
+                Text(strings.loadFailed(info.displayName))
                     .font(ReadingPageType.body)
                     .foregroundStyle(.secondary)
             }
         } links: {
-            Button("Full changelog") {
+            Button(strings.fullChangelog) {
                 openURL(info.releasesURL)
             }
             .buttonStyle(.settingsGlass)
@@ -114,7 +160,7 @@ public struct WhatsNewView: View {
                     selectedVersion = channelReleases.first?.version
                 }
             ),
-            tabs: UpdateChannel.allCases
+            items: UpdateChannel.allCases.map { .init($0, title: strings.channelName($0), systemImage: $0.systemImage) }
         )
     }
 
@@ -129,7 +175,7 @@ public struct WhatsNewView: View {
     @ViewBuilder
     private func updateNotice(for release: ChangelogDocument.Release) -> some View {
         if release.version == pendingUpdateVersion {
-            Text("This update is ready to install. Use the update window to install it now or later.")
+            Text(strings.updateReady)
                 .font(ThawType.body)
                 .foregroundStyle(.secondary)
         }
@@ -141,11 +187,11 @@ public struct WhatsNewView: View {
     private var sourceNotice: some View {
         switch source {
         case .disabled:
-            Text(fetchingOffMessage)
+            Text(strings.fetchingOff)
                 .font(ThawType.body)
                 .foregroundStyle(.secondary)
         case .cached:
-            Text("The repository could not be reached, so this is the last copy fetched.")
+            Text(strings.cachedCopy)
                 .font(ThawType.body)
                 .foregroundStyle(.secondary)
         case .fetched, .unavailable:
@@ -155,9 +201,9 @@ public struct WhatsNewView: View {
 
     private var title: Text {
         if let release = selectedRelease {
-            Text("What’s new in \(release.version)")
+            Text(strings.releaseTitle(release.version))
         } else {
-            Text("What’s New")
+            Text(strings.title)
         }
     }
 
@@ -165,7 +211,7 @@ public struct WhatsNewView: View {
         guard let release = selectedRelease else { return nil }
         let date = release.date.map { Text($0, format: .dateTime.day().month(.wide).year()) }
         switch (date, release.facts) {
-        case let (date?, facts?): return Text("\(date) · \(facts)")
+        case let (date?, facts?): return strings.releaseSubtitle(date, facts)
         case let (date?, nil): return date
         case let (nil, facts?): return Text(verbatim: facts)
         case (nil, nil): return nil
@@ -221,7 +267,7 @@ public struct WhatsNewView: View {
         case let .text(text):
             ReadingParagraph(text)
         case let .callout(callout):
-            ChangelogCalloutView(callout: callout)
+            ChangelogCalloutView(callout: callout, label: strings.calloutName(callout.kind))
         }
     }
 
@@ -236,7 +282,7 @@ public struct WhatsNewView: View {
                 ReadingParagraph(text)
             }
         case let .callout(callout):
-            ChangelogCalloutView(callout: callout)
+            ChangelogCalloutView(callout: callout, label: strings.calloutName(callout.kind))
         }
     }
 
@@ -284,6 +330,7 @@ public struct WhatsNewView: View {
 /// label carry the meaning, so colour is never the only cue.
 private struct ChangelogCalloutView: View {
     let callout: ChangelogDocument.Callout
+    let label: LocalizedStringResource
 
     private var shape: RoundedRectangle {
         RoundedRectangle(cornerRadius: ThawRadius.control, style: .continuous)
@@ -292,7 +339,7 @@ private struct ChangelogCalloutView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: ThawSpacing.compact) {
             Label {
-                Text(callout.kind.label)
+                Text(label)
                     .font(ReadingPageType.body.weight(.semibold))
             } icon: {
                 Image(systemName: callout.kind.symbol)
@@ -323,16 +370,6 @@ private struct ChangelogCalloutView: View {
 }
 
 private extension ChangelogDocument.Callout.Kind {
-    var label: LocalizedStringResource {
-        switch self {
-        case .note: "Note"
-        case .tip: "Tip"
-        case .important: "Important"
-        case .warning: "Warning"
-        case .caution: "Caution"
-        }
-    }
-
     var symbol: String {
         switch self {
         case .note: "info.circle"

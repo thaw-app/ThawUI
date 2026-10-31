@@ -14,17 +14,18 @@ extension View {
     public func errorAlert(
         _ title: LocalizedStringResource,
         message: Binding<String?>,
+        okLabel: LocalizedStringResource,
         role: ButtonRole? = nil
     ) -> some View {
         alert(title, item: message) { _ in
-            Button("OK", role: role) { /* The alert dismisses itself, and its binding clears the message. */ }
+            Button(okLabel, role: role) { /* The alert dismisses itself, and its binding clears the message. */ }
         } message: { message in
             Text(message)
         }
     }
 
     /// Uses the error's own wording without duplication or a replacement title; clearing the binding dismisses the alert.
-    public func errorAlert(_ error: Binding<(some LocalizedError)?>) -> some View {
+    public func errorAlert(_ error: Binding<(some LocalizedError)?>, okLabel: LocalizedStringResource) -> some View {
         alert(
             isPresented: Binding(
                 get: { error.wrappedValue != nil },
@@ -36,7 +37,7 @@ extension View {
             ),
             error: error.wrappedValue
         ) {
-            Button("OK") {
+            Button(okLabel) {
                 error.wrappedValue = nil
             }
         }

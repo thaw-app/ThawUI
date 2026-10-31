@@ -24,6 +24,26 @@ public enum AppUIZoom {
     }
 }
 
+/// The words on the zoom commands.
+public nonisolated struct AppUIZoomStrings: Sendable {
+    public var zoomIn: LocalizedStringResource
+    public var zoomOut: LocalizedStringResource
+    public var actualSize: LocalizedStringResource
+    public var level: @Sendable (_ percent: Int) -> LocalizedStringResource
+
+    public init(
+        zoomIn: LocalizedStringResource,
+        zoomOut: LocalizedStringResource,
+        actualSize: LocalizedStringResource,
+        level: @escaping @Sendable (_ percent: Int) -> LocalizedStringResource
+    ) {
+        self.zoomIn = zoomIn
+        self.zoomOut = zoomOut
+        self.actualSize = actualSize
+        self.level = level
+    }
+}
+
 public struct AppUIZoomModifier: ViewModifier {
     @AppStorage(AppUIZoom.defaultsKey) private var percent = 100
 
@@ -71,30 +91,41 @@ public struct AppUIZoomControls: View {
     /// Off inside a toolbar item: one that carries a keyboardShortcut is
     /// vended with focused values every layout pass, and AppKit refuses the
     /// 406th constraints pass. The app menu's copy keeps the shortcuts.
-    public var showsShortcuts = true
+    public var showsShortcuts: Bool
+    let strings: AppUIZoomStrings
+
+    public init(strings: AppUIZoomStrings, showsShortcuts: Bool = true) {
+        self.strings = strings
+        self.showsShortcuts = showsShortcuts
+    }
 
     public var body: some View {
-        Button("Zoom In") { percent = AppUIZoom.next(percent, increasing: true) }
+        Button(strings.zoomIn) { percent = AppUIZoom.next(percent, increasing: true) }
             .keyboardShortcut(showsShortcuts ? KeyboardShortcut("+", modifiers: .command) : nil)
             .disabled(AppUIZoom.normalized(percent) == AppUIZoom.levels.last)
-        Button("Zoom Out") { percent = AppUIZoom.next(percent, increasing: false) }
+        Button(strings.zoomOut) { percent = AppUIZoom.next(percent, increasing: false) }
             .keyboardShortcut(showsShortcuts ? KeyboardShortcut("-", modifiers: .command) : nil)
             .disabled(AppUIZoom.normalized(percent) == AppUIZoom.levels.first)
-        Button("Actual Size") { percent = 100 }
+        Button(strings.actualSize) { percent = 100 }
             .keyboardShortcut(showsShortcuts ? KeyboardShortcut("0", modifiers: .command) : nil)
         Divider()
-        Text("Zoom: \(AppUIZoom.normalized(percent))%")
+        Text(strings.level(AppUIZoom.normalized(percent)))
     }
 }
 
 public struct AppUIZoomCommands: Commands {
     @AppStorage(AppUIZoom.defaultsKey) private var percent = 100
+    let strings: AppUIZoomStrings
+
+    public init(strings: AppUIZoomStrings) {
+        self.strings = strings
+    }
 
     public var body: some Commands {
         CommandGroup(after: .toolbar) {
-            AppUIZoomControls()
+            AppUIZoomControls(strings: strings)
             // US keyboards produce '=' for Command-plus without Shift.
-            Button("Zoom In") { percent = AppUIZoom.next(percent, increasing: true) }
+            Button(strings.zoomIn) { percent = AppUIZoom.next(percent, increasing: true) }
                 .keyboardShortcut("=", modifiers: .command)
                 .hidden()
         }

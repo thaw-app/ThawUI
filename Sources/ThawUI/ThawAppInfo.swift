@@ -60,14 +60,6 @@ public nonisolated enum UpdateChannel: String, CaseIterable, Identifiable, Senda
         rawValue
     }
 
-    public var localized: LocalizedStringResource {
-        switch self {
-        case .stable: "Stable"
-        case .beta: "Beta"
-        case .alpha: "Alpha"
-        }
-    }
-
     /// Sparkle channel names to allow in addition to the default channel.
     /// Alpha also takes betas: a beta is a later build than the alphas before
     /// it, and releases are tagged with one channel each.
