@@ -18,16 +18,11 @@ public struct ThawFirstRunHint: View {
     private let action: (() -> Void)?
     private let onDismiss: () -> Void
 
-    /// - Parameters:
-    ///   - systemImage: SF Symbol shown before the sentence, in the same
-    ///     size as the row's text.
-    ///   - text: The one sentence. It wraps rather than truncating, so a
-    ///     narrow window still shows the whole instruction.
-    ///   - dismissLabel: The close button's help and VoiceOver name.
-    ///   - actionTitle: The one thing the hint suggests doing, when there is one.
-    ///   - action: Runs when the suggestion is taken.
-    ///   - onDismiss: Called when the close button is pressed. The caller
-    ///     records the dismissal; the view holds no state of its own.
+    /// The SF Symbol shows before the sentence, in the same size as the row's text. The text is the one sentence. It wraps
+    /// rather than truncating, so a narrow window still shows the whole instruction. The dismiss label is the close button's
+    /// help and VoiceOver name. The action title is the one thing the hint suggests doing, when there is one, and the action
+    /// runs when the suggestion is taken. onDismiss is called when the close button is pressed. The caller records the
+    /// dismissal; the view holds no state of its own.
     public init(
         systemImage: String,
         _ text: LocalizedStringResource,

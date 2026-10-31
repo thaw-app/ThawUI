@@ -11,8 +11,8 @@ import SwiftUI
 
 /// The persisted form of the menu bar's tint and background fills.
 public nonisolated struct ThawGradient: Codable, Hashable, Sendable {
-    /// - Important: The name of this property is part of the gradient's
-    ///   encoded representation. Renaming it invalidates stored settings.
+    /// Important: the name of this property is part of the gradient's encoded representation.
+    /// Renaming it invalidates stored settings.
     public var stops: [ColorStop]
 
     /// Direction of the stops in degrees: 0 is top to bottom, 90 leading to trailing, 180 bottom to top.
@@ -81,9 +81,8 @@ public nonisolated struct ThawGradient: Codable, Hashable, Sendable {
         GradientPreview(gradient: ThawGradient(stops: stops), colorSpace: colorSpace)
     }
 
-    /// - Parameters:
-    ///   - location: A position between 0 and 1 along the gradient.
-    ///   - colorSpace: The interpolation space, also used for the result.
+    /// The location is a position between 0 and 1 along the gradient.
+    /// The color space is the interpolation space, also used for the result.
     @MainActor
     public func color(at location: CGFloat, using colorSpace: CGColorSpace) -> CGColor? {
         guard let space = NSColorSpace(cgColorSpace: colorSpace) else {
@@ -103,7 +102,7 @@ public nonisolated struct ThawGradient: Codable, Hashable, Sendable {
         }
     }
 
-    /// - Parameter colorSpace: An RGB space to sample and return the color in; non-RGB spaces and nil fall back to extended Display P3.
+    /// The color space is an RGB space to sample and return the color in; non-RGB spaces and nil fall back to extended Display P3.
     @MainActor
     public func averageColor(
         using colorSpace: CGColorSpace? = nil,

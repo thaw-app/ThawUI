@@ -205,10 +205,8 @@ extension View {
     /// Adds a one-line annotation below this view, with the rest behind an info button beside it.
     /// Use it when the copy wraps past one line at the settings window's default width.
     ///
-    /// - Parameters:
-    ///   - titleKey: The one line that always shows below this view.
-    ///   - more: The rest of the explanation, shown in a popover on request.
-    ///   - moreLabel: The info button's help and VoiceOver name.
+    /// The title is the one line that always shows below this view. The more text is the rest of the explanation, shown in
+    /// a popover on request. The more label is the info button's help and VoiceOver name.
     public func annotation(
         _ titleKey: LocalizedStringResource,
         more: LocalizedStringResource,

@@ -9,8 +9,8 @@ import SwiftUI
 
 // MARK: - ChangelogDocument
 
-/// Release notes from a Keep a Changelog file, not localized. Parses `## [version]` releases, `###` sections,
-/// `####` themes, `-` bullets, numbered steps and inline markdown. Other prose before a release's first section becomes a paragraph; the rest is dropped.
+/// Release notes from a Keep a Changelog file, not localized. Parses ## [version] releases, ### sections,
+/// #### themes, dash bullets, numbered steps and inline markdown. Other prose before a release's first section becomes a paragraph; the rest is dropped.
 public nonisolated struct ChangelogDocument {
     /// One block of release prose: plain text, or a GitHub alert.
     public enum Block {
@@ -18,12 +18,12 @@ public nonisolated struct ChangelogDocument {
         case callout(Callout)
     }
 
-    /// A GitHub alert: `> [!WARNING]` and the `>` lines under it. Rendered as the design's one emphasis surface.
+    /// A GitHub alert: a > [!WARNING] line and the > lines under it. Rendered as the design's one emphasis surface.
     public struct Callout {
         public enum Kind: String, CaseIterable, Sendable {
             case note, tip, important, warning, caution
 
-            /// The kind a `> [!WARNING]` marker names, or `nil` for any other line.
+            /// The kind a > [!WARNING] marker names, or nil for any other line.
             public init?(marker line: String) {
                 guard line.hasPrefix(">") else { return nil }
                 let inner = line.dropFirst().trimmingCharacters(in: .whitespaces)
@@ -34,23 +34,23 @@ public nonisolated struct ChangelogDocument {
             }
         }
 
-        /// A run of the alert's text: a paragraph, or one `- ` bullet.
+        /// A run of the alert's text: a paragraph, or one bullet, a line starting with a dash and a space.
         public enum Part {
             case paragraph(AttributedString)
             case bullet(AttributedString)
         }
 
         public var kind: Kind
-        /// In the order written. A blank `>` line ends a paragraph, and each
-        /// `- ` line is its own bullet, so a list inside an alert stays a list.
+        /// In the order written. A blank > line ends a paragraph, and each
+        /// line starting with a dash and a space is its own bullet, so a list inside an alert stays a list.
         public var parts: [Part]
     }
 
     public struct Release {
         public var version: String
-        /// The release day from a `## [version] - YYYY-MM-DD` heading, if it has one.
+        /// The release day from a ## [version] - YYYY-MM-DD heading, if it has one.
         public var date: Date?
-        /// The bold `**macOS 27 only · Build 108 · …**` line under the heading,
+        /// The bold line such as macOS 27 only · Build 108 · … under the heading,
         /// shown beside the date rather than as the first paragraph.
         public var facts: String?
         /// Prose paragraphs, alerts and intro bullets ahead of the first section.
@@ -61,15 +61,15 @@ public nonisolated struct ChangelogDocument {
         public var sections: [Section] = []
     }
 
-    /// An image link written as `[![alt](image.ext)](url)`. The image is a file in the app bundle,
-    /// named by its file name; the link is always `https`.
+    /// An image link: a Markdown link whose text is an image, giving alt text, an image file and a URL. The image is a
+    /// file in the app bundle, named by its file name; the link is always https.
     public struct Badge: Equatable {
         public var alt: String
         public var imageFileName: String
         public var url: URL
     }
 
-    /// Reads the optional ` - YYYY-MM-DD` after a release heading's closing bracket, ignoring anything else there.
+    /// Reads the optional dash and YYYY-MM-DD after a release heading's closing bracket, ignoring anything else there.
     /// Anchored at local midnight: UTC midnight renders a day early west of Greenwich.
     private static func releaseDate(in heading: String) -> Date? {
         guard let bracket = heading.firstIndex(of: "]") else {
@@ -90,7 +90,7 @@ public nonisolated struct ChangelogDocument {
         public var themes: [Theme] = []
     }
 
-    /// A `####` theme inside a section; sections without themes get one
+    /// A #### theme inside a section; sections without themes get one
     /// unnamed theme holding their direct bullets.
     public struct Theme {
         public var title: String?
@@ -99,7 +99,7 @@ public nonisolated struct ChangelogDocument {
 
     public var releases: [Release] = []
 
-    /// The newest release that has content, skips an empty `[Unreleased]`.
+    /// The newest release that has content, skips an empty [Unreleased].
     public var newestRelease: Release? {
         releases.first { !$0.sections.isEmpty || !$0.intro.isEmpty }
     }
@@ -129,7 +129,7 @@ public nonisolated struct ChangelogDocument {
     }
 
     /// Loads the changelog from the repository, falling back to the last successful fetch.
-    /// With `allowFetch` off, as the Privacy pane can set it, only the cache is read.
+    /// With allowFetch off, as the Privacy pane can set it, only the cache is read.
     @concurrent
     public static func load(allowFetch: Bool, info: ThawAppInfo) async -> (document: ChangelogDocument?, source: Source) {
         await load(allowFetch: allowFetch, cacheFolder: info.cacheFolderName) {
@@ -198,7 +198,7 @@ public nonisolated struct ChangelogDocument {
     }
 
     /// The text of a release's opening facts line: the whole paragraph in
-    /// bold, with its facts separated by ` · `. Anything else is prose.
+    /// bold, with its facts separated by a middle dot with a space on each side. Anything else is prose.
     public static func factsLine(_ paragraph: String) -> String? {
         let line = paragraph.trimmingCharacters(in: .whitespaces)
         guard line.hasPrefix("**"), line.hasSuffix("**"), line.count > 4 else { return nil }
@@ -207,10 +207,10 @@ public nonisolated struct ChangelogDocument {
         return inner
     }
 
-    /// `[![alt](image)](url)` on a line of its own.
+    /// A Markdown link whose text is an image, with alt text, an image and a URL, on a line of its own.
     private static nonisolated(unsafe) let badgePattern = /^\[!\[(?<alt>[^\]]*)\]\((?<image>[^)]+)\)\]\((?<url>[^)]+)\)$/
 
-    /// A badge's link when it is `https`. The file is fetched and a click hands the link to `openURL`,
+    /// A badge's link when it is https. The file is fetched and a click hands the link to openURL,
     /// so any other scheme could open a local file or launch another app.
     private static func badgeURL(_ string: String) -> URL? {
         guard
@@ -317,7 +317,7 @@ public nonisolated struct ChangelogDocument {
         for rawLine in text.components(separatedBy: .newlines) {
             let line = rawLine.trimmingCharacters(in: .whitespaces)
 
-            // GitHub alerts: `> [!WARNING]` plus the `>` lines under it. A
+            // GitHub alerts: > [!WARNING] plus the > lines under it. A
             // plain blockquote keeps falling through to paragraph text below.
             if let kind = Callout.Kind(marker: line) {
                 flushBullet()

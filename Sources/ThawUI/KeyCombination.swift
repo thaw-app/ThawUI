@@ -15,7 +15,7 @@ public nonisolated struct KeyCombination: Hashable, Sendable {
     public let key: KeyCode
     public let modifiers: Modifiers
 
-    /// - Parameter spaceName: The app's word for the space bar.
+    /// The space name is the app's word for the space bar.
     @MainActor
     public func displayValue(spaceName: String) -> String {
         modifiers.symbolicValue + " " + key.stringValue(spaceName: spaceName).capitalized

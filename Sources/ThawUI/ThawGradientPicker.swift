@@ -42,7 +42,7 @@ public struct ThawGradientPicker: View {
     /// The index of the stop the color panel is currently editing.
     @State private var selectedStop: Int?
 
-    /// - Parameter supportsOpacity: Whether the color panel offers an opacity control while a stop is selected.
+    /// supportsOpacity says whether the color panel offers an opacity control while a stop is selected.
     public init(
         _ labelKey: LocalizedStringResource,
         gradient: Binding<ThawGradient>,

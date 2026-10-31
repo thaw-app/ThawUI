@@ -40,10 +40,8 @@ public struct AboutSettingsPane: View {
     @State private var copyFeedbackTask: Task<Void, Never>?
     @State private var menuAnchor = MoreMenuAnchor()
 
-    /// - Parameters:
-    ///   - moreMenu: The actions' menu, as groups with a separator between them. With no
-    ///     items, the button does not show.
-    ///   - updates: The updates card. Nil for a build that cannot update, which has no card.
+    /// The more menu is the actions' menu, as groups with a separator between them. With no items, the button does not show.
+    /// The updates card is nil for a build that cannot update, which has no card.
     public init(
         appName: String,
         version: AboutVersionDetails,

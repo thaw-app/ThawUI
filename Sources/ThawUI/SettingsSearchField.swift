@@ -16,12 +16,9 @@ public struct SettingsSearchKeyboard {
     let move: (_ offset: Int) -> Void
     let submit: () -> Void
 
-    /// - Parameters:
-    ///   - isSearching: Holds the arrows while a search runs, so they are the sidebar's and the pages' otherwise.
-    ///   - previousLabel: The name of the action on the up arrow.
-    ///   - nextLabel: The name of the action on the down arrow.
-    ///   - move: Moves the highlight by this many results, negative for up.
-    ///   - submit: Opens the highlighted result, on Return.
+    /// isSearching holds the arrows while a search runs, so they are the sidebar's and the pages' otherwise. The labels name
+    /// the actions on the up and down arrows. move moves the highlight by this many results, negative for up. submit opens
+    /// the highlighted result, on Return.
     public init(
         isSearching: Bool,
         previousLabel: LocalizedStringResource,
@@ -75,10 +72,8 @@ struct SettingsSearchField: ViewModifier {
 public extension View {
     /// Adds the settings search field to the split view it is applied to.
     ///
-    /// - Parameters:
-    ///   - placement: Where the field sits, the toolbar or the sidebar.
-    ///   - findLabel: The name of the action on ⌘F.
-    ///   - keyboard: The arrow keys and Return, for results that keep a highlight.
+    /// The placement is where the field sits, the toolbar or the sidebar. The find label is the name of the action on ⌘F.
+    /// The keyboard is the arrow keys and Return, for results that keep a highlight.
     func settingsSearchField(
         text: Binding<String>,
         placement: SearchFieldPlacement,

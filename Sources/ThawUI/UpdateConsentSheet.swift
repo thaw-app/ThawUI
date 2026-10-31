@@ -101,7 +101,7 @@ public struct UpdateConsentSheet: View {
 }
 
 public extension View {
-    /// Presents the consent sheet while `isPresented` is true. Only its buttons answer it.
+    /// Presents the consent sheet while isPresented is true. Only its buttons answer it.
     func updateConsentSheet(
         isPresented: Binding<Bool>,
         strings: UpdateConsentStrings,

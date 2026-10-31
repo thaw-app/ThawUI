@@ -14,7 +14,7 @@ public struct OnboardingStepIndicator: View {
     private let total: Int
     let label: LocalizedStringResource
 
-    /// - Parameter label: The sentence VoiceOver reads, such as "Step 2 of 3".
+    /// The label is the sentence VoiceOver reads, such as "Step 2 of 3".
     public init(step: Int, total: Int, label: LocalizedStringResource) {
         self.step = step
         self.total = total

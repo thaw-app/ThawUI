@@ -40,12 +40,10 @@ public struct SettingsSearchResultsList<ResultGroup: Identifiable, Entry: Identi
     private let groupIcon: (ResultGroup) -> Icon
     private let header: Header
 
-    /// - Parameters:
-    ///   - entries: A group's results, best first.
-    ///   - highlighted: The result the arrow keys are on, kept in sight.
-    ///   - hoverTint: The wash under the pointer: the accent, or .primary for an app that keeps the accent off its rows.
-    ///   - groupIcon: The glyph the sidebar shows for the group's pane. A bare symbol takes the heading's size and colour.
-    ///   - header: Anything that scrolls above the results, such as their count.
+    /// A group's entries are its results, best first. The highlighted result is the one the arrow keys are on, kept in sight.
+    /// The hover tint is the wash under the pointer: the accent, or .primary for an app that keeps the accent off its rows.
+    /// The group icon is the glyph the sidebar shows for the group's pane. A bare symbol takes the heading's size and colour.
+    /// The header is anything that scrolls above the results, such as their count.
     public init(
         groups: [ResultGroup],
         entries: @escaping (ResultGroup) -> [Entry],
