@@ -23,6 +23,10 @@ public enum ThawGlass {
     /// Containers that float over arbitrary desktops (search panel, palettes,
     /// popover chrome, notch descender). Regular glass.
     case panel
+    /// A .panel with no edge of its own, even under Reduce Transparency or
+    /// Increase Contrast, for a panel whose glass already draws the rim it
+    /// wants, where a hairline would read as a broken dark border.
+    case borderlessPanel
     /// Interactive elements inside a panel: fields, pickers, key caps, slider
     /// tracks. Interactive glass so controls respond as surfaces.
     case control
@@ -107,6 +111,8 @@ private struct ThawGlassModifier<S: InsettableShape>: ViewModifier {
         case .panel:
             surface(content, interactive: false)
                 .overlay(fallbackEdge(0.5))
+        case .borderlessPanel:
+            surface(content, interactive: false)
         case .control:
             surface(content, interactive: true)
                 .overlay(fallbackEdge(0.65))
