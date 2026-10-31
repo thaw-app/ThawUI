@@ -41,6 +41,10 @@ extension EnvironmentValues {
 /// Whether the pointer is over the view and has moved since it last rested.
 public struct PointerHover: ViewModifier {
     @Binding public var isHovering: Bool
+
+    public init(isHovering: Binding<Bool>) {
+        _isHovering = isHovering
+    }
     @Environment(\.pointerRest) private var rest
 
     public func body(content: Content) -> some View {
