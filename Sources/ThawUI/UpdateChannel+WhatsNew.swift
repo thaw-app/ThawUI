@@ -22,7 +22,7 @@ nonisolated extension UpdateChannel: ThawTab {
         }
     }
 
-    public var title: LocalizedStringKey {
+    public var title: LocalizedStringResource {
         localized
     }
 

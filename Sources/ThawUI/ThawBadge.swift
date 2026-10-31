@@ -37,10 +37,10 @@ public struct ThawBadge: View {
         ThawBadge("BETA", tone: .tinted(.green))
     }
 
-    private let title: LocalizedStringKey
+    private let title: LocalizedStringResource
     private let tone: Tone
 
-    public init(_ title: LocalizedStringKey, tone: Tone = .neutral) {
+    public init(_ title: LocalizedStringResource, tone: Tone = .neutral) {
         self.title = title
         self.tone = tone
     }

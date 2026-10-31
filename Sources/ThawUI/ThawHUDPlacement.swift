@@ -46,7 +46,7 @@ public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable {
     }
 
     /// The picker's label for this case.
-    public var localized: LocalizedStringKey {
+    public var localized: LocalizedStringResource {
         switch self {
         case .leading: "Top left"
         case .center: "Top center"

@@ -15,14 +15,14 @@ import SwiftUI
 /// safe area instead, where the scroll edge effect keeps the content that
 /// scrolls under them legible.
 public struct EditorPanelChrome<Content: View, BottomBar: View>: View {
-    private let title: LocalizedStringKey
-    private let subtitle: LocalizedStringKey?
+    private let title: LocalizedStringResource
+    private let subtitle: LocalizedStringResource?
     private let content: Content
     private let bottomBar: BottomBar
 
     public init(
-        _ title: LocalizedStringKey,
-        subtitle: LocalizedStringKey? = nil,
+        _ title: LocalizedStringResource,
+        subtitle: LocalizedStringResource? = nil,
         @ViewBuilder content: () -> Content,
         @ViewBuilder bottomBar: () -> BottomBar
     ) {

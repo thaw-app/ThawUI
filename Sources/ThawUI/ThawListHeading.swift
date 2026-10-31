@@ -15,7 +15,7 @@ public struct ThawListHeading: View {
         self.title = title
     }
 
-    public init(_ title: LocalizedStringKey) {
+    public init(_ title: LocalizedStringResource) {
         self.title = Text(title)
     }
 

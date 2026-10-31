@@ -15,12 +15,12 @@ public struct ThawRowLabel: View {
     private let title: Text
     private let detail: Text?
 
-    public init(_ title: LocalizedStringKey, detail: LocalizedStringKey? = nil) {
+    public init(_ title: LocalizedStringResource, detail: LocalizedStringResource? = nil) {
         self.title = Text(title)
         self.detail = detail.map { Text($0) }
     }
 
-    public init(_ title: LocalizedStringKey, verbatimDetail: String) {
+    public init(_ title: LocalizedStringResource, verbatimDetail: String) {
         self.title = Text(title)
         detail = Text(verbatim: verbatimDetail)
     }

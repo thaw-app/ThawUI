@@ -15,13 +15,13 @@ public struct WhatsNewView: View {
     private let info: ThawAppInfo
     private let allowFetch: Bool
     private let pendingUpdateVersion: String?
-    private let fetchingOffMessage: LocalizedStringKey
+    private let fetchingOffMessage: LocalizedStringResource
 
     public init(
         info: ThawAppInfo,
         allowFetch: Bool = true,
         pendingUpdateVersion: String? = nil,
-        fetchingOffMessage: LocalizedStringKey = "Fetching release notes is off."
+        fetchingOffMessage: LocalizedStringResource = "Fetching release notes is off."
     ) {
         self.info = info
         self.allowFetch = allowFetch
@@ -323,7 +323,7 @@ private struct ChangelogCalloutView: View {
 }
 
 private extension ChangelogDocument.Callout.Kind {
-    var label: LocalizedStringKey {
+    var label: LocalizedStringResource {
         switch self {
         case .note: "Note"
         case .tip: "Tip"

@@ -16,7 +16,7 @@ extension EnvironmentValues {
     @Entry public var settingsDescriptionsVisible: Bool = true
 
     /// A title a ThawForm draws over itself; hosts like the What's New window set it.
-    @Entry public var settingsPaneTitle: LocalizedStringKey?
+    @Entry public var settingsPaneTitle: LocalizedStringResource?
 
     /// Set for a search field that is its own piece of glass: it draws no glass and marks focus on this outline.
     @Entry public var fieldPieceOutline: RoundedRectangle?

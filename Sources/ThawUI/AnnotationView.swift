@@ -43,7 +43,7 @@ public struct AnnotationView<Parent: View, Content: View, ForegroundStyle: Shape
 
     /// Creates an annotation view whose content is the text for titleKey.
     public init(
-        _ titleKey: LocalizedStringKey,
+        _ titleKey: LocalizedStringResource,
         alignment: HorizontalAlignment = .leading,
         spacing: CGFloat = .annotationDefaultSpacing,
         font: Font? = .subheadline,
@@ -84,7 +84,7 @@ public struct AnnotationView<Parent: View, Content: View, ForegroundStyle: Shape
 
     /// Creates a standalone annotation showing the text for titleKey.
     public init(
-        _ titleKey: LocalizedStringKey,
+        _ titleKey: LocalizedStringResource,
         alignment: HorizontalAlignment = .leading,
         spacing: CGFloat = .annotationDefaultSpacing,
         font: Font? = .subheadline,
@@ -128,8 +128,8 @@ public struct AnnotationView<Parent: View, Content: View, ForegroundStyle: Shape
 /// The summary has to fit one line at the settings window's default width. If
 /// it does not, it is not a summary and the split is in the wrong place.
 private struct DeferredAnnotation<Parent: View, ForegroundStyle: ShapeStyle>: View {
-    let summary: LocalizedStringKey
-    let more: LocalizedStringKey
+    let summary: LocalizedStringResource
+    let more: LocalizedStringResource
     let alignment: HorizontalAlignment
     let spacing: CGFloat
     let font: Font?
@@ -214,7 +214,7 @@ extension View {
     ///   - font: The font to apply to the annotation content's environment.
     ///   - foregroundStyle: The foreground style to apply to the annotation content's environment.
     public func annotation(
-        _ titleKey: LocalizedStringKey,
+        _ titleKey: LocalizedStringResource,
         alignment: HorizontalAlignment = .leading,
         spacing: CGFloat = .annotationDefaultSpacing,
         font: Font? = .subheadline,
@@ -246,8 +246,8 @@ extension View {
     ///   - font: The font to apply to the annotation's environment.
     ///   - foregroundStyle: The foreground style to apply to the annotation's environment.
     public func annotation(
-        _ titleKey: LocalizedStringKey,
-        more: LocalizedStringKey,
+        _ titleKey: LocalizedStringResource,
+        more: LocalizedStringResource,
         alignment: HorizontalAlignment = .leading,
         spacing: CGFloat = .annotationDefaultSpacing,
         font: Font? = .subheadline,

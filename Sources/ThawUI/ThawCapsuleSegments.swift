@@ -10,11 +10,11 @@ import SwiftUI
 /// One choice in a ThawPillPicker or one tab in a ThawTabStrip.
 public struct ThawSegment<Value: Hashable> {
     let value: Value
-    let title: LocalizedStringKey
+    let title: LocalizedStringResource
     let systemImage: String?
-    let help: LocalizedStringKey?
+    let help: LocalizedStringResource?
 
-    public init(_ value: Value, title: LocalizedStringKey, systemImage: String? = nil, help: LocalizedStringKey? = nil) {
+    public init(_ value: Value, title: LocalizedStringResource, systemImage: String? = nil, help: LocalizedStringResource? = nil) {
         self.value = value
         self.title = title
         self.systemImage = systemImage
@@ -131,7 +131,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
 /// A segment's tooltip, left off entirely when it has none, so an empty one
 /// never covers a tooltip set further out.
 private struct SegmentHelp: ViewModifier {
-    let text: LocalizedStringKey?
+    let text: LocalizedStringResource?
 
     func body(content: Content) -> some View {
         if let text {

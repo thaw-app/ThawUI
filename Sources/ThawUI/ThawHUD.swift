@@ -62,7 +62,7 @@ public enum ThawHUD {
     ///     unrequested banner in the center of a wide display covers the work.
     public static func show(
         symbol: String,
-        text: LocalizedStringKey,
+        text: LocalizedStringResource,
         on screen: NSScreen? = nil,
         placement: ThawHUDPlacement = .center
     ) {
@@ -145,7 +145,7 @@ public enum ThawHUD {
 /// reads as Thaw's chrome rather than as an OS alert.
 private struct ThawHUDCard: View {
     let symbol: String
-    let text: LocalizedStringKey
+    let text: LocalizedStringResource
 
     var body: some View {
         HStack(spacing: 8) {

@@ -12,7 +12,7 @@ extension View {
     /// OK clears the binding; caller-supplied titles describe failures sharing a catch block better than generic error names.
     /// The optional role preserves Escape dismissal where needed.
     public func errorAlert(
-        _ title: LocalizedStringKey,
+        _ title: LocalizedStringResource,
         message: Binding<String?>,
         role: ButtonRole? = nil
     ) -> some View {

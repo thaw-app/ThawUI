@@ -11,14 +11,14 @@ import SwiftUI
 public struct SliderRow<ValueLabel: View>: View {
     @Environment(\.sliderLabelWidth) private var sharedLabelWidth
 
-    private let title: LocalizedStringKey
+    private let title: LocalizedStringResource
     @Binding private var value: Double
     private let bounds: ClosedRange<Double>
     private let step: Double
     @ViewBuilder private let valueLabel: (Double) -> ValueLabel
 
     public init(
-        _ title: LocalizedStringKey,
+        _ title: LocalizedStringResource,
         value: Binding<Double>,
         in bounds: ClosedRange<Double>,
         step: Double,
@@ -54,13 +54,13 @@ public struct SliderRow<ValueLabel: View>: View {
 /// A SliderRow for durations, with the value rendered by SecondsLabel
 /// so every delay reads "2.5 seconds" the same way.
 public struct SecondsSliderRow: View {
-    private let title: LocalizedStringKey
+    private let title: LocalizedStringResource
     @Binding private var value: Double
     private let bounds: ClosedRange<Double>
     private let step: Double
 
     public init(
-        _ title: LocalizedStringKey,
+        _ title: LocalizedStringResource,
         value: Binding<Double>,
         in bounds: ClosedRange<Double>,
         step: Double
@@ -82,10 +82,10 @@ public struct SecondsSliderRow: View {
 
 /// Shared overflow menu keeps help text and VoiceOver names consistent across rows.
 public struct MoreActionsMenu<Content: View>: View {
-    private let label: LocalizedStringKey
+    private let label: LocalizedStringResource
     private let content: Content
 
-    public init(label: LocalizedStringKey, @ViewBuilder content: () -> Content) {
+    public init(label: LocalizedStringResource, @ViewBuilder content: () -> Content) {
         self.label = label
         self.content = content()
     }

@@ -10,12 +10,12 @@ import SwiftUI
 /// A page's own search: a filled field as wide as the page, so it reads apart from the settings search at
 /// the top of the sidebar. Escape and the clear button empty it.
 public struct SettingsFilterField: View {
-    public let prompt: LocalizedStringKey
+    public let prompt: LocalizedStringResource
     @Binding public var text: String
     @FocusState private var isFocused: Bool
 
     public init(
-        prompt: LocalizedStringKey,
+        prompt: LocalizedStringResource,
         text: Binding<String>
     ) {
         self.prompt = prompt

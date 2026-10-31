@@ -32,7 +32,7 @@ public struct ThawGradientPicker: View {
     ///   - gradient: The gradient the picker edits.
     ///   - supportsOpacity: Whether the color panel offers an opacity
     ///     control while a stop is selected.
-    public init(_ labelKey: LocalizedStringKey, gradient: Binding<ThawGradient>, supportsOpacity: Bool = true) {
+    public init(_ labelKey: LocalizedStringResource, gradient: Binding<ThawGradient>, supportsOpacity: Bool = true) {
         self._gradient = gradient
         self.supportsOpacity = supportsOpacity
         self.label = Text(labelKey)

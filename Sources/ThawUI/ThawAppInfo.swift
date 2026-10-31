@@ -60,7 +60,7 @@ public nonisolated enum UpdateChannel: String, CaseIterable, Identifiable, Senda
         rawValue
     }
 
-    public var localized: LocalizedStringKey {
+    public var localized: LocalizedStringResource {
         switch self {
         case .stable: "Stable"
         case .beta: "Beta"

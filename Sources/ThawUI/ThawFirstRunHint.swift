@@ -15,7 +15,7 @@ public struct ThawFirstRunHint: View {
     private let image: Image
     private let title: Text?
     private let text: Text
-    private let actionTitle: LocalizedStringKey?
+    private let actionTitle: LocalizedStringResource?
     private let action: (() -> Void)?
     private let onDismiss: () -> Void
 
@@ -31,8 +31,8 @@ public struct ThawFirstRunHint: View {
     ///     records the dismissal; the view holds no state of its own.
     public init(
         systemImage: String,
-        _ text: LocalizedStringKey,
-        actionTitle: LocalizedStringKey? = nil,
+        _ text: LocalizedStringResource,
+        actionTitle: LocalizedStringResource? = nil,
         action: (() -> Void)? = nil,
         onDismiss: @escaping () -> Void
     ) {
