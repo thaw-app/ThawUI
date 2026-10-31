@@ -528,6 +528,45 @@ struct ChangelogDocumentTests {
         #expect(release.badges.first?.url.absoluteString == "https://example.com/thaw")
         #expect(release.sections[0].themes[0].bullets.map(plain) == ["A real bullet."])
     }
+
+    @Test(
+        "a badge whose link is not https is dropped, and the rest of the release stays",
+        arguments: [
+            "http://example.com/thaw",
+            "file:///etc/passwd",
+            "thaw://reset",
+            "javascript:alert",
+            "/relative/path",
+            "https:no-host",
+        ]
+    )
+    func nonHTTPSBadgeIsDropped(url: String) throws {
+        let document = ChangelogDocument.parse("""
+        ## [1.0.0]
+
+        [![Dropped](Dropped.svg)](\(url))
+
+        [![Kept](Kept.svg)](https://example.com/thaw)
+
+        An intro paragraph.
+        """)
+
+        let release = try #require(document.releases.first)
+        #expect(release.badges.map(\.alt) == ["Kept"])
+        #expect(release.intro.map(plain) == ["An intro paragraph."])
+    }
+
+    @Test("a badge's https scheme is matched in any case")
+    func httpsBadgeSchemeIgnoresCase() throws {
+        let document = ChangelogDocument.parse("""
+        ## [1.0.0]
+
+        [![Upper](Upper.svg)](HTTPS://example.com/thaw)
+        """)
+
+        let release = try #require(document.releases.first)
+        #expect(release.badges.map(\.alt) == ["Upper"])
+    }
 }
 
 // MARK: - Version-3 line filter

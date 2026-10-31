@@ -72,7 +72,8 @@ public nonisolated struct ChangelogDocument {
     }
 
     /// An image link written as `[![alt](image.ext)](url)`. The image is a
-    /// file in the app bundle, named by its file name.
+    /// file in the app bundle, named by its file name; the link is always
+    /// `https`.
     public struct Badge: Equatable {
         public var alt: String
         public var imageFileName: String
@@ -225,6 +226,18 @@ public nonisolated struct ChangelogDocument {
     /// `[![alt](image)](url)` on a line of its own.
     private static nonisolated(unsafe) let badgePattern = /^\[!\[(?<alt>[^\]]*)\]\((?<image>[^)]+)\)\]\((?<url>[^)]+)\)$/
 
+    /// A badge's link when it is `https`, its only accepted scheme. The file is
+    /// fetched and a click hands the link to `openURL`, so any other scheme
+    /// could open a local file or launch another app.
+    private static func badgeURL(_ string: String) -> URL? {
+        guard
+            let url = URL(string: string), url.scheme?.lowercased() == "https", url.host() != nil
+        else {
+            return nil
+        }
+        return url
+    }
+
     public static func parse(_ text: String) -> ChangelogDocument {
         var document = ChangelogDocument()
         var pendingBullet: String?
@@ -371,7 +384,7 @@ public nonisolated struct ChangelogDocument {
             } else if let match = line.wholeMatch(of: badgePattern) {
                 flushParagraph()
                 guard var release = document.releases.popLast() else { continue }
-                if release.sections.isEmpty, let url = URL(string: String(match.url)) {
+                if release.sections.isEmpty, let url = badgeURL(String(match.url)) {
                     release.badges.append(Badge(
                         alt: String(match.alt),
                         imageFileName: String(match.image),
