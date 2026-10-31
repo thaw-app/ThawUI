@@ -85,7 +85,7 @@ public struct PermissionLabel: View {
     }
 
     public var body: some View {
-        HStack(alignment: badgePlacement == .below ? .top : .center, spacing: 8) {
+        HStack(alignment: badgePlacement == .below ? .top : .center, spacing: ThawSpacing.base) {
             // In the sidebar's box, so every permission's title starts in the same place.
             Image(systemName: permission.iconName)
                 .font(ListStyle.symbolFont)
@@ -93,7 +93,7 @@ public struct PermissionLabel: View {
                 .frame(width: ListStyle.iconBox, height: ListStyle.iconBox)
 
             if badgePlacement == .below {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: ThawSpacing.tight) {
                     title
                     badge
                 }

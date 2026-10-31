@@ -298,7 +298,7 @@ public struct SearchPanelButtonStyle: ButtonStyle {
         configuration.label
             .frame(height: 22)
             .frame(minWidth: 22)
-            .padding(3)
+            .padding(ThawSpacing.capsuleInset)
             .opacity(configuration.isPressed ? 0.7 : 1.0)
     }
 }

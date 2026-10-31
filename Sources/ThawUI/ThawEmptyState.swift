@@ -39,7 +39,7 @@ public struct ThawEmptyState: View {
     }
 
     public var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: ThawSpacing.row) {
             symbol
 
             Text(title)
@@ -61,8 +61,8 @@ public struct ThawEmptyState: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 24)
+        .padding(.horizontal, ThawSpacing.gutter)
+        .padding(.vertical, ThawSpacing.section)
         // Combined only when there is nothing to press: a combined element
         // would swallow the button.
         .accessibilityElement(children: actionTitle == nil ? .combine : .contain)

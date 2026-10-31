@@ -40,8 +40,8 @@ public struct ThawBadge: View {
         Text(title)
             .font(ThawType.caption.weight(.medium))
             .foregroundStyle(foreground)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
+            .padding(.horizontal, ThawSpacing.compact)
+            .padding(.vertical, ThawSpacing.hairline)
             .background(background, in: Capsule(style: .continuous))
             .overlay {
                 if case let .tinted(tint) = tone {

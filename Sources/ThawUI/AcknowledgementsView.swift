@@ -242,7 +242,7 @@ public struct AcknowledgementsView: View {
         VStack(alignment: .leading, spacing: 22) {
             paragraph(Text(strings.thanks))
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: ThawSpacing.inset) {
                 if let url = content.contributorsURL {
                     Link(destination: url) {
                         Text(strings.contributors).underline()
@@ -269,7 +269,7 @@ public struct AcknowledgementsView: View {
             }
 
             ForEach(Array(content.origins.enumerated()), id: \.offset) { _, origin in
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ThawSpacing.inset) {
                     if let name = origin.name {
                         name
                             .font(ReadingPageType.heading)

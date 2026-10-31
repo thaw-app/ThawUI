@@ -233,7 +233,7 @@ public struct WhatsNewView: View {
             }
 
             if !release.badges.isEmpty {
-                HStack(spacing: 16) {
+                HStack(spacing: ThawSpacing.gutter) {
                     ForEach(Array(release.badges.enumerated()), id: \.offset) { _, badge in
                         badgeButton(badge)
                     }
@@ -247,7 +247,7 @@ public struct WhatsNewView: View {
                         .accessibilityAddTraits(.isHeader)
 
                     ForEach(Array(section.themes.enumerated()), id: \.offset) { _, theme in
-                        VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: ThawSpacing.inset) {
                             if let title = theme.title {
                                 Text(verbatim: title)
                                     .font(ReadingPageType.body.weight(.semibold))
@@ -280,7 +280,7 @@ public struct WhatsNewView: View {
     private func themeBlock(_ block: ChangelogDocument.Block) -> some View {
         switch block {
         case let .text(text):
-            HStack(alignment: .firstTextBaseline, spacing: 12) {
+            HStack(alignment: .firstTextBaseline, spacing: ThawSpacing.inset) {
                 Text(verbatim: "•")
                     .foregroundStyle(.tertiary)
                 ReadingParagraph(text)
@@ -355,7 +355,7 @@ private struct ChangelogCalloutView: View {
                 case let .paragraph(text):
                     ReadingParagraph(text)
                 case let .bullet(text):
-                    HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    HStack(alignment: .firstTextBaseline, spacing: ThawSpacing.row) {
                         Text(verbatim: "•")
                             .foregroundStyle(.secondary)
                         ReadingParagraph(text)
