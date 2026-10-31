@@ -123,6 +123,13 @@ struct SuppliedStringsTests {
         #expect(String(localized: state(" thaw ").resolvedTitle) == "Nothing for thaw")
     }
 
+    @Test("The privacy notice shows the promise it is given")
+    func privacyNotice() {
+        let notice = SettingsPrivacyNotice(title: "Promise", message: "Kept")
+        #expect(notice.title == "Promise")
+        #expect(notice.message == "Kept")
+    }
+
     @Test("Persisted option values stay the same")
     func rawValues() {
         #expect(SearchFieldBeam.allCases.map(\.rawValue) == ["off", "colorful", "mono", "ocean", "sunset"])
