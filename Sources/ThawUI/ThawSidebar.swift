@@ -49,9 +49,10 @@ public enum ThawSidebarRow<Page: Hashable>: Hashable {
 
 extension ThawSidebarRow: Sendable where Page: Sendable {}
 
-/// The colours an app gives its sidebar. Layout, focus and the keyboard stay the same in every app.
-public struct ThawSidebarColors: Equatable {
-    public enum Selection: Equatable {
+/// The colours of a sidebar. Layout, focus and the keyboard stay the same in every app. An app's selection normally
+/// comes from ThawTheme; the sidebar's colors parameter is for one that differs from the rest of its app.
+public struct ThawSidebarColors: Equatable, Sendable {
+    public enum Selection: Equatable, Sendable {
         /// The shared see-through fill of thawSelectedFill, in this tint.
         case tinted(Color)
         /// A flat fill, with an optional edge, for a selection that doesn't take the accent colour.
@@ -91,19 +92,20 @@ public struct ThawSidebar<Page: Hashable, Icon: View>: View {
     private let rows: [Row]
     private let current: Page
     private let showsSelection: Bool
-    private let colors: ThawSidebarColors
+    private let colors: ThawSidebarColors?
     private let select: (Page) -> Void
     private let title: (Page) -> Text
     private let icon: (Page) -> Icon
     private let isDimmed: (Page) -> Bool
 
     @FocusState private var isFocused: Bool
+    @Environment(\.thawTheme) private var theme
 
     public init(
         rows: [Row],
         current: Page,
         showsSelection: Bool = true,
-        colors: ThawSidebarColors = ThawSidebarColors(),
+        colors: ThawSidebarColors? = nil,
         select: @escaping (Page) -> Void,
         title: @escaping (Page) -> Text,
         isDimmed: @escaping (Page) -> Bool = { _ in false },
@@ -164,7 +166,7 @@ public struct ThawSidebar<Page: Hashable, Icon: View>: View {
                 isDimmed: isDimmed(page),
                 isSelected: isSelected,
                 showsFocus: isFocused,
-                colors: colors,
+                colors: colors ?? ThawSidebarColors(selection: theme.selection),
                 select: { select(page) }
             )
             .id(page)
@@ -220,7 +222,8 @@ private struct ThawSidebarPageRow<Icon: View>: View {
     }
 }
 
-private struct SelectionFill<S: InsettableShape>: ViewModifier {
+/// A selection's fill behind a selected row, and nothing behind any other.
+struct SelectionFill<S: InsettableShape>: ViewModifier {
     let selection: ThawSidebarColors.Selection
     let isSelected: Bool
     let shape: S

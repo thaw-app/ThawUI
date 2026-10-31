@@ -33,7 +33,7 @@ public struct SettingsSearchResultsList<ResultGroup: Identifiable, Entry: Identi
     private let groups: [ResultGroup]
     private let entries: (ResultGroup) -> [Entry]
     private let highlighted: Entry.ID?
-    private let hoverTint: Color
+    private let hoverTint: Color?
     private let onSelect: (Entry) -> Void
     private let groupTitle: (ResultGroup) -> Text
     private let result: (Entry) -> SettingsSearchResultText
@@ -41,14 +41,14 @@ public struct SettingsSearchResultsList<ResultGroup: Identifiable, Entry: Identi
     private let header: Header
 
     /// A group's entries are its results, best first. The highlighted result is the one the arrow keys are on, kept in sight.
-    /// The hover tint is the wash under the pointer: the accent, or .primary for an app that keeps the accent off its rows.
+    /// The hover tint is the wash under the pointer, the theme's unless given here.
     /// The group icon is the glyph the sidebar shows for the group's pane. A bare symbol takes the heading's size and colour.
     /// The header is anything that scrolls above the results, such as their count.
     public init(
         groups: [ResultGroup],
         entries: @escaping (ResultGroup) -> [Entry],
         highlighted: Entry.ID? = nil,
-        hoverTint: Color = .accentColor,
+        hoverTint: Color? = nil,
         onSelect: @escaping (Entry) -> Void,
         groupTitle: @escaping (ResultGroup) -> Text,
         result: @escaping (Entry) -> SettingsSearchResultText,
@@ -135,7 +135,7 @@ public extension SettingsSearchResultsList where Header == EmptyView {
         groups: [ResultGroup],
         entries: @escaping (ResultGroup) -> [Entry],
         highlighted: Entry.ID? = nil,
-        hoverTint: Color = .accentColor,
+        hoverTint: Color? = nil,
         onSelect: @escaping (Entry) -> Void,
         groupTitle: @escaping (ResultGroup) -> Text,
         result: @escaping (Entry) -> SettingsSearchResultText,
@@ -162,15 +162,16 @@ public extension SettingsSearchResultsList where Header == EmptyView {
 public struct SettingsSearchResultRow: View {
     private let text: SettingsSearchResultText
     private let isHighlighted: Bool
-    private let hoverTint: Color
+    private let hoverTint: Color?
     private let action: () -> Void
 
     @State private var isHovering = false
+    @Environment(\.thawTheme) private var theme
 
     public init(
         _ text: SettingsSearchResultText,
         isHighlighted: Bool = false,
-        hoverTint: Color = .accentColor,
+        hoverTint: Color? = nil,
         action: @escaping () -> Void
     ) {
         self.text = text
@@ -183,7 +184,7 @@ public struct SettingsSearchResultRow: View {
         Button(action: action) {
             content
         }
-        .buttonStyle(SettingsSearchResultButtonStyle(isHovering: isHovering, tint: hoverTint))
+        .buttonStyle(SettingsSearchResultButtonStyle(isHovering: isHovering, tint: hoverTint ?? theme.hoverTint))
         .selectedRowBackground(isHighlighted)
         .onHover { isHovering = $0 }
         .thawAnimation(ThawMotion.quick, value: isHovering)

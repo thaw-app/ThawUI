@@ -56,10 +56,12 @@ public struct ListRowIcon: View {
     }
 }
 
-/// The sidebar's selected row: a light gray fill with a faint edge, the same whether the window is key or not,
+/// The sidebar's selected row, in the theme's selection, the same whether the window is key or not,
 /// under a label that keeps its own colour. The row answers clicks across the whole shape.
 public struct SelectedRowBackground: ViewModifier {
     public let isSelected: Bool
+
+    @Environment(\.thawTheme) private var theme
 
     public init(
         isSelected: Bool
@@ -69,13 +71,7 @@ public struct SelectedRowBackground: ViewModifier {
 
     public func body(content: Content) -> some View {
         content
-            .background {
-                if isSelected {
-                    ListStyle.rowShape
-                        .fill(Color.primary.opacity(0.1))
-                        .overlay(ListStyle.rowShape.strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-                }
-            }
+            .modifier(SelectionFill(selection: theme.selection, isSelected: isSelected, shape: ListStyle.rowShape))
             .contentShape(ListStyle.rowShape)
             // A fill alone can be missed; Differentiate Without Color adds a bar, and VoiceOver hears the state.
             .thawSelectionCue(isSelected: isSelected)
