@@ -21,7 +21,7 @@ public struct ThawListHeading: View {
 
     public var body: some View {
         title
-            .font(.system(size: 11, weight: .semibold))
+            .font(ThawType.sublabel.weight(.semibold))
             .textCase(.uppercase)
             .foregroundStyle(.secondary)
             .lineLimit(1)

@@ -111,7 +111,7 @@ public struct ListSectionHeading: View {
             ThawListHeading(Text(title))
             if let detail {
                 Text(detail)
-                    .font(.system(size: 11))
+                    .font(ThawType.sublabel)
                     .foregroundStyle(ThawInk.supporting)
                     .lineLimit(1)
             }
