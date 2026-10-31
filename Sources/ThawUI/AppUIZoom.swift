@@ -47,6 +47,8 @@ public nonisolated struct AppUIZoomStrings: Sendable {
 public struct AppUIZoomModifier: ViewModifier {
     @AppStorage(AppUIZoom.defaultsKey) private var percent = 100
 
+    public init() {}
+
     public func body(content: Content) -> some View {
         let scale = CGFloat(AppUIZoom.normalized(percent)) / 100
         ZoomLayout(scale: scale) {
