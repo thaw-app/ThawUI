@@ -244,11 +244,16 @@ public nonisolated struct ChangelogDocument {
         var pendingParagraph: String?
         var pendingCallout: (kind: Callout.Kind, lines: [String])?
 
+        // The notes come over the network, so a link in them opens only over https.
         func inline(_ markdown: String) -> AttributedString {
-            (try? AttributedString(
+            var text = (try? AttributedString(
                 markdown: markdown,
                 options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
             )) ?? AttributedString(markdown)
+            for run in text.runs where run.link?.scheme?.lowercased() != "https" {
+                text[run.range].link = nil
+            }
+            return text
         }
 
         // A block lands in the release intro ahead of the first section, and

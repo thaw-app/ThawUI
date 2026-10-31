@@ -613,4 +613,25 @@ struct ChangelogDocumentVersionLineTests {
 
         #expect(ChangelogDocument.displayReleases(in: document, majorVersion: 3).isEmpty)
     }
+
+    @Test("Links in the notes open only over https; any other link stays as plain text", arguments: [
+        "thaw://set?key=x", "file:///etc/hosts", "http://example.com", "floe://run", "javascript:alert",
+    ])
+    func proseLinksAreHTTPSOnly(url: String) throws {
+        let document = ChangelogDocument.parse("""
+        ## [1.0.0]
+
+        ### Fixed
+
+        - See [the notes](\(url)) and [the site](https://example.com).
+        """)
+        let block = try #require(document.releases.first?.sections.first?.themes.first?.bullets.first)
+        guard case let .text(text) = block else {
+            Issue.record("Expected text")
+            return
+        }
+        let links = text.runs.compactMap(\.link)
+        #expect(links == [URL(string: "https://example.com")])
+        #expect(String(text.characters).contains("the notes"))
+    }
 }
