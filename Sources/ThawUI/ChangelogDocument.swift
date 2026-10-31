@@ -1,5 +1,5 @@
 //
-//  ChangelogView.swift
+//  ChangelogDocument.swift
 //  Project: Thaw
 //
 //  Copyright (Thaw) © 2026 Toni Förster
@@ -35,8 +35,7 @@ public nonisolated struct ChangelogDocument {
             public init?(marker line: String) {
                 guard line.hasPrefix(">") else { return nil }
                 let inner = line.dropFirst().trimmingCharacters(in: .whitespaces)
-                guard inner.hasPrefix("[!"), inner.hasSuffix("]") else { return nil }
-                guard let kind = Kind(rawValue: inner.dropFirst(2).dropLast().lowercased()) else {
+                guard inner.hasPrefix("[!"), inner.hasSuffix("]"), let kind = Kind(rawValue: inner.dropFirst(2).dropLast().lowercased()) else {
                     return nil
                 }
                 self = kind
@@ -165,10 +164,7 @@ public nonisolated struct ChangelogDocument {
         var request = URLRequest(url: url)
         request.timeoutInterval = 10
         guard
-            let (data, response) = try? await URLSession.shared.data(for: request),
-            let http = response as? HTTPURLResponse,
-            (200 ..< 300).contains(http.statusCode),
-            let text = String(data: data, encoding: .utf8)
+            let (data, response) = try? await URLSession.shared.data(for: request), let http = response as? HTTPURLResponse, (200 ..< 300).contains(http.statusCode), let text = String(data: data, encoding: .utf8)
         else {
             return nil
         }
@@ -225,8 +221,8 @@ public nonisolated struct ChangelogDocument {
             )) ?? AttributedString(markdown)
         }
 
-        /// A block lands in the release intro ahead of the first section, and
-        /// in the open theme after it, the same target a bullet takes.
+        // A block lands in the release intro ahead of the first section, and
+        // in the open theme after it, the same target a bullet takes.
         func appendBlock(_ block: Block) {
             guard !document.releases.isEmpty else { return }
             var release = document.releases.removeLast()
@@ -245,9 +241,9 @@ public nonisolated struct ChangelogDocument {
             document.releases.append(release)
         }
 
-        /// Prose ahead of a release's first section becomes an intro
-        /// paragraph; prose anywhere else, including the file preamble, is
-        /// dropped.
+        // Prose ahead of a release's first section becomes an intro
+        // paragraph; prose anywhere else, including the file preamble, is
+        // dropped.
         func flushParagraph() {
             guard let paragraph = pendingParagraph else { return }
             pendingParagraph = nil

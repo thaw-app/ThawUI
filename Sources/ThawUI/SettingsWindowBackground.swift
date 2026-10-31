@@ -35,14 +35,14 @@ public enum SettingsWindowBackground: Equatable {
     }
 }
 
-extension EnvironmentValues {
-    @Entry public var settingsWindowBackground = SettingsWindowBackground.system
+public extension EnvironmentValues {
+    @Entry var settingsWindowBackground = SettingsWindowBackground.system
 }
 
-extension View {
+public extension View {
     /// Draws the background behind this view, holds the hosting window to it, and
     /// passes it down to panes that draw their own backdrop.
-    public func settingsWindowBackground(_ background: SettingsWindowBackground) -> some View {
+    func settingsWindowBackground(_ background: SettingsWindowBackground) -> some View {
         modifier(SettingsWindowBackgroundModifier(background: background))
     }
 }
