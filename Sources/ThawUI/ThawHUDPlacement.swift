@@ -15,7 +15,7 @@ import CoreGraphics
 /// unrequested and land on a display the user may not be facing, and the
 /// center of a wide display is also where the thing being worked on usually
 /// is, the one spot a banner is most likely to be in the way of.
-public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable {
+public nonisolated enum ThawHUDPlacement: String, CaseIterable, Hashable, Sendable {
     /// Under the left end of the menu bar, past the application menus.
     case leading
     /// Under the middle of the menu bar. What every HUD caller gets unless it
