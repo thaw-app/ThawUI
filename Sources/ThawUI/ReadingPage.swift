@@ -81,13 +81,13 @@ public struct ReadingPage<Content: View, Links: View>: View {
                     subtitle
                         .font(ThawType.label)
                         .foregroundStyle(.secondary)
-                        .padding(.top, 10)
+                        .padding(.top, ThawSpacing.row)
                 }
 
                 content()
                     .padding(.top, 44)
 
-                HStack(spacing: 12) {
+                HStack(spacing: ThawSpacing.inset) {
                     links()
                 }
                 .buttonStyle(.plain)
@@ -138,7 +138,7 @@ public struct ReadingPage<Content: View, Links: View>: View {
     /// The stops as a slash-separated path, the app's name at its head. The active stop is in full weight
     /// with a dot beneath; the rest read as links, and past visiblePathCount they fold into a menu.
     private var pathRow: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
+        HStack(alignment: .firstTextBaseline, spacing: ThawSpacing.inset) {
             Text(verbatim: appName)
                 .foregroundStyle(ThawInk.supporting)
             Text(verbatim: ":")

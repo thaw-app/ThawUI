@@ -58,7 +58,7 @@ public struct SettingsWarningPill: View {
     }
 
     public var body: some View {
-        HStack(alignment: .center, spacing: 12) {
+        HStack(alignment: .center, spacing: ThawSpacing.inset) {
             Image(systemName: systemImage)
                 // Hierarchical: white disappears on the light tints warnings use
                 // (yellow, orange), and the tint itself carries the meaning.
@@ -67,7 +67,7 @@ public struct SettingsWarningPill: View {
                 .font(.title2)
                 .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: ThawSpacing.hairline) {
                 if let title {
                     Text(title)
                         .font(.callout.weight(.semibold))
@@ -87,7 +87,7 @@ public struct SettingsWarningPill: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             if actionTitle != nil || secondaryActionTitle != nil {
-                VStack(alignment: .trailing, spacing: 6) {
+                VStack(alignment: .trailing, spacing: ThawSpacing.compact) {
                     if let actionTitle, let action {
                         Button(actionTitle, action: action)
                             .buttonStyle(.thawProminent(tint: tint))
@@ -106,7 +106,7 @@ public struct SettingsWarningPill: View {
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, ThawSpacing.inset)
         .thawGlass(.accent(tint), in: shape)
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)

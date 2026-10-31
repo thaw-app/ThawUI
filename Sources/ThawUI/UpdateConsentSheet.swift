@@ -61,7 +61,7 @@ public struct UpdateConsentSheet: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ThawSpacing.gutter) {
             Text(strings.title)
                 .font(.title2.bold())
 

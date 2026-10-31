@@ -97,7 +97,7 @@ private struct ThawHUDCard: View {
     let text: LocalizedStringResource
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ThawSpacing.base) {
             if let symbol {
                 Image(systemName: symbol)
                     .font(ThawType.symbol.weight(.semibold))
@@ -109,7 +109,7 @@ private struct ThawHUDCard: View {
                 .lineLimit(1)
                 .truncationMode(.tail)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ThawSpacing.gutter)
         .padding(.vertical, 9)
         // The width stays free so text wider than the screen truncates inside the capsule.
         .fixedSize(horizontal: false, vertical: true)

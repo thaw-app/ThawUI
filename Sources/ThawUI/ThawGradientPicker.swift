@@ -123,7 +123,7 @@ private struct ThawGradientTrack: View {
             .clipShape(trackShape)
             .overlay { trackShape.strokeBorder(.secondary) }
             .overlay { centerTick }
-            .padding(.vertical, 2)
+            .padding(.vertical, ThawSpacing.hairline)
             .overlay {
                 GeometryReader { geometry in
                     insertionSurface(in: geometry)
