@@ -21,4 +21,4 @@ catalog lives in another bundle names it on the resource:
 
 ## Licensing
 
-GPL-3.0. See [LICENSE](LICENSE).
+GPL-3.0. See [LICENSE](LICENSE). [LICENSE-EXCEPTION](LICENSE-EXCEPTION) adds a permission to link with PlatformRuntimeKit.
