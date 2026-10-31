@@ -338,32 +338,6 @@ enum AboutMoreMenu {
     }
 }
 
-@MainActor
-private final class ClosureMenuItem: NSMenuItem {
-    private let handler: @MainActor () -> Void
-
-    init(title: String, handler: @escaping @MainActor () -> Void) {
-        self.handler = handler
-        super.init(title: title, action: #selector(run), keyEquivalent: "")
-        target = self
-    }
-
-    /// AppKit's initializers are nonisolated, and so must be what stands in for them here.
-    @available(*, unavailable)
-    override nonisolated init(title _: String, action _: Selector?, keyEquivalent _: String) {
-        fatalError("init(title:action:keyEquivalent:) has not been implemented")
-    }
-
-    @available(*, unavailable)
-    required nonisolated init(coder _: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    @objc private func run() {
-        handler()
-    }
-}
-
 /// A reference box for the AppKit view behind the actions button, so the representable
 /// doesn't write SwiftUI state during a view update.
 @MainActor
