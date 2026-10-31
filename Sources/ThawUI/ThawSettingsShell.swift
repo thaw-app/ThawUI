@@ -7,9 +7,8 @@
 
 import SwiftUI
 
-/// The settings window's split view: the sidebar column at the shared width, and a detail column filled from the top
-/// that names itself in the toolbar and fades its content under it. Search goes on the shell with settingsSearchField.
-/// The sidebar keeps its width unless sidebarMaxWidth lets it be dragged out to that.
+/// The settings window's split view. The detail column names itself in the toolbar and fades its content under it.
+/// Search goes on the shell with settingsSearchField; sidebarMaxWidth lets the sidebar be dragged out to that width.
 public struct ThawSettingsShell<Sidebar: View, Detail: View, Toolbar: ToolbarContent>: View {
     private let title: Text
     private let subtitle: Text?

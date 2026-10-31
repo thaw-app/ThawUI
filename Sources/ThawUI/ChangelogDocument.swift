@@ -9,8 +9,8 @@ import SwiftUI
 
 // MARK: - ChangelogDocument
 
-/// Release notes from a Keep a Changelog file, not localized. Parses ## [version] releases, ### sections,
-/// #### themes, dash bullets, numbered steps and inline markdown. Other prose before a release's first section becomes a paragraph; the rest is dropped.
+/// Keep a Changelog release notes, not localized: ## [version] releases, ### sections, #### themes, dash bullets,
+/// numbered steps and inline markdown. Prose before a release's first section becomes a paragraph; the rest is dropped.
 public nonisolated struct ChangelogDocument {
     /// One block of release prose: plain text, or a GitHub alert.
     public enum Block {
@@ -34,15 +34,14 @@ public nonisolated struct ChangelogDocument {
             }
         }
 
-        /// A run of the alert's text: a paragraph, or one bullet, a line starting with a dash and a space.
+        /// A run of the alert's text: a paragraph or one dash bullet.
         public enum Part {
             case paragraph(AttributedString)
             case bullet(AttributedString)
         }
 
         public var kind: Kind
-        /// In the order written. A blank > line ends a paragraph, and each
-        /// line starting with a dash and a space is its own bullet, so a list inside an alert stays a list.
+        /// In the order written. A blank > line ends a paragraph, and each dash line is its own bullet.
         public var parts: [Part]
     }
 
@@ -61,8 +60,8 @@ public nonisolated struct ChangelogDocument {
         public var sections: [Section] = []
     }
 
-    /// An image link: a Markdown link whose text is an image, giving alt text, an image file and a URL. The image is a
-    /// file in the app bundle, named by its file name; the link is always https.
+    /// A Markdown link whose text is an image. The image is a file in the app bundle, named by its file name;
+    /// the link is always https.
     public struct Badge: Equatable {
         public var alt: String
         public var imageFileName: String
@@ -99,7 +98,7 @@ public nonisolated struct ChangelogDocument {
 
     public var releases: [Release] = []
 
-    /// The newest release that has content, skips an empty [Unreleased].
+    /// The newest release with content, skipping an empty [Unreleased].
     public var newestRelease: Release? {
         releases.first { !$0.sections.isEmpty || !$0.intro.isEmpty }
     }
@@ -207,7 +206,7 @@ public nonisolated struct ChangelogDocument {
         return inner
     }
 
-    /// A Markdown link whose text is an image, with alt text, an image and a URL, on a line of its own.
+    /// A Markdown link whose text is an image, on a line of its own.
     private static nonisolated(unsafe) let badgePattern = /^\[!\[(?<alt>[^\]]*)\]\((?<image>[^)]+)\)\]\((?<url>[^)]+)\)$/
 
     /// A badge's link when it is https. The file is fetched and a click hands the link to openURL,

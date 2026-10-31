@@ -22,7 +22,7 @@ public final class ClosureMenuItem: NSMenuItem, NSMenuItemValidation {
         self.isEnabled = isEnabled
     }
 
-    /// AppKit's initializers are nonisolated, and so must be what stands in for them here.
+    /// AppKit's initializers are nonisolated, so this stand-in has to be too.
     @available(*, unavailable)
     override nonisolated init(title _: String, action _: Selector?, keyEquivalent _: String) {
         fatalError("init(title:action:keyEquivalent:) has not been implemented")

@@ -54,7 +54,7 @@ public nonisolated struct SearchFieldCorners: Codable, Hashable, Sendable {
         }
     }
 
-    /// Up from square to `middle` over the first half of the slider, then on to `full` over the second.
+    /// Up from square to the middle radius over the first half of the slider, then on to the full one over the second.
     private func radius(middle: CGFloat, full: CGFloat) -> CGFloat {
         let position = CGFloat(roundness)
         guard position > 0.5 else { return middle * position * 2 }

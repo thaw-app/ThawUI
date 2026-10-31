@@ -71,9 +71,8 @@ public struct HotkeyRecorder<Label: View>: View {
 
     @State private var capture = KeyCapture()
 
-    /// The key combination is the assigned one; nil shows the control as empty. The width is a fixed width, for a row whose
-    /// label leaves the control little room or for recorders that must line up; nil lets it grow from a minimum of 132.
-    /// onRecordingChange is called with true when a recording starts and false when it ends.
+    /// A nil key combination shows the control as empty. A nil width lets it grow from a minimum of 132; set one for a
+    /// narrow row or recorders that must line up. onRecordingChange gets true when a recording starts, false when it ends.
     public init(
         keyCombination: Binding<KeyCombination?>,
         strings: HotkeyRecorderStrings,

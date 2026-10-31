@@ -49,8 +49,7 @@ public nonisolated enum ForegroundContrast {
     /// overlay painted over base at opacity, as one opaque color, or nil when either has no sRGB form.
     /// Content under a wash is drawn on this result, so judge the flip against it wherever a tint covers the surface.
     ///
-    /// The overlay is the color painted on top, and its own alpha is honored.
-    /// The base is the color underneath, treated as opaque.
+    /// The overlay's own alpha is honored; the base is treated as opaque.
     public static func composited(_ overlay: CGColor, over base: CGColor, opacity: Double) -> CGColor? {
         guard
             let overlay = sRGBComponents(of: overlay),
