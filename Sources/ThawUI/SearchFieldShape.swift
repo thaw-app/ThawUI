@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// The outline of the launcher's search field, as the three choices it had before `SearchFieldCorners`.
+/// The outline of the launcher's search field, as the three choices it had before SearchFieldCorners.
 /// Settings that sync still carry it, for older copies of an app on another Mac.
 public nonisolated enum SearchFieldShape: String, Codable, CaseIterable, Identifiable, Sendable {
     /// The corners the rest of the panel's controls have.

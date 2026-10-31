@@ -17,11 +17,8 @@ public struct ThawEmptyState: View {
     private let actionTitle: LocalizedStringResource?
     private let action: (() -> Void)?
 
-    /// The SF Symbol shows above the title, ignored while isLoading is true, when a ProgressView takes its place. The title is
-    /// the primary message, e.g. "No settings found". The caption is optional supporting detail shown under the title.
-    /// isLoading shows a spinner instead of systemImage when true; use it for "waiting on data" states rather than "nothing
-    /// here" states. The action title is the one step that fixes the state, when there is one. An empty state that names a
-    /// problem should say what to do next. The action runs when the step is chosen.
+    /// isLoading swaps the symbol for a spinner, for "waiting on data" states rather than "nothing here" states. The action
+    /// title is the one step that fixes the state, when there is one: an empty state naming a problem should say what to do next.
     public init(
         systemImage: String,
         title: LocalizedStringResource,
