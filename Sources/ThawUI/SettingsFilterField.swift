@@ -63,20 +63,28 @@ public struct NoMatchesState: View {
     public let query: String
     /// Takes the query with its surrounding spaces gone.
     private let title: (String) -> LocalizedStringResource
+    /// For a query of nothing but spaces, when there is no text to quote back.
+    private let emptyQueryTitle: LocalizedStringResource?
     let caption: LocalizedStringResource
 
     public init(
         query: String,
         title: @escaping (_ query: String) -> LocalizedStringResource,
+        emptyQueryTitle: LocalizedStringResource? = nil,
         caption: LocalizedStringResource
     ) {
         self.query = query
         self.title = title
+        self.emptyQueryTitle = emptyQueryTitle
         self.caption = caption
     }
 
     var resolvedTitle: LocalizedStringResource {
-        title(query.trimmingCharacters(in: .whitespacesAndNewlines))
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty, let emptyQueryTitle {
+            return emptyQueryTitle
+        }
+        return title(trimmed)
     }
 
     public var body: some View {

@@ -114,6 +114,15 @@ struct SuppliedStringsTests {
         #expect(state.caption == "Try again")
     }
 
+    @Test("The no-matches state has a title of its own for an empty query")
+    func noMatchesEmptyQuery() {
+        func state(_ query: String) -> NoMatchesState {
+            NoMatchesState(query: query, title: { "Nothing for \($0)" }, emptyQueryTitle: "Nothing found", caption: "Try again")
+        }
+        #expect(state("   ").resolvedTitle == "Nothing found")
+        #expect(String(localized: state(" thaw ").resolvedTitle) == "Nothing for thaw")
+    }
+
     @Test("Persisted option values stay the same")
     func rawValues() {
         #expect(SearchFieldBeam.allCases.map(\.rawValue) == ["off", "colorful", "mono", "ocean", "sunset"])
