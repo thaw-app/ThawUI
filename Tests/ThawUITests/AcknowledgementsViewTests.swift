@@ -40,7 +40,7 @@ struct AcknowledgementsViewTests {
             contributorsURL: repository,
             translatorsURL: repository,
             originsIntro: Text(verbatim: "Where it began"),
-            origins: [AcknowledgementEntry(name: Text(verbatim: "Ice"), detail: Text(verbatim: "The start"), url: repository)],
+            origins: [AcknowledgementEntry(name: Text(verbatim: "Origin"), detail: Text(verbatim: "The start"), url: repository)],
             licenses: licenses
         )
     }
@@ -90,8 +90,8 @@ struct AcknowledgementsViewTests {
 
     @Test("Printed links show the host and path, without the scheme")
     func displayText() throws {
-        let url = try #require(URL(string: "https://github.com/jordanbaird/Ice"))
-        #expect(AcknowledgementsView.displayText(for: url) == "github.com/jordanbaird/Ice")
+        let url = try #require(URL(string: "https://github.com/thaw-app/ThawUI"))
+        #expect(AcknowledgementsView.displayText(for: url) == "github.com/thaw-app/ThawUI")
     }
 
     @Test("The slash between the two page links shows only when both exist", arguments: [
