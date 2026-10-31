@@ -41,7 +41,7 @@ public struct OnboardingPermissionCard<Label: View, Details: View, Control: View
     private let details: Details
     private let control: Control
 
-    /// - Parameter isGranted: Animates the card when the grant changes.
+    /// isGranted animates the card when the grant changes.
     public init(
         surface: OnboardingCardSurface,
         spacing: CGFloat = ThawSpacing.inset,

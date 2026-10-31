@@ -53,7 +53,7 @@ public nonisolated struct HotkeyRecorderStrings: Sendable {
 // MARK: - HotkeyRecorder
 
 /// A two-part control that shows an assigned key combination and lets the user type a new one.
-/// The app owns the hotkey and stands its hotkeys down from `onRecordingChange`, so the old combination can't fire.
+/// The app owns the hotkey and stands its hotkeys down from onRecordingChange, so the old combination can't fire.
 public struct HotkeyRecorder<Label: View>: View {
     /// What the control is showing at the moment.
     private enum Phase {
@@ -71,11 +71,9 @@ public struct HotkeyRecorder<Label: View>: View {
 
     @State private var capture = KeyCapture()
 
-    /// - Parameters:
-    ///   - keyCombination: The assigned combination. Nil shows the control as empty.
-    ///   - width: A fixed width, for a row whose label leaves the control little room
-    ///     or for recorders that must line up. Nil lets it grow from a minimum of 132.
-    ///   - onRecordingChange: Called with true when a recording starts and false when it ends.
+    /// The key combination is the assigned one; nil shows the control as empty. The width is a fixed width, for a row whose
+    /// label leaves the control little room or for recorders that must line up; nil lets it grow from a minimum of 132.
+    /// onRecordingChange is called with true when a recording starts and false when it ends.
     public init(
         keyCombination: Binding<KeyCombination?>,
         strings: HotkeyRecorderStrings,

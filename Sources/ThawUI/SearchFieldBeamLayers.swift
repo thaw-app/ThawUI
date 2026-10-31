@@ -158,7 +158,7 @@ public final class BeamLayerView: NSView {
         return holder
     }
 
-    /// One lap every `turn` seconds at one speed, at the same place in the lap for every layer, the field's and the glow's.
+    /// One lap every turn seconds at one speed, at the same place in the lap for every layer, the field's and the glow's.
     public static func run(from start: Double, along length: CGFloat, at frameRate: Float) -> CAAnimation {
         let lap = CABasicAnimation(keyPath: "lineDashPhase")
         lap.fromValue = -start * length
@@ -194,7 +194,7 @@ public final class BeamLayerView: NSView {
         }
     }
 
-    /// Where the light first comes up to `level`, or last goes down from it.
+    /// Where the light first comes up to level, or last goes down from it.
     private static func crossing(_ stops: [(Double, Double)], at level: Double, rising: Bool) -> Double? {
         let pairs = Array(zip(stops, stops.dropFirst()))
         for (a, b) in rising ? pairs : pairs.reversed() {

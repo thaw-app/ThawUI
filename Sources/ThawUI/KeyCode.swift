@@ -310,7 +310,7 @@ public extension KeyCode {
 
     /// A short label for the interface: the key's printed glyph, or else what it types on the current layout.
     ///
-    /// - Parameter spaceName: The app's word for the space bar, the one label that needs translating.
+    /// The space name is the app's word for the space bar, the one label that needs translating.
     func stringValue(spaceName: String) -> String {
         self == .space ? spaceName : keyLabels[self] ?? keyEquivalent
     }

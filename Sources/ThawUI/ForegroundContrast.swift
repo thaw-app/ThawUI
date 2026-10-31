@@ -11,8 +11,8 @@ import Foundation
 /// Picks black or white content for a measured background by WCAG relative luminance. Perceived-brightness
 /// weights (0.299 / 0.587 / 0.114) disagree on saturated colors: pure green gets white at 1.37:1, not black at 15.30:1.
 ///
-/// - Note: The contrast curves cross at luminance ≈ 0.1791, at 4.58:1, so the chosen color never drops below
-///   that, above the 4.5:1 AA floor for normal text, on any opaque sRGB background.
+/// The contrast curves cross at luminance ≈ 0.1791, at 4.58:1, so the chosen color never drops below
+/// that, above the 4.5:1 AA floor for normal text, on any opaque sRGB background.
 public nonisolated enum ForegroundContrast {
     /// The relative luminance at which black overtakes white: where white's 1.05 / (L + 0.05)
     /// equals black's (L + 0.05) / 0.05.
@@ -49,9 +49,8 @@ public nonisolated enum ForegroundContrast {
     /// overlay painted over base at opacity, as one opaque color, or nil when either has no sRGB form.
     /// Content under a wash is drawn on this result, so judge the flip against it wherever a tint covers the surface.
     ///
-    /// - Parameters:
-    ///   - overlay: The color painted on top. Its own alpha is honored.
-    ///   - base: The color underneath. Treated as opaque.
+    /// The overlay is the color painted on top, and its own alpha is honored.
+    /// The base is the color underneath, treated as opaque.
     public static func composited(_ overlay: CGColor, over base: CGColor, opacity: Double) -> CGColor? {
         guard
             let overlay = sRGBComponents(of: overlay),

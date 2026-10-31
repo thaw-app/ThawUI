@@ -15,7 +15,7 @@ public struct ThawProminentButtonStyle: ButtonStyle {
 
     private let tint: Color
 
-    /// - Parameter tint: The fill's colour, the accent unless a notice brings its own.
+    /// The tint is the fill's colour, the accent unless a notice brings its own.
     public init(tint: Color = .accentColor) {
         self.tint = tint
     }

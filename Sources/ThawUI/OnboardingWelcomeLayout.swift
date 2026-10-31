@@ -69,9 +69,8 @@ public struct OnboardingQuietButton: View {
     let shortcut: KeyboardShortcut?
     private let action: () -> Void
 
-    /// - Parameters:
-    ///   - help: The tooltip, saying what leaving here does.
-    ///   - shortcut: A key for it, such as ⌘Q when it quits, since the window may have no close button.
+    /// The help is the tooltip, saying what leaving here does.
+    /// The shortcut is a key for it, such as ⌘Q when it quits, since the window may have no close button.
     public init(title: Text, help: Text, shortcut: KeyboardShortcut? = nil, action: @escaping () -> Void) {
         self.title = title
         self.help = help
