@@ -24,7 +24,7 @@ struct OnboardingPiecesTests {
     }
 
     private static func button(_ title: String) -> some View {
-        OnboardingPrimaryButton(action: {}, label: { Text(verbatim: title) })
+        OnboardingPrimaryButton(action: { /* never pressed here */ }, label: { Text(verbatim: title) })
     }
 
     @Test("A short title still gets the shared minimum size")
@@ -72,7 +72,7 @@ struct OnboardingPiecesTests {
             } details: {
                 Text(verbatim: "Reads the menu bar")
             } control: {
-                Button(action: {}, label: { Text(verbatim: "Grant") })
+                Button(action: { /* never pressed here */ }, label: { Text(verbatim: "Grant") })
             }
             .frame(width: 240)
         }
@@ -91,7 +91,7 @@ struct OnboardingPiecesTests {
         } copy: {
             OnboardingHeader(title: Text(verbatim: "Welcome"), message: Text(verbatim: "Glad you came"))
         } exit: {
-            OnboardingQuietButton(title: Text(verbatim: "Leave"), help: Text(verbatim: "Leave now")) {}
+            OnboardingQuietButton(title: Text(verbatim: "Leave"), help: Text(verbatim: "Leave now")) { /* never pressed here */ }
         }
         let size = Self.fittingSize(layout.frame(width: 760, height: 600))
         #expect(size == CGSize(width: 760, height: 600))
@@ -99,8 +99,8 @@ struct OnboardingPiecesTests {
 
     @Test("A quiet exit has a key only when the app gives it one")
     func quietButtonShortcut() {
-        let plain = OnboardingQuietButton(title: Text(verbatim: "Skip"), help: Text(verbatim: "Skip it")) {}
-        let quit = OnboardingQuietButton(title: Text(verbatim: "Quit"), help: Text(verbatim: "Quit it"), shortcut: KeyboardShortcut("q")) {}
+        let plain = OnboardingQuietButton(title: Text(verbatim: "Skip"), help: Text(verbatim: "Skip it")) { /* never pressed here */ }
+        let quit = OnboardingQuietButton(title: Text(verbatim: "Quit"), help: Text(verbatim: "Quit it"), shortcut: KeyboardShortcut("q")) { /* never pressed here */ }
         #expect(plain.shortcut == nil)
         #expect(quit.shortcut == KeyboardShortcut("q"))
     }

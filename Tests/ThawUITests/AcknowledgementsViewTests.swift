@@ -109,7 +109,9 @@ struct AcknowledgementsViewTests {
 
     @Test("The same page draws the same pixels twice, so a difference below means something")
     func drawingIsRepeatable() async throws {
-        #expect(try await drawnPixels(view(page: .origins)) == drawnPixels(view(page: .origins)))
+        let first = try await drawnPixels(view(page: .origins))
+        let second = try await drawnPixels(view(page: .origins))
+        #expect(first == second)
     }
 
     @Test("Every page draws, and each draws differently")

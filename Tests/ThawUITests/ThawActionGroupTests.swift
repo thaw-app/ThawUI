@@ -36,11 +36,11 @@ struct ThawActionGroupTests {
     @Test("Each button adds width, and the capsule is at least a grouped button tall")
     func layout() {
         let one = Self.renderedSize(of: ThawActionGroup {
-            Button("First") {}
+            Button("First") { /* never pressed here */ }
         }.buttonStyle(.thawGrouped))
         let two = Self.renderedSize(of: ThawActionGroup {
-            Button("First") {}
-            Button("Second") {}
+            Button("First") { /* never pressed here */ }
+            Button("Second") { /* never pressed here */ }
         }.buttonStyle(.thawGrouped))
         #expect(two.width > one.width)
         #expect(one.height >= 26)
@@ -49,7 +49,7 @@ struct ThawActionGroupTests {
     @Test("A disabled group still lays out")
     func disabled() {
         let size = Self.renderedSize(of: ThawActionGroup {
-            Button("First") {}
+            Button("First") { /* never pressed here */ }
         }.buttonStyle(.thawGrouped).disabled(true))
         #expect(size.width > 0)
     }
