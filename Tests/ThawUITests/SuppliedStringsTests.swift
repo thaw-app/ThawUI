@@ -81,7 +81,7 @@ struct SuppliedStringsTests {
         #expect(SettingsFilterField(prompt: "Find", clearLabel: "Wipe", text: .constant("")).clearLabel == "Wipe")
         #expect(ThawCheckboxToggleStyle(onValue: "Yes", offValue: "No").onValue == "Yes")
         #expect(ThawCheckboxToggleStyle(onValue: "Yes", offValue: "No").offValue == "No")
-        #expect(ThawFirstRunHint(systemImage: "star", "Text", dismissLabel: "Later") {}.dismissLabel == "Later")
+        #expect(ThawFirstRunHint(systemImage: "star", "Text", dismissLabel: "Later") { /* never pressed here */ }.dismissLabel == "Later")
         #expect(ThawHintTipViewStyle(dismissLabel: "Later").dismissLabel == "Later")
         let items = Binding<[SectionedListItem<Int, EmptyView>]>.constant([])
         #expect(SectionedList(selection: .constant(nil), items: items, openLabel: "Launch").openLabel == "Launch")

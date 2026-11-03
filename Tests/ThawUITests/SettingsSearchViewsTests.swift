@@ -54,7 +54,7 @@ struct SettingsSearchViewsTests {
     @Test("A row grows for its section and its description")
     func rowLines() {
         func height(_ text: SettingsSearchResultText) -> CGFloat {
-            Self.fittingSize(SettingsSearchResultRow(text) {}.frame(width: 320)).height
+            Self.fittingSize(SettingsSearchResultRow(text) { /* never pressed here */ }.frame(width: 320)).height
         }
         let title = Text(verbatim: "Title")
         let bare = height(SettingsSearchResultText(title: title))
@@ -67,8 +67,8 @@ struct SettingsSearchViewsTests {
     @Test("The highlight does not move a row or change its size")
     func highlightKeepsSize() {
         let text = SettingsSearchResultText(title: Text(verbatim: "Title"))
-        let plain = Self.fittingSize(SettingsSearchResultRow(text) {}.frame(width: 320))
-        let highlighted = Self.fittingSize(SettingsSearchResultRow(text, isHighlighted: true, hoverTint: .primary) {}.frame(width: 320))
+        let plain = Self.fittingSize(SettingsSearchResultRow(text) { /* never pressed here */ }.frame(width: 320))
+        let highlighted = Self.fittingSize(SettingsSearchResultRow(text, isHighlighted: true, hoverTint: .primary) { /* never pressed here */ }.frame(width: 320))
         #expect(plain == highlighted)
     }
 
@@ -80,7 +80,7 @@ struct SettingsSearchViewsTests {
             groups: Self.groups,
             entries: \.entries,
             highlighted: "b",
-            onSelect: { _ in },
+            onSelect: { _ in /* never called here */ },
             groupTitle: { group in
                 titled.append(group.id)
                 return Text(verbatim: "Group \(group.id)")
@@ -102,7 +102,7 @@ struct SettingsSearchViewsTests {
         let list = SettingsSearchResultsList(
             groups: [ResultGroup](),
             entries: \.entries,
-            onSelect: { _ in },
+            onSelect: { _ in /* never called here */ },
             groupTitle: { _ in Text(verbatim: "") },
             result: { SettingsSearchResultText(title: Text(verbatim: $0.id)) },
             groupIcon: { _ in EmptyView() },
@@ -135,7 +135,7 @@ struct SettingsSearchViewsTests {
 
     @Test("The search field holds the app's words")
     func fieldWords() {
-        let keyboard = SettingsSearchKeyboard(isSearching: false, previousLabel: "Up", nextLabel: "Down", move: { _ in }, submit: {})
+        let keyboard = SettingsSearchKeyboard(isSearching: false, previousLabel: "Up", nextLabel: "Down", move: { _ in /* never called here */ }, submit: { /* never pressed here */ })
         let field = SettingsSearchField(text: .constant(""), placement: .sidebar, prompt: "Look", findLabel: "Seek", keyboard: keyboard)
         #expect(field.prompt == "Look")
         #expect(field.findLabel == "Seek")
@@ -145,7 +145,7 @@ struct SettingsSearchViewsTests {
 
     @Test("A split view takes the search field with or without the arrow keys", arguments: [false, true])
     func fieldDraws(withKeyboard: Bool) {
-        let keyboard = SettingsSearchKeyboard(isSearching: true, previousLabel: "Up", nextLabel: "Down", move: { _ in }, submit: {})
+        let keyboard = SettingsSearchKeyboard(isSearching: true, previousLabel: "Up", nextLabel: "Down", move: { _ in /* never called here */ }, submit: { /* never pressed here */ })
         let view = NavigationSplitView {
             Text(verbatim: "Sidebar")
         } detail: {

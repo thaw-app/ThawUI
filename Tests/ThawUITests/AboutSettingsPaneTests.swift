@@ -74,8 +74,8 @@ struct AboutSettingsPaneTests {
                 updates: updates,
                 copyright: Text(verbatim: "Copyright"),
                 strings: Self.strings,
-                showWhatsNew: {},
-                showCredits: {}
+                showWhatsNew: { /* never pressed here */ },
+                showCredits: { /* never pressed here */ }
             )
             .frame(width: Self.size.width, height: Self.size.height),
             size: Self.size
@@ -95,7 +95,9 @@ struct AboutSettingsPaneTests {
 
     @Test("The same page draws the same pixels twice, so a difference below means something")
     func drawingIsRepeatable() async throws {
-        #expect(try await drawnPixels(pane()) == drawnPixels(pane()))
+        let first = try await drawnPixels(pane())
+        let second = try await drawnPixels(pane())
+        #expect(first == second)
     }
 
     // MARK: Details
@@ -186,7 +188,7 @@ struct AboutSettingsPaneTests {
     @Test("With no items the actions button does not show")
     func moreButtonIsOptional() async throws {
         let empty = try await drawnPixels(pane(moreMenu: [[]]))
-        let item = AboutMenuItem("Item", systemImage: "star") {}
+        let item = AboutMenuItem("Item", systemImage: "star") { /* never pressed here */ }
         let filled = try await drawnPixels(pane(moreMenu: [[item]]))
         #expect(empty != filled)
     }
@@ -195,9 +197,9 @@ struct AboutSettingsPaneTests {
 
     @Test("Groups are separated, and an empty group leaves no separator")
     func menuGroups() {
-        let first = AboutMenuItem("One", systemImage: "star") {}
+        let first = AboutMenuItem("One", systemImage: "star") { /* never pressed here */ }
         let second = AboutMenuItem("Two", systemImage: "globe", url: Self.url)
-        let menu = AboutMoreMenu.make(groups: [[], [first], [], [second]]) { _ in }
+        let menu = AboutMoreMenu.make(groups: [[], [first], [], [second]]) { _ in /* never called here */ }
         #expect(menu.items.map(\.title) == ["One", "", "Two"])
         #expect(menu.items.map(\.isSeparatorItem) == [false, true, false])
         #expect(menu.items[0].image != nil)

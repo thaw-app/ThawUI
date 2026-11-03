@@ -45,6 +45,6 @@ private struct KeyboardListSample: View {
                     .thawFocusRing(row == 0, in: RoundedRectangle(cornerRadius: ThawRadius.row))
             }
         }
-        .thawKeyboardList(isFocused: $isFocused) { _ in }
+        .thawKeyboardList(isFocused: $isFocused) { _ in /* never called here */ }
     }
 }
