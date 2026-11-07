@@ -9,7 +9,7 @@ import AppKit
 import SwiftUI
 
 /// A capsule under the menu bar confirming actions that otherwise succeed invisibly. Its single reused panel
-/// never takes key from the app in front, never animates (Reduce Motion) and never stacks under a held hotkey.
+/// never takes key from the app in front, appears at once, fades out briefly and never stacks under a held hotkey.
 @MainActor
 public enum ThawHUD {
     /// How tall the menu bar is on a screen. An app that can read it more exactly sets this.
@@ -26,6 +26,12 @@ public enum ThawHUD {
     /// Cancelled and replaced when a second HUD arrives before this one expires.
     private static var dismissal: Task<Void, Never>?
 
+    /// The fade-out, kept under Reduce Motion since only opacity changes.
+    public static let fadeDuration: TimeInterval = 0.15
+
+    /// Counts shows, so a fade that ends after a newer show leaves that one up.
+    private static var showCount = 0
+
     /// Shows a confirmation capsule and dismisses it after displayDuration.
     ///
     /// The text says what just happened, best in one to four words; give a sentence a longer duration. The capsule truncates
@@ -34,6 +40,7 @@ public enum ThawHUD {
     public static func show(
         symbol: String? = nil,
         text: LocalizedStringResource,
+        tint: Color? = nil,
         on screen: NSScreen? = nil,
         placement: ThawHUDPlacement = .center,
         displayDuration: Duration = ThawHUD.duration
@@ -46,8 +53,14 @@ public enum ThawHUD {
 
         let panel = panel ?? makePanel()
         Self.panel = panel
+        showCount += 1
+        // A fade still running from the previous capsule ends now, at full opacity.
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0
+            panel.animator().alphaValue = 1
+        }
 
-        let host = NSHostingView(rootView: ThawHUDCard(symbol: symbol, text: text))
+        let host = NSHostingView(rootView: ThawHUDCard(symbol: symbol, text: text, tint: tint))
         panel.contentView = host
         let frame = placement.frame(fitting: host.fittingSize, screenFrame: screen.frame, menuBarHeight: menuBarHeight(screen))
         panel.setFrame(frame, display: true)
@@ -57,13 +70,29 @@ public enum ThawHUD {
         dismissal = Task {
             try? await Task.sleep(for: displayDuration)
             guard !Task.isCancelled else { return }
-            dismiss()
+            fadeOut()
+        }
+    }
+
+    private static func fadeOut() {
+        guard let panel else { return }
+        let shown = showCount
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = fadeDuration
+            context.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            panel.animator().alphaValue = 0
+        } completionHandler: {
+            MainActor.assumeIsolated {
+                guard shown == showCount else { return }
+                dismiss()
+            }
         }
     }
 
     /// Idempotent: a cancelled dismissal that raced a second show finds nothing to close.
     public static func dismiss() {
         panel?.orderOut(nil)
+        panel?.alphaValue = 1
         panel = nil
     }
 
@@ -94,13 +123,14 @@ public enum ThawHUD {
 private struct ThawHUDCard: View {
     let symbol: String?
     let text: LocalizedStringResource
+    let tint: Color?
 
     var body: some View {
         HStack(spacing: ThawSpacing.base) {
             if let symbol {
                 Image(systemName: symbol)
                     .font(ThawType.symbol.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(tint.map(AnyShapeStyle.init) ?? AnyShapeStyle(.secondary))
             }
             Text(text)
                 .font(ThawType.heading)
