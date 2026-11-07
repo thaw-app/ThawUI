@@ -68,6 +68,52 @@ struct ThawCapsuleSegmentsTests {
         #expect(Segments.swellDuration == .milliseconds(220))
     }
 
+    @Test("The lens bends nothing at rest and magnifies, refracts and fringes mid-move")
+    func lensOptics() {
+        let rest = LensOptics.at(strength: 0)
+        #expect(rest == LensOptics(magnification: 1, refraction: 0, chroma: 0))
+        let moving = LensOptics.at(strength: 1)
+        #expect(moving.magnification > 1.1 && moving.magnification < 1.2)
+        #expect(moving.refraction > 0 && moving.chroma > 0)
+    }
+
+    /// ImageRenderer runs layer shaders; an offscreen window's cached display skips them.
+    @MainActor
+    private func renderStripes(optics: LensOptics?) throws -> Data {
+        let stripes = HStack(spacing: 2) {
+            ForEach(0 ..< 25, id: \.self) { index in
+                Rectangle().fill(index.isMultiple(of: 2) ? Color.red : Color.blue).frame(width: 6)
+            }
+        }
+        .frame(width: 200, height: 40)
+        .background(Color.white)
+        let lens = CGRect(x: 40, y: 5, width: 100, height: 30)
+        let view = stripes.layerEffect(
+            (optics ?? .at(strength: 0)).shader(lens: lens),
+            maxSampleOffset: CGSize(width: 48, height: 24),
+            isEnabled: optics != nil
+        )
+        let image = try #require(ImageRenderer(content: view).cgImage)
+        return try #require(NSBitmapImageRep(cgImage: image).representation(using: .png, properties: [:]))
+    }
+
+    @MainActor
+    @Test("The lens shader loads from the module and bends the layer only when it has strength")
+    func lensShaderBends() throws {
+        let plain = try renderStripes(optics: nil)
+        #expect(try renderStripes(optics: .at(strength: 0)) == plain)
+        #expect(try renderStripes(optics: .at(strength: 1)) != plain)
+    }
+
+    @Test("The swollen lens fits inside the effect's drawing area")
+    func lensFitsOverhang() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        let segment = CGRect(x: 0, y: 0, width: 120, height: 30)
+        let moving = Segments.lensFrame(around: segment, moving: true)
+        #expect((moving.height - segment.height) / 2 <= Segments.lensOverhang)
+        #expect((moving.width - segment.width) / 2 <= Segments.lensOverhang)
+    }
+
     @Test("Reduce Motion never swells the lens")
     func reduceMotionNoSwell() {
         typealias Segments = ThawCapsuleSegments<Int>

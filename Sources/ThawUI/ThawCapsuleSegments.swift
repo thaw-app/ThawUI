@@ -82,13 +82,19 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isMoving = false
     @State private var moveCount = 0
+    @State private var segmentFrames: [Value: CGRect] = [:]
+
+    /// Room around the control for the swollen lens, so the effect isn't clipped to the track.
+    static var lensOverhang: CGFloat {
+        12
+    }
 
     /// How long the lens stays swollen after the last selection change before it settles.
     static var swellDuration: Duration {
         .milliseconds(220)
     }
 
-    /// The clear glass lens needs transparency to read; without it, or with more contrast, the flat fill stands alone.
+    /// The lens needs transparency to read; without it, or with more contrast, the flat fill stands alone.
     static func showsLens(reduceTransparency: Bool, increasedContrast: Bool) -> Bool {
         !reduceTransparency && !increasedContrast
     }
@@ -119,6 +125,8 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     }
 
     var body: some View {
+        let lensShown = Self.showsLens(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased)
+        let swollen = Self.swells(moving: isMoving, reduceMotion: reduceMotion)
         HStack(spacing: sizing.spacing) {
             ForEach(segments, id: \.value) { segment in
                 segmentButton(segment)
@@ -126,21 +134,15 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         }
         .padding(sizing.inset)
         .frame(maxWidth: sizing.maxWidth)
-        // Not glass: the lens drawn over the labels has to sample the track, and glass can't sample glass.
+        // Material, not glass: the lens shader samples the rendered layer, and glass isn't in it.
         .thawGlass(.track, in: Capsule(style: .continuous))
-        .overlayPreferenceValue(SegmentAnchorsKey.self) { anchors in
-            GeometryReader { proxy in
-                if Self.showsLens(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased), let anchor = anchors[AnyHashable(selection)] {
-                    let frame = Self.lensFrame(around: proxy[anchor], moving: Self.swells(moving: isMoving, reduceMotion: reduceMotion))
-                    Color.clear
-                        .glassEffect(.clear.interactive(), in: Capsule(style: .continuous))
-                        .frame(width: frame.width, height: frame.height)
-                        .position(x: frame.midX, y: frame.midY)
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-            }
-        }
+        .coordinateSpace(.named(SegmentSpace.name))
+        .modifier(LiquidLensEffect(
+            lens: segmentFrames[selection].map { Self.lensFrame(around: $0, moving: swollen) } ?? .zero,
+            strength: swollen ? 1 : 0,
+            overhang: Self.lensOverhang,
+            isActive: lensShown && segmentFrames[selection] != nil
+        ))
         // The fill and the lens slide on the selection spring; Reduce Motion moves them without it.
         .thawAnimation(ThawMotion.selection, value: selection)
         .onChange(of: selection) { swell() }
@@ -183,7 +185,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
                         .matchedGeometryEffect(id: "selection", in: selectionSpace)
                 }
             }
-            .anchorPreference(key: SegmentAnchorsKey.self, value: .bounds) { [AnyHashable(segment.value): $0] }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .named(SegmentSpace.name)) } action: { segmentFrames[segment.value] = $0 }
             .contentShape([.interaction, .focusEffect], shape)
         }
         .buttonStyle(.plain)
@@ -193,14 +195,93 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     }
 }
 
-/// Each segment's bounds, so the lens can sit over the selected one.
-private struct SegmentAnchorsKey: PreferenceKey {
-    static var defaultValue: [AnyHashable: Anchor<CGRect>] {
-        [:]
+private enum SegmentSpace {
+    static let name = "ThawCapsuleSegments"
+}
+
+/// How strongly the lens bends what's under it, from 0 (a pass-through) to 1 (mid-move).
+struct LensOptics: Equatable {
+    var magnification: Double
+    var refraction: Double
+    var chroma: Double
+
+    static func at(strength: Double) -> LensOptics {
+        LensOptics(magnification: 1 + 0.15 * strength, refraction: 0.22 * strength, chroma: 1.5 * strength)
     }
 
-    static func reduce(value: inout [AnyHashable: Anchor<CGRect>], nextValue: () -> [AnyHashable: Anchor<CGRect>]) {
-        value.merge(nextValue()) { _, new in new }
+    private static let library = ShaderLibrary.bundle(.module)
+
+    /// The liquidLens shader (Shaders/LiquidLens.metal) for a capsule lens at rect, in the layer's coordinates.
+    func shader(lens rect: CGRect) -> Shader {
+        Self.library.liquidLens(
+            .float4(rect.minX, rect.minY, rect.width, rect.height),
+            .float(min(rect.width, rect.height) / 2),
+            .float(magnification),
+            .float(refraction),
+            .float(chroma)
+        )
+    }
+}
+
+/// Bends the control under the selection lens with the liquidLens shader and draws a glass rim over it.
+/// Animatable so the lens rect and strength follow the selection spring, and redirect when interrupted.
+private struct LiquidLensEffect: ViewModifier, Animatable {
+    var lens: CGRect
+    var strength: Double
+    let overhang: CGFloat
+    let isActive: Bool
+
+    nonisolated var animatableData: AnimatablePair<AnimatablePair<CGPoint.AnimatableData, CGSize.AnimatableData>, Double> {
+        get { AnimatablePair(AnimatablePair(lens.origin.animatableData, lens.size.animatableData), strength) }
+        set {
+            lens.origin.animatableData = newValue.first.first
+            lens.size.animatableData = newValue.first.second
+            strength = newValue.second
+        }
+    }
+
+    func body(content: Content) -> some View {
+        let optics = LensOptics.at(strength: strength)
+        let rect = lens.offsetBy(dx: overhang, dy: overhang)
+        // One path whether or not the lens shows, so the control keeps its identity when it turns on or off.
+        content
+            // Draw into a larger layer so the swollen lens has room outside the track, then give the space back.
+            .padding(overhang)
+            .layerEffect(
+                optics.shader(lens: rect),
+                maxSampleOffset: CGSize(width: overhang * 4, height: overhang * 2),
+                isEnabled: isActive && strength > 0.001
+            )
+            .overlay(alignment: .topLeading) {
+                if isActive {
+                    LensRim(strength: strength)
+                        .frame(width: rect.width, height: rect.height)
+                        .offset(x: rect.minX, y: rect.minY)
+                }
+            }
+            .padding(-overhang)
+    }
+}
+
+/// The lens's edge: a highlight brighter along the top, and a faint inner shadow. Faint at rest, clear mid-move.
+private struct LensRim: View {
+    let strength: Double
+
+    var body: some View {
+        let shape = Capsule(style: .continuous)
+        ZStack {
+            shape
+                .stroke(Color.black.opacity(0.12), lineWidth: 2)
+                .blur(radius: 1.5)
+                .clipShape(shape)
+            shape.strokeBorder(
+                LinearGradient(colors: [.white.opacity(0.75), .white.opacity(0.1), .white.opacity(0.3)], startPoint: .top, endPoint: .bottom),
+                lineWidth: 0.75
+            )
+        }
+        .opacity(0.3 + 0.7 * strength)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
