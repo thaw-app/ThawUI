@@ -42,6 +42,9 @@ public enum ThawType {
     /// with it; call sites keep their weight and imageScale.
     public static let symbol = Font.system(.body)
 
+    /// A sidebar row's icon. .title3 is 15pt at the default size and grows with the row's title.
+    public static let sidebarSymbol = Font.system(.title3)
+
     /// A large SF Symbol above an empty state's message. .title (22pt); .title2 (17pt) would lose
     /// the "this is a placeholder, not a row" reading.
     public static let symbolLarge = Font.system(.title)

@@ -206,7 +206,7 @@ private struct ThawSidebarPageRow<Icon: View>: View {
                     .lineLimit(1)
             } icon: {
                 icon
-                    .font(.system(size: 15, weight: .regular))
+                    .font(ThawType.sidebarSymbol.weight(.regular))
                     .foregroundStyle(colors.icon)
                     .opacity(isDimmed ? ThawInk.disabledOpacity : 1)
                     .frame(width: Self.iconBox, height: Self.iconBox)
