@@ -26,6 +26,15 @@ public enum ThawHUD {
     /// Cancelled and replaced when a second HUD arrives before this one expires.
     private static var dismissal: Task<Void, Never>?
 
+    /// Reads a capsule's text to VoiceOver, which can't reach the click-through panel. Tests replace it.
+    public static var announce: (String) -> Void = { text in
+        NSAccessibility.post(
+            element: NSApp as Any,
+            notification: .announcementRequested,
+            userInfo: [.announcement: text, .priority: NSAccessibilityPriorityLevel.high.rawValue]
+        )
+    }
+
     /// The fade-out, kept under Reduce Motion since only opacity changes.
     public static let fadeDuration: TimeInterval = 0.15
 
@@ -66,6 +75,7 @@ public enum ThawHUD {
         panel.setFrame(frame, display: true)
         // A confirmation often arrives while another app is in front.
         panel.orderFrontRegardless()
+        announce(String(localized: text))
 
         dismissal = Task {
             try? await Task.sleep(for: displayDuration)
@@ -143,8 +153,7 @@ private struct ThawHUDCard: View {
         // The width stays free so text wider than the screen truncates inside the capsule.
         .fixedSize(horizontal: false, vertical: true)
         .thawGlass(.panel, in: Capsule(style: .continuous))
-        // The panel is non-activating and ignores the mouse; VoiceOver reaches
-        // the same state through the settings pane and the menu bar itself.
+        // The panel is non-activating and ignores the mouse; show() announces the text instead.
         .accessibilityHidden(true)
     }
 }

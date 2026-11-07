@@ -88,4 +88,18 @@ struct ThawHUDTests {
         ThawHUD.dismiss()
         #expect(!panel.isVisible)
     }
+
+    @Test("Showing a capsule asks VoiceOver to read its text, since the capsule itself is hidden from it")
+    func announcesItsText() throws {
+        let screen = try #require(NSScreen.screens.first)
+        let original = ThawHUD.announce
+        defer { ThawHUD.announce = original }
+        var announced: [String] = []
+        ThawHUD.announce = { announced.append($0) }
+
+        ThawHUD.show(symbol: "checkmark", text: "Moved to Hidden", on: screen)
+        ThawHUD.dismiss()
+
+        #expect(announced == ["Moved to Hidden"])
+    }
 }
