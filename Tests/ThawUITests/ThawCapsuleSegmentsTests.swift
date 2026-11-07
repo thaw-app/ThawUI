@@ -135,10 +135,12 @@ struct ThawCapsuleSegmentsTests {
         frame.first.first = 100
         frame.first.second = 96
         frame.second.first = 35
-        frame.second.second = 0.5
+        frame.second.second.first = 0.5
+        frame.second.second.second = -1
         effect.animatableData = frame
         #expect(effect.lens == CGRect(x: 52, y: -2.5, width: 96, height: 35))
         #expect(effect.strength == 0.5)
+        #expect(effect.tilt == -1)
         #expect(effect.animatableData == frame)
     }
 
@@ -153,6 +155,20 @@ struct ThawCapsuleSegmentsTests {
             #expect((swollen.height - segment.height) / 2 <= overhang)
             #expect((swollen.width - segment.width) / 2 <= overhang)
         }
+    }
+
+    @Test("The highlight leans toward the direction of travel and settles at the top left")
+    func highlightTilt() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        #expect(Segments.travelTilt(from: 40, to: 120) == 1)
+        #expect(Segments.travelTilt(from: 120, to: 40) == -1)
+        #expect(Segments.travelTilt(from: 40, to: 40) == 0)
+        #expect(Segments.travelTilt(from: nil, to: 40) == 0)
+        #expect(Segments.travelTilt(velocity: 300) == 0.5)
+        #expect(Segments.travelTilt(velocity: -2000) == -1)
+        #expect(LensRim.highlightStart(tilt: 0) == UnitPoint(x: 0.25, y: 0))
+        #expect(LensRim.highlightStart(tilt: 1) == UnitPoint(x: 0.5, y: 0))
+        #expect(LensRim.highlightStart(tilt: -3) == UnitPoint(x: 0, y: 0))
     }
 
     @Test("Reduce Motion never swells the lens")

@@ -8,8 +8,8 @@ static float roundedRectDistance(float2 p, float2 halfSize, float radius) {
     return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
 }
 
-// Bends the layer under a rounded-rect lens: magnified in the middle, pulled outward near the rim,
-// with the red and blue channels split along the bend for a chromatic fringe, and frosted: slightly blurred
+// Bends the layer under a rounded-rect lens: magnified in the middle, pulled outward near the rim and
+// squeezed hard in a 4 pt band at the edge, with the red and blue channels split mostly in that band, and frosted: slightly blurred
 // and brightened, as the system lens is.
 // lensRect is x, y, width, height in the layer's coordinates. Zero magnification change, refraction,
 // chroma and frost leave the layer untouched.
@@ -32,9 +32,13 @@ static float roundedRectDistance(float2 p, float2 halfSize, float radius) {
     float rim = clamp(1.0 + distance / band, 0.0, 1.0);
     rim = rim * rim;
 
-    float2 bent = p / max(magnification, 0.01) * (1.0 + refraction * rim);
+    // The edge band: the last 4 pt before the rim, where content is squeezed hard and the colours split.
+    float edge = clamp(1.0 + distance / 4.0, 0.0, 1.0);
+    edge = pow(edge, 1.5);
+
+    float2 bent = p / max(magnification, 0.01) * (1.0 + refraction * rim + 1.6 * refraction * edge);
     float2 direction = length(p) > 0.001 ? normalize(p) : float2(0.0);
-    float2 fringe = direction * chroma * rim;
+    float2 fringe = direction * chroma * (0.3 * rim + edge);
 
     float2 source = centre + bent;
     half4 lensed = layer.sample(source);
