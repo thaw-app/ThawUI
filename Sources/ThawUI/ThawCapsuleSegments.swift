@@ -286,9 +286,12 @@ struct LensOptics: Equatable {
         LensOptics(magnification: 1 + 0.1 * strength, refraction: 0.22 * strength, chroma: 1.2 * strength, frost: strength)
     }
 
-    private static let library = ShaderLibrary.bundle(.module)
+    /// The shaders precompiled from Shaders/ by scripts/build-shaders.sh.
+    private static let library = Bundle.module.url(forResource: "ThawUI", withExtension: "metallib")
+        .map { ShaderLibrary(url: $0) } ?? .bundle(.module)
 
-    /// The liquidLens shader (Shaders/LiquidLens.metal) for a capsule lens at rect, in the layer's coordinates.
+    /// The liquidLens shader (Shaders/LiquidLens.metal, at the package root) for a capsule lens at rect,
+    /// in the layer's coordinates.
     func shader(lens rect: CGRect) -> Shader {
         Self.library.liquidLens(
             .float4(rect.minX, rect.minY, rect.width, rect.height),

@@ -14,7 +14,9 @@ let package = Package(
     targets: [
         .target(
             name: "ThawUI",
-            dependencies: ["CompactSlider"]
+            dependencies: ["CompactSlider"],
+            // Built from Shaders/ by scripts/build-shaders.sh, so building ThawUI doesn't need the Metal Toolchain.
+            resources: [.copy("Resources/ThawUI.metallib")]
         ),
         .testTarget(
             name: "ThawUITests",
