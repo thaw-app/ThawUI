@@ -76,12 +76,22 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     let segments: [ThawSegment<Value>]
     let sizing: Sizing
 
+    @Namespace private var selectionSpace
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var contrast
+
+    static func indicatorSurface(reduceTransparency: Bool, increasedContrast: Bool) -> SegmentIndicatorSurface {
+        reduceTransparency || increasedContrast ? .flat : .glass
+    }
+
     var body: some View {
         HStack(spacing: sizing.spacing) {
             ForEach(segments, id: \.value) { segment in
                 segmentButton(segment)
             }
         }
+        // One indicator moves between segments; Reduce Motion moves it without the slide.
+        .thawAnimation(ThawMotion.selection, value: selection)
         .padding(sizing.inset)
         .frame(maxWidth: sizing.maxWidth)
         .thawGlass(.control, in: Capsule(style: .continuous))
@@ -118,13 +128,46 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
                 minHeight: sizing.minHeight,
                 maxHeight: sizing.maxHeight
             )
-            .thawSelectedFill(isSelected, in: shape)
+            .background {
+                if isSelected {
+                    SegmentSelectionIndicator(
+                        surface: Self.indicatorSurface(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased),
+                        shape: shape
+                    )
+                    .matchedGeometryEffect(id: "selection", in: selectionSpace)
+                }
+            }
             .contentShape([.interaction, .focusEffect], shape)
         }
         .buttonStyle(.plain)
         .thawSelectionCue(isSelected: isSelected, in: shape)
         .modifier(SegmentHelp(text: segment.help))
         .accessibilityLabel(Text(segment.title))
+    }
+}
+
+/// What the sliding selection is drawn with.
+enum SegmentIndicatorSurface: Equatable {
+    /// A clear glass lens under the flat selection fill.
+    case glass
+    /// The flat fill alone, which stays legible without transparency or with more contrast.
+    case flat
+}
+
+/// The selected segment's fill. It keeps ThawGlass's flat selection on top, so the label stays legible,
+/// with a clear glass lens under it while transparency and contrast allow.
+private struct SegmentSelectionIndicator<S: InsettableShape>: View {
+    let surface: SegmentIndicatorSurface
+    let shape: S
+
+    var body: some View {
+        let fill = Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
+        switch surface {
+        case .glass:
+            fill.background(Color.clear.glassEffect(.clear.interactive(), in: shape))
+        case .flat:
+            fill
+        }
     }
 }
 

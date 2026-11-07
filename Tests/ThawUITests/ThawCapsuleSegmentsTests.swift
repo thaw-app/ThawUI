@@ -5,6 +5,7 @@
 //  Copyright (Thaw) © 2026 Toni Förster
 //  Licensed under the GNU GPLv3
 
+import SwiftUI
 import Testing
 @testable import ThawUI
 
@@ -40,5 +41,28 @@ struct ThawCapsuleSegmentsTests {
         #expect(!symbols.showsTitles)
         #expect(symbols.minWidth == 28)
         #expect(symbols.horizontalPadding < Sizing.fitted(showsTitles: true).horizontalPadding)
+    }
+
+    @Test("The selection slides on a short spring with a slight bounce")
+    func selectionMotion() {
+        #expect(ThawMotion.selection == .spring(response: 0.3, dampingFraction: 0.78))
+    }
+
+    @Test("The sliding selection is a glass lens only when transparency and contrast allow it")
+    func indicatorSurface() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        #expect(Segments.indicatorSurface(reduceTransparency: false, increasedContrast: false) == .glass)
+        #expect(Segments.indicatorSurface(reduceTransparency: true, increasedContrast: false) == .flat)
+        #expect(Segments.indicatorSurface(reduceTransparency: false, increasedContrast: true) == .flat)
+    }
+
+    @MainActor
+    @Test("Changing the selection moves the one selection indicator to the new segment")
+    func indicatorFollowsSelection() throws {
+        let picker = ThawPillPicker(selection: .constant(1), options: [.init(1, title: "One"), .init(2, title: "Two"), .init(3, title: "Three")])
+        let first = try OffscreenRender(picker, size: CGSize(width: 260, height: 40)).pixels()
+        let moved = ThawPillPicker(selection: .constant(3), options: [.init(1, title: "One"), .init(2, title: "Two"), .init(3, title: "Three")])
+        let last = try OffscreenRender(moved, size: CGSize(width: 260, height: 40)).pixels()
+        #expect(first != last)
     }
 }
