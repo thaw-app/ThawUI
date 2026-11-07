@@ -17,11 +17,12 @@ public struct ThawTogglePills<Content: View>: View {
     }
 
     public var body: some View {
-        HStack(spacing: ThawTogglePillStyle.Metrics.spacing) {
+        let sizing = ThawTogglePillStyle.sizing
+        HStack(spacing: sizing.spacing) {
             content
         }
         .toggleStyle(ThawTogglePillStyle())
-        .padding(ThawTogglePillStyle.Metrics.inset)
+        .padding(sizing.inset)
         .thawGlass(.control, in: Capsule(style: .continuous))
         .accessibilityElement(children: .contain)
     }
@@ -29,14 +30,7 @@ public struct ThawTogglePills<Content: View>: View {
 
 /// One switch drawn as a ThawPillPicker segment: filled and heavier while on.
 struct ThawTogglePillStyle: ToggleStyle {
-    /// The capsule's measurements, the ones ThawPillPicker used before it became the system's segmented control.
-    enum Metrics {
-        static let spacing = ThawSpacing.hairline
-        static let inset = ThawSpacing.capsuleInset
-        static let horizontalPadding = ThawSpacing.row
-        static let minWidth: CGFloat = 28
-        static let minHeight: CGFloat = 24
-    }
+    static let sizing = ThawCapsuleSegments<Int>.Sizing.fitted(showsTitles: true)
 
     func makeBody(configuration: Configuration) -> some View {
         let isOn = configuration.isOn
@@ -49,8 +43,8 @@ struct ThawTogglePillStyle: ToggleStyle {
                 .foregroundStyle(isOn ? AnyShapeStyle(.primary) : AnyShapeStyle(.secondary))
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
-                .padding(.horizontal, Metrics.horizontalPadding)
-                .frame(minWidth: Metrics.minWidth, minHeight: Metrics.minHeight)
+                .padding(.horizontal, Self.sizing.horizontalPadding)
+                .frame(minWidth: Self.sizing.minWidth, minHeight: Self.sizing.minHeight)
                 .thawSelectedFill(isOn, in: shape)
                 .contentShape(shape)
         }

@@ -21,6 +21,8 @@ public enum ThawMotion {
     public static let interactive: Animation = .spring(response: 0.25, dampingFraction: 0.8)
     /// Layout finding its place after a change.
     public static let settle: Animation = .smooth(duration: 0.3)
+    /// A segmented choice's selection sliding to the clicked segment, with a slight bounce.
+    public static let selection: Animation = .spring(response: 0.3, dampingFraction: 0.78)
     /// Decoration easing in once, such as the search field's beam.
     public static let reveal: Animation = .easeOut(duration: 0.6)
     /// What a fade becomes under Reduce Motion: short, with nothing moving.

@@ -22,14 +22,14 @@ public struct ThawSegment<Value: Hashable> {
     }
 }
 
-/// The segmented choice ThawPillPicker and ThawTabStrip draw. It is the system's segmented picker, so the
-/// moving glass selection, keyboard, VoiceOver and the accessibility display settings come from macOS.
+/// The glass capsule of segments that ThawPillPicker and ThawTabStrip draw:
+/// one plain button per value, the selected one filled and in a heavier weight.
 struct ThawCapsuleSegments<Value: Hashable>: View {
-    /// How the picker takes up space.
+    /// How the capsule and its segments take up space.
     enum Sizing: Equatable {
         /// Each segment as wide as its label, which may be a symbol alone.
         case fitted(showsTitles: Bool)
-        /// The segments share the width evenly and the picker fills its container.
+        /// The segments share the width evenly and the capsule fills its container.
         case filling
 
         var showsTitles: Bool {
@@ -39,63 +39,134 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
             }
         }
 
+        var spacing: CGFloat {
+            self == .filling ? ThawSpacing.tight : ThawSpacing.hairline
+        }
+
+        var inset: CGFloat {
+            self == .filling ? ThawSpacing.tight : ThawSpacing.capsuleInset
+        }
+
+        var horizontalPadding: CGFloat {
+            switch self {
+            case .filling: ThawSpacing.inset
+            case .fitted(showsTitles: true): ThawSpacing.row
+            case .fitted(showsTitles: false): ThawSpacing.compact
+            }
+        }
+
+        var minWidth: CGFloat? {
+            self == .filling ? nil : 28
+        }
+
         var maxWidth: CGFloat? {
             self == .filling ? .infinity : nil
         }
 
-        /// A tab strip stands as tall as the pane's other headers; pills sit in a row at the form's size.
-        var controlSize: ControlSize {
-            self == .filling ? .large : .regular
+        var minHeight: CGFloat {
+            self == .filling ? 30 : 24
         }
-    }
 
-    /// What a segment shows.
-    enum SegmentLabel: Equatable {
-        case title
-        case titleAndSymbol(String)
-        case symbol(String)
+        var maxHeight: CGFloat? {
+            self == .filling ? 30 : nil
+        }
     }
 
     @Binding var selection: Value
     let segments: [ThawSegment<Value>]
     let sizing: Sizing
 
-    /// A segment with no symbol keeps its title even when titles are off, so it never draws empty.
-    static func label(for segment: ThawSegment<Value>, showsTitles: Bool) -> SegmentLabel {
-        switch (segment.systemImage, showsTitles) {
-        case let (symbol?, true): .titleAndSymbol(symbol)
-        case let (symbol?, false): .symbol(symbol)
-        case (nil, _): .title
-        }
+    @Namespace private var selectionSpace
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var contrast
+
+    static func indicatorSurface(reduceTransparency: Bool, increasedContrast: Bool) -> SegmentIndicatorSurface {
+        reduceTransparency || increasedContrast ? .flat : .glass
     }
 
     var body: some View {
-        Picker(selection: $selection) {
+        HStack(spacing: sizing.spacing) {
             ForEach(segments, id: \.value) { segment in
-                segmentLabel(segment)
-                    .modifier(SegmentHelp(text: segment.help))
-                    .tag(segment.value)
+                segmentButton(segment)
             }
-        } label: {
-            EmptyView()
         }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .tint(.accentColor)
-        .controlSize(sizing.controlSize)
+        // One indicator moves between segments; Reduce Motion moves it without the slide.
+        .thawAnimation(ThawMotion.selection, value: selection)
+        .padding(sizing.inset)
         .frame(maxWidth: sizing.maxWidth)
+        .thawGlass(.control, in: Capsule(style: .continuous))
+        .accessibilityElement(children: .contain)
     }
 
-    @ViewBuilder
-    private func segmentLabel(_ segment: ThawSegment<Value>) -> some View {
-        switch Self.label(for: segment, showsTitles: sizing.showsTitles) {
-        case .title:
-            Text(segment.title)
-        case let .titleAndSymbol(symbol):
-            Label { Text(segment.title) } icon: { Image(systemName: symbol) }
-        case let .symbol(symbol):
-            Image(systemName: symbol)
-                .accessibilityLabel(Text(segment.title))
+    private func segmentButton(_ segment: ThawSegment<Value>) -> some View {
+        let isSelected = segment.value == selection
+        let shape = Capsule(style: .continuous)
+        // Styled on each part: a section header sets its own text colour over the label's.
+        let style = isSelected ? AnyShapeStyle(.primary) : AnyShapeStyle(ThawInk.supporting)
+        let weight: Font.Weight = isSelected ? .semibold : .regular
+        return Button {
+            selection = segment.value
+        } label: {
+            HStack(spacing: ThawSpacing.tight) {
+                if let systemImage = segment.systemImage {
+                    Image(systemName: systemImage)
+                        .font(ThawType.symbol.weight(weight))
+                        .foregroundStyle(style)
+                }
+                if sizing.showsTitles {
+                    Text(segment.title)
+                        .font(ThawType.body.weight(weight))
+                        .foregroundStyle(style)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                }
+            }
+            .padding(.horizontal, sizing.horizontalPadding)
+            .frame(
+                minWidth: sizing.minWidth,
+                maxWidth: sizing.maxWidth,
+                minHeight: sizing.minHeight,
+                maxHeight: sizing.maxHeight
+            )
+            .background {
+                if isSelected {
+                    SegmentSelectionIndicator(
+                        surface: Self.indicatorSurface(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased),
+                        shape: shape
+                    )
+                    .matchedGeometryEffect(id: "selection", in: selectionSpace)
+                }
+            }
+            .contentShape([.interaction, .focusEffect], shape)
+        }
+        .buttonStyle(.plain)
+        .thawSelectionCue(isSelected: isSelected, in: shape)
+        .modifier(SegmentHelp(text: segment.help))
+        .accessibilityLabel(Text(segment.title))
+    }
+}
+
+/// What the sliding selection is drawn with.
+enum SegmentIndicatorSurface: Equatable {
+    /// A clear glass lens under the flat selection fill.
+    case glass
+    /// The flat fill alone, which stays legible without transparency or with more contrast.
+    case flat
+}
+
+/// The selected segment's fill. It keeps ThawGlass's flat selection on top, so the label stays legible,
+/// with a clear glass lens under it while transparency and contrast allow.
+private struct SegmentSelectionIndicator<S: InsettableShape>: View {
+    let surface: SegmentIndicatorSurface
+    let shape: S
+
+    var body: some View {
+        let fill = Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
+        switch surface {
+        case .glass:
+            fill.background(Color.clear.glassEffect(.clear.interactive(), in: shape))
+        case .flat:
+            fill
         }
     }
 }
