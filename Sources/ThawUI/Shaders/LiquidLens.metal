@@ -9,11 +9,13 @@ static float roundedRectDistance(float2 p, float2 halfSize, float radius) {
 }
 
 // Bends the layer under a rounded-rect lens: magnified in the middle, pulled outward near the rim,
-// with the red and blue channels split along the bend for a chromatic fringe.
-// lensRect is x, y, width, height in the layer's coordinates. Zero magnification change, refraction
-// and chroma leave the layer untouched.
+// with the red and blue channels split along the bend for a chromatic fringe, and frosted: slightly blurred
+// and brightened, as the system lens is.
+// lensRect is x, y, width, height in the layer's coordinates. Zero magnification change, refraction,
+// chroma and frost leave the layer untouched.
 [[ stitchable ]] half4 liquidLens(float2 position, SwiftUI::Layer layer, float4 lensRect,
-                                  float cornerRadius, float magnification, float refraction, float chroma) {
+                                  float cornerRadius, float magnification, float refraction, float chroma,
+                                  float frost) {
     float2 halfSize = lensRect.zw * 0.5;
     float2 centre = lensRect.xy + halfSize;
     float2 p = position - centre;
@@ -38,6 +40,13 @@ static float roundedRectDistance(float2 p, float2 halfSize, float radius) {
     half4 lensed = layer.sample(source);
     lensed.r = layer.sample(source + fringe).r;
     lensed.b = layer.sample(source - fringe).b;
+
+    // Frost: average a small cross of samples about 1 pt out, then lift toward white.
+    float spread = 1.0 * frost;
+    half4 blurred = (layer.sample(source + float2(spread, 0.0)) + layer.sample(source - float2(spread, 0.0))
+                     + layer.sample(source + float2(0.0, spread)) + layer.sample(source - float2(0.0, spread))) * 0.25h;
+    lensed.rgb = mix(lensed.rgb, blurred.rgb, half(0.4 * frost));
+    lensed.rgb = mix(lensed.rgb, half3(lensed.a), half(0.06 * frost));
 
     // Soft edge over about 1.5 pt so the outline doesn't alias.
     float inside = smoothstep(0.75, -0.75, distance);

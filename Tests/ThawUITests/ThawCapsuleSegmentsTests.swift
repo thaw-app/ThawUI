@@ -48,7 +48,7 @@ struct ThawCapsuleSegmentsTests {
         #expect(ThawMotion.selection == .spring(response: 0.3, dampingFraction: 0.78))
     }
 
-    @Test("A clear glass lens shows over the selection only when transparency and contrast allow it")
+    @Test("The lens shows over the selection only when transparency and contrast allow it")
     func lensVisibility() {
         typealias Segments = ThawCapsuleSegments<Int>
         #expect(Segments.showsLens(reduceTransparency: false, increasedContrast: false))
@@ -56,25 +56,47 @@ struct ThawCapsuleSegmentsTests {
         #expect(!Segments.showsLens(reduceTransparency: false, increasedContrast: true))
     }
 
-    @Test("At rest the lens covers its segment; while moving it swells wider and taller than the track")
+    @Test("At rest the lens covers its segment; pressed or moving it swells wider and past the track")
     func lensFrame() {
         typealias Segments = ThawCapsuleSegments<Int>
-        let segment = CGRect(x: 40, y: 3, width: 80, height: 24)
-        #expect(Segments.lensFrame(around: segment, moving: false) == segment)
-        let moving = Segments.lensFrame(around: segment, moving: true)
-        #expect(moving.width == 96)
-        #expect(moving.height == 35)
-        #expect(moving.midX == segment.midX && moving.midY == segment.midY)
-        #expect(Segments.swellDuration == .milliseconds(220))
+        let track = CGSize(width: 240, height: 38)
+        let segment = CGRect(x: 84, y: 4, width: 80, height: 30)
+        #expect(Segments.lensFrame(around: segment, trackSize: track, swollen: false) == segment)
+        let swollen = Segments.lensFrame(around: segment, trackSize: track, swollen: true)
+        #expect(abs(swollen.width - 94.4) < 0.001)
+        #expect(swollen.height == 48)
+        #expect(swollen.midX == segment.midX && swollen.midY == segment.midY)
     }
 
-    @Test("The lens bends nothing at rest and magnifies, refracts and fringes mid-move")
+    @Test("A scrub centres the lens on the pointer, kept inside the track")
+    func scrubFollowsPointer() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        let track = CGSize(width: 240, height: 38)
+        let segment = CGRect(x: 4, y: 4, width: 80, height: 30)
+        #expect(Segments.lensFrame(around: segment, trackSize: track, swollen: true, pointerX: 130).midX == 130)
+        #expect(Segments.clampedLensX(-50, segmentWidth: 80, trackWidth: 240) == 40)
+        #expect(Segments.clampedLensX(400, segmentWidth: 80, trackWidth: 240) == 200)
+        #expect(Segments.clampedLensX(120, segmentWidth: 80, trackWidth: 240) == 120)
+    }
+
+    @Test("Releasing a scrub picks the segment under the pointer, or the closest one off its ends")
+    func scrubPicksSegment() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        let frames = [1: CGRect(x: 4, y: 4, width: 80, height: 30), 2: CGRect(x: 86, y: 4, width: 80, height: 30), 3: CGRect(x: 168, y: 4, width: 68, height: 30)]
+        #expect(Segments.segment(at: 40, in: frames) == 1)
+        #expect(Segments.segment(at: 120, in: frames) == 2)
+        #expect(Segments.segment(at: 300, in: frames) == 3)
+        #expect(Segments.segment(at: -10, in: frames) == 1)
+        #expect(Segments.segment(at: 10, in: [:]) == nil)
+    }
+
+    @Test("The lens bends nothing at rest and magnifies, refracts, fringes and frosts mid-move")
     func lensOptics() {
         let rest = LensOptics.at(strength: 0)
-        #expect(rest == LensOptics(magnification: 1, refraction: 0, chroma: 0))
+        #expect(rest == LensOptics(magnification: 1, refraction: 0, chroma: 0, frost: 0))
         let moving = LensOptics.at(strength: 1)
-        #expect(moving.magnification > 1.1 && moving.magnification < 1.2)
-        #expect(moving.refraction > 0 && moving.chroma > 0)
+        #expect(moving.magnification > 1.05 && moving.magnification < 1.15)
+        #expect(moving.refraction > 0 && moving.chroma > 0 && moving.frost > 0)
     }
 
     /// ImageRenderer runs layer shaders; an offscreen window's cached display skips them.
@@ -120,21 +142,26 @@ struct ThawCapsuleSegmentsTests {
         #expect(effect.animatableData == frame)
     }
 
-    @Test("The swollen lens fits inside the effect's drawing area")
+    @Test("The swollen lens fits inside the effect's drawing area, however wide the segment")
     func lensFitsOverhang() {
         typealias Segments = ThawCapsuleSegments<Int>
-        let segment = CGRect(x: 0, y: 0, width: 120, height: 30)
-        let moving = Segments.lensFrame(around: segment, moving: true)
-        #expect((moving.height - segment.height) / 2 <= Segments.lensOverhang)
-        #expect((moving.width - segment.width) / 2 <= Segments.lensOverhang)
+        let track = CGSize(width: 640, height: 38)
+        for width in [40.0, 120, 300] {
+            let segment = CGRect(x: 4, y: 4, width: width, height: 30)
+            let swollen = Segments.lensFrame(around: segment, trackSize: track, swollen: true)
+            let overhang = Segments.lensOverhang(widestSegment: width)
+            #expect((swollen.height - segment.height) / 2 <= overhang)
+            #expect((swollen.width - segment.width) / 2 <= overhang)
+        }
     }
 
     @Test("Reduce Motion never swells the lens")
     func reduceMotionNoSwell() {
         typealias Segments = ThawCapsuleSegments<Int>
-        #expect(Segments.swells(moving: true, reduceMotion: false))
-        #expect(!Segments.swells(moving: true, reduceMotion: true))
-        #expect(!Segments.swells(moving: false, reduceMotion: false))
+        #expect(Segments.swells(pressed: true, moving: false, reduceMotion: false))
+        #expect(Segments.swells(pressed: false, moving: true, reduceMotion: false))
+        #expect(!Segments.swells(pressed: true, moving: true, reduceMotion: true))
+        #expect(!Segments.swells(pressed: false, moving: false, reduceMotion: false))
     }
 
     @MainActor

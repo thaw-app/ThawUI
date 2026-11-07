@@ -86,32 +86,68 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     /// The segment the lens is over. Moved under an explicit animation, so the lens slides even when the
     /// caller changes the selection in a transaction that turns implicit animations off.
     @State private var lensTarget: Value?
+    /// Held from mouse-down to release, like the system control: the lens swells on press, not on release.
+    @State private var isPressed = false
+    /// Where a drag across the track has the lens, in the track's coordinates; nil when not scrubbing.
+    @State private var pointerX: CGFloat?
+    @State private var trackSize: CGSize = .zero
 
     /// Room around the control for the swollen lens, so the effect isn't clipped to the track.
-    static var lensOverhang: CGFloat {
-        12
+    /// Wide segments swell further sideways, so the room grows with them.
+    static nonisolated func lensOverhang(widestSegment: CGFloat) -> CGFloat {
+        max(12, (widestSegment * (swollenWidthScale - 1) / 2).rounded(.up) + 2)
+    }
+
+    static nonisolated var swollenWidthScale: CGFloat {
+        1.18
+    }
+
+    /// How far the swollen lens stands above the track, top and bottom together, as the system control does.
+    static nonisolated var swollenHeightGain: CGFloat {
+        10
+    }
+
+    /// A drag shorter than this is a click; the segment's button handles it.
+    static nonisolated var scrubThreshold: CGFloat {
+        3
     }
 
     /// How long the lens stays swollen after the last selection change before it settles.
-    static var swellDuration: Duration {
+    static nonisolated var swellDuration: Duration {
         .milliseconds(220)
     }
 
     /// The lens needs transparency to read; without it, or with more contrast, the flat fill stands alone.
-    static func showsLens(reduceTransparency: Bool, increasedContrast: Bool) -> Bool {
+    static nonisolated func showsLens(reduceTransparency: Bool, increasedContrast: Bool) -> Bool {
         !reduceTransparency && !increasedContrast
     }
 
-    static func swells(moving: Bool, reduceMotion: Bool) -> Bool {
-        moving && !reduceMotion
+    static nonisolated func swells(pressed: Bool, moving: Bool, reduceMotion: Bool) -> Bool {
+        (pressed || moving) && !reduceMotion
     }
 
-    /// The lens over a segment: the segment itself at rest, wider and taller than the track while it moves.
-    static func lensFrame(around segment: CGRect, moving: Bool) -> CGRect {
-        guard moving else { return segment }
-        let width = segment.width * 1.2
-        let height = segment.height + 11
-        return CGRect(x: segment.midX - width / 2, y: segment.midY - height / 2, width: width, height: height)
+    /// The lens over a segment: the segment itself at rest; while pressed or moving, wider and taller than the
+    /// track. A scrub centres it on the pointer, kept within the track.
+    static nonisolated func lensFrame(around segment: CGRect, trackSize: CGSize, swollen: Bool, pointerX: CGFloat? = nil) -> CGRect {
+        let midX = pointerX.map { clampedLensX($0, segmentWidth: segment.width, trackWidth: trackSize.width) } ?? segment.midX
+        let width = swollen ? segment.width * swollenWidthScale : segment.width
+        let height = swollen ? trackSize.height + swollenHeightGain : segment.height
+        return CGRect(x: midX - width / 2, y: segment.midY - height / 2, width: width, height: height)
+    }
+
+    /// The pointer's x, held far enough inside the track that a segment-wide lens stays on it.
+    static nonisolated func clampedLensX(_ x: CGFloat, segmentWidth: CGFloat, trackWidth: CGFloat) -> CGFloat {
+        let low = segmentWidth / 2
+        let high = max(trackWidth - segmentWidth / 2, low)
+        return min(max(x, low), high)
+    }
+
+    /// The segment a scrub ends on: the one under the pointer, else the one whose centre is closest.
+    static nonisolated func segment(at x: CGFloat, in frames: [Value: CGRect]) -> Value? {
+        if let hit = frames.first(where: { $0.value.minX <= x && x <= $0.value.maxX }) {
+            return hit.key
+        }
+        return frames.min { abs($0.value.midX - x) < abs($1.value.midX - x) }?.key
     }
 
     /// Slides the lens to the new selection and swells it, then settles it once no newer change has come in.
@@ -134,10 +170,35 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         }
     }
 
+    /// Press swells the lens in place; dragging scrubs it along the track, and release selects the segment
+    /// under the pointer. A click without a drag leaves the selection to the segment's button.
+    private var scrub: some Gesture {
+        DragGesture(minimumDistance: 0, coordinateSpace: .named(SegmentSpace.name))
+            .onChanged { drag in
+                guard !reduceMotion else { return }
+                if !isPressed {
+                    withAnimation(ThawMotion.selection) { isPressed = true }
+                }
+                if abs(drag.translation.width) > Self.scrubThreshold {
+                    withAnimation(ThawMotion.interactive) { pointerX = drag.location.x }
+                }
+            }
+            .onEnded { drag in
+                if abs(drag.translation.width) > Self.scrubThreshold, let value = Self.segment(at: drag.location.x, in: segmentFrames) {
+                    selection = value
+                }
+                withAnimation(ThawMotion.selection) {
+                    isPressed = false
+                    pointerX = nil
+                }
+            }
+    }
+
     var body: some View {
         let lensShown = Self.showsLens(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased)
-        let swollen = Self.swells(moving: isMoving, reduceMotion: reduceMotion)
+        let swollen = Self.swells(pressed: isPressed, moving: isMoving, reduceMotion: reduceMotion)
         let lensSegment = segmentFrames[lensTarget ?? selection]
+        let overhang = Self.lensOverhang(widestSegment: segmentFrames.values.map(\.width).max() ?? 0)
         HStack(spacing: sizing.spacing) {
             ForEach(segments, id: \.value) { segment in
                 segmentButton(segment)
@@ -147,11 +208,13 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         .frame(maxWidth: sizing.maxWidth)
         // Material, not glass: the lens shader samples the rendered layer, and glass isn't in it.
         .thawGlass(.track, in: Capsule(style: .continuous))
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { trackSize = $0 }
         .coordinateSpace(.named(SegmentSpace.name))
+        .simultaneousGesture(scrub)
         .modifier(LiquidLensEffect(
-            lens: lensSegment.map { Self.lensFrame(around: $0, moving: swollen) } ?? .zero,
+            lens: lensSegment.map { Self.lensFrame(around: $0, trackSize: trackSize, swollen: swollen, pointerX: pointerX) } ?? .zero,
             strength: swollen ? 1 : 0,
-            overhang: Self.lensOverhang,
+            overhang: overhang,
             isActive: lensShown && lensSegment != nil
         ))
         // The fill and the lens slide on the selection spring; Reduce Motion moves them without it.
@@ -216,9 +279,11 @@ struct LensOptics: Equatable {
     var magnification: Double
     var refraction: Double
     var chroma: Double
+    /// Blur and brightening inside the lens, 0 to 1.
+    var frost: Double
 
     static func at(strength: Double) -> LensOptics {
-        LensOptics(magnification: 1 + 0.15 * strength, refraction: 0.22 * strength, chroma: 1.5 * strength)
+        LensOptics(magnification: 1 + 0.1 * strength, refraction: 0.22 * strength, chroma: 1.2 * strength, frost: strength)
     }
 
     private static let library = ShaderLibrary.bundle(.module)
@@ -230,7 +295,8 @@ struct LensOptics: Equatable {
             .float(min(rect.width, rect.height) / 2),
             .float(magnification),
             .float(refraction),
-            .float(chroma)
+            .float(chroma),
+            .float(frost)
         )
     }
 }
@@ -296,7 +362,7 @@ struct LiquidLensEffect: ViewModifier, Animatable {
     }
 }
 
-/// The lens's edge: a highlight brighter along the top, and a faint inner shadow. Faint at rest, clear mid-move.
+/// The lens's edge: a specular highlight from the top left, and a faint inner shadow. Faint at rest, clear mid-move.
 private struct LensRim: View {
     let strength: Double
 
@@ -307,9 +373,14 @@ private struct LensRim: View {
                 .stroke(Color.black.opacity(0.12), lineWidth: 2)
                 .blur(radius: 1.5)
                 .clipShape(shape)
+            // Specular: light from the top left, a dimmer bounce at the bottom right.
             shape.strokeBorder(
-                LinearGradient(colors: [.white.opacity(0.75), .white.opacity(0.1), .white.opacity(0.3)], startPoint: .top, endPoint: .bottom),
-                lineWidth: 0.75
+                LinearGradient(
+                    stops: [.init(color: .white.opacity(0.95), location: 0), .init(color: .white.opacity(0.15), location: 0.45), .init(color: .white.opacity(0.4), location: 1)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                lineWidth: 1
             )
         }
         .opacity(0.3 + 0.7 * strength)
