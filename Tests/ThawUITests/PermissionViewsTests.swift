@@ -92,6 +92,12 @@ struct PermissionViewsTests {
         #expect(NSHostingView(rootView: view).fittingSize.height > 0)
     }
 
+    @Test("The card's control keeps one symbol, an empty circle that becomes a checkmark when granted")
+    func filledSymbol() {
+        #expect(PermissionStatusControl.symbolName(granted: false) == "circle")
+        #expect(PermissionStatusControl.symbolName(granted: true) == "checkmark.circle.fill")
+    }
+
     @Test("The optional badge makes the label taller only when it sits below")
     func badgeBelowIsTaller() {
         let optional = Stub()
