@@ -24,10 +24,13 @@ struct ThawTogglePillsTests {
         return host.fittingSize
     }
 
-    @Test("Sized like a titled pill picker")
+    @Test("Keeps the pill measurements a titled pill picker had")
     func sizing() {
-        let picker = ThawCapsuleSegments<Int>.Sizing.fitted(showsTitles: true)
-        #expect(ThawTogglePillStyle.sizing == picker)
+        typealias Metrics = ThawTogglePillStyle.Metrics
+        #expect(Metrics.spacing == ThawSpacing.hairline)
+        #expect(Metrics.inset == ThawSpacing.capsuleInset)
+        #expect(Metrics.horizontalPadding == ThawSpacing.row)
+        #expect(Metrics.minWidth == 28 && Metrics.minHeight == 24)
     }
 
     @Test("Each switch adds width, on or off, and the capsule is at least a pill tall")
@@ -40,6 +43,6 @@ struct ThawTogglePillsTests {
             Toggle("Second", isOn: .constant(false))
         })
         #expect(two.width > one.width)
-        #expect(one.height >= ThawTogglePillStyle.sizing.minHeight)
+        #expect(one.height >= ThawTogglePillStyle.Metrics.minHeight)
     }
 }

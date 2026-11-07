@@ -22,14 +22,14 @@ public struct ThawSegment<Value: Hashable> {
     }
 }
 
-/// The glass capsule of segments that ThawPillPicker and ThawTabStrip draw:
-/// one plain button per value, the selected one filled and in a heavier weight.
+/// The segmented choice ThawPillPicker and ThawTabStrip draw. It is the system's segmented picker, so the
+/// moving glass selection, keyboard, VoiceOver and the accessibility display settings come from macOS.
 struct ThawCapsuleSegments<Value: Hashable>: View {
-    /// How the capsule and its segments take up space.
+    /// How the picker takes up space.
     enum Sizing: Equatable {
         /// Each segment as wide as its label, which may be a symbol alone.
         case fitted(showsTitles: Bool)
-        /// The segments share the width evenly and the capsule fills its container.
+        /// The segments share the width evenly and the picker fills its container.
         case filling
 
         var showsTitles: Bool {
@@ -39,207 +39,64 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
             }
         }
 
-        var spacing: CGFloat {
-            self == .filling ? ThawSpacing.tight : ThawSpacing.hairline
-        }
-
-        var inset: CGFloat {
-            self == .filling ? ThawSpacing.tight : ThawSpacing.capsuleInset
-        }
-
-        var horizontalPadding: CGFloat {
-            switch self {
-            case .filling: ThawSpacing.inset
-            case .fitted(showsTitles: true): ThawSpacing.row
-            case .fitted(showsTitles: false): ThawSpacing.compact
-            }
-        }
-
-        var minWidth: CGFloat? {
-            self == .filling ? nil : 28
-        }
-
         var maxWidth: CGFloat? {
             self == .filling ? .infinity : nil
         }
 
-        var minHeight: CGFloat {
-            self == .filling ? 30 : 24
+        /// A tab strip stands as tall as the pane's other headers; pills sit in a row at the form's size.
+        var controlSize: ControlSize {
+            self == .filling ? .large : .regular
         }
+    }
 
-        var maxHeight: CGFloat? {
-            self == .filling ? 30 : nil
-        }
+    /// What a segment shows.
+    enum SegmentLabel: Equatable {
+        case title
+        case titleAndSymbol(String)
+        case symbol(String)
     }
 
     @Binding var selection: Value
     let segments: [ThawSegment<Value>]
     let sizing: Sizing
 
-    @Namespace private var selectionSpace
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-    @Environment(\.colorSchemeContrast) private var contrast
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var isLifted = false
-    @State private var liftCount = 0
-
-    /// How long the lens stays lifted after the last selection change before it settles.
-    static var liftDuration: Duration {
-        .milliseconds(200)
-    }
-
-    static func indicatorSurface(reduceTransparency: Bool, increasedContrast: Bool) -> SegmentIndicatorSurface {
-        reduceTransparency || increasedContrast ? .flat : .glass
-    }
-
-    /// While the selection moves, a larger glass lens; at rest, the flat fill. Accessibility settings keep the fill.
-    static func indicatorAppearance(
-        lifted: Bool,
-        reduceTransparency: Bool,
-        increasedContrast: Bool,
-        reduceMotion: Bool
-    ) -> SegmentIndicatorAppearance {
-        let lifts = lifted && !reduceMotion && indicatorSurface(reduceTransparency: reduceTransparency, increasedContrast: increasedContrast) == .glass
-        return lifts ? .lifted : .resting
-    }
-
-    private var appearance: SegmentIndicatorAppearance {
-        Self.indicatorAppearance(
-            lifted: isLifted,
-            reduceTransparency: reduceTransparency,
-            increasedContrast: contrast == .increased,
-            reduceMotion: reduceMotion
-        )
-    }
-
-    /// Lifts the lens for the move, and settles it once no newer change has come in.
-    private func lift() {
-        guard Self.indicatorAppearance(
-            lifted: true,
-            reduceTransparency: reduceTransparency,
-            increasedContrast: contrast == .increased,
-            reduceMotion: reduceMotion
-        ).showsLens else { return }
-        liftCount += 1
-        let count = liftCount
-        withAnimation(ThawMotion.selection) { isLifted = true }
-        Task { @MainActor in
-            try? await Task.sleep(for: Self.liftDuration)
-            guard count == liftCount else { return }
-            withAnimation(.smooth(duration: 0.18)) { isLifted = false }
+    /// A segment with no symbol keeps its title even when titles are off, so it never draws empty.
+    static func label(for segment: ThawSegment<Value>, showsTitles: Bool) -> SegmentLabel {
+        switch (segment.systemImage, showsTitles) {
+        case let (symbol?, true): .titleAndSymbol(symbol)
+        case let (symbol?, false): .symbol(symbol)
+        case (nil, _): .title
         }
-    }
-
-    /// The lens around a segment: wider, and taller than the bar so it bulges out, on the same centre.
-    static func lensFrame(around segment: CGRect) -> CGRect {
-        let width = segment.width * 1.15
-        let height = segment.height + 7
-        return CGRect(x: segment.midX - width / 2, y: segment.midY - height / 2, width: width, height: height)
     }
 
     var body: some View {
-        // The bar's glass and the lens share one container, since glass can't sample glass.
-        GlassEffectContainer {
-            HStack(spacing: sizing.spacing) {
-                ForEach(segments, id: \.value) { segment in
-                    segmentButton(segment)
-                }
+        Picker(selection: $selection) {
+            ForEach(segments, id: \.value) { segment in
+                segmentLabel(segment)
+                    .modifier(SegmentHelp(text: segment.help))
+                    .tag(segment.value)
             }
-            .padding(sizing.inset)
-            .frame(maxWidth: sizing.maxWidth)
-            .thawGlass(.control, in: Capsule(style: .continuous))
-            .backgroundPreferenceValue(SegmentAnchorsKey.self) { anchors in
-                GeometryReader { proxy in
-                    if appearance.showsLens, let anchor = anchors[AnyHashable(selection)] {
-                        let frame = Self.lensFrame(around: proxy[anchor])
-                        Color.clear
-                            .thawGlass(.lens(.accentColor), in: Capsule(style: .continuous))
-                            .glassEffectID("lens", in: selectionSpace)
-                            .frame(width: frame.width, height: frame.height)
-                            .position(x: frame.midX, y: frame.midY)
-                    }
-                }
-            }
-        }
-        // The fill and the lens move on the selection spring; Reduce Motion moves them without it.
-        .thawAnimation(ThawMotion.selection, value: selection)
-        .onChange(of: selection) { lift() }
-        .accessibilityElement(children: .contain)
-    }
-
-    private func segmentButton(_ segment: ThawSegment<Value>) -> some View {
-        let isSelected = segment.value == selection
-        let shape = Capsule(style: .continuous)
-        // Styled on each part: a section header sets its own text colour over the label's.
-        let style = isSelected ? AnyShapeStyle(.primary) : AnyShapeStyle(ThawInk.supporting)
-        let weight: Font.Weight = isSelected ? .semibold : .regular
-        return Button {
-            selection = segment.value
         } label: {
-            HStack(spacing: ThawSpacing.tight) {
-                if let systemImage = segment.systemImage {
-                    Image(systemName: systemImage)
-                        .font(ThawType.symbol.weight(weight))
-                        .foregroundStyle(style)
-                }
-                if sizing.showsTitles {
-                    Text(segment.title)
-                        .font(ThawType.body.weight(weight))
-                        .foregroundStyle(style)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.85)
-                }
-            }
-            .padding(.horizontal, sizing.horizontalPadding)
-            .frame(
-                minWidth: sizing.minWidth,
-                maxWidth: sizing.maxWidth,
-                minHeight: sizing.minHeight,
-                maxHeight: sizing.maxHeight
-            )
-            .background {
-                if isSelected {
-                    Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
-                        .matchedGeometryEffect(id: "selection", in: selectionSpace)
-                }
-            }
-            .anchorPreference(key: SegmentAnchorsKey.self, value: .bounds) { [AnyHashable(segment.value): $0] }
-            .contentShape([.interaction, .focusEffect], shape)
+            EmptyView()
         }
-        .buttonStyle(.plain)
-        .thawSelectionCue(isSelected: isSelected, in: shape)
-        .modifier(SegmentHelp(text: segment.help))
-        .accessibilityLabel(Text(segment.title))
-    }
-}
-
-/// What the sliding selection is drawn with.
-enum SegmentIndicatorSurface: Equatable {
-    /// A clear glass lens under the flat selection fill.
-    case glass
-    /// The flat fill alone, which stays legible without transparency or with more contrast.
-    case flat
-}
-
-/// How the selection looks in one phase of a move.
-struct SegmentIndicatorAppearance: Equatable {
-    /// Whether the glass lens shows behind the selected segment.
-    let showsLens: Bool
-    /// The flat selected fill, which stays visible throughout.
-    let fillOpacity: Double
-
-    static let lifted = SegmentIndicatorAppearance(showsLens: true, fillOpacity: 1)
-    static let resting = SegmentIndicatorAppearance(showsLens: false, fillOpacity: 1)
-}
-
-/// Each segment's bounds, so the lens can sit behind the selected one.
-private struct SegmentAnchorsKey: PreferenceKey {
-    static var defaultValue: [AnyHashable: Anchor<CGRect>] {
-        [:]
+        .pickerStyle(.segmented)
+        .labelsHidden()
+        .tint(.accentColor)
+        .controlSize(sizing.controlSize)
+        .frame(maxWidth: sizing.maxWidth)
     }
 
-    static func reduce(value: inout [AnyHashable: Anchor<CGRect>], nextValue: () -> [AnyHashable: Anchor<CGRect>]) {
-        value.merge(nextValue()) { _, new in new }
+    @ViewBuilder
+    private func segmentLabel(_ segment: ThawSegment<Value>) -> some View {
+        switch Self.label(for: segment, showsTitles: sizing.showsTitles) {
+        case .title:
+            Text(segment.title)
+        case let .titleAndSymbol(symbol):
+            Label { Text(segment.title) } icon: { Image(systemName: symbol) }
+        case let .symbol(symbol):
+            Image(systemName: symbol)
+                .accessibilityLabel(Text(segment.title))
+        }
     }
 }
 
