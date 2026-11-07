@@ -298,15 +298,20 @@ private enum SegmentSpace {
 }
 
 /// How strongly the lens bends what's under it, from 0 (a pass-through) to 1 (mid-move).
+/// How strongly the lens bends what's under it, scaled to the lens's height as the system lens is
+/// (at a 44 pt peak: 8.8 pt displacement, 6.6 pt edge refraction over a 4.4 pt band). Strength 0 is a
+/// pass-through, 1 is fully swollen.
 struct LensOptics: Equatable {
-    var magnification: Double
-    var refraction: Double
+    var displacement: Double
+    var edgeRefraction: Double
+    var edgeBand: Double
     var chroma: Double
-    /// Blur and brightening inside the lens, 0 to 1.
-    var frost: Double
 
-    static func at(strength: Double) -> LensOptics {
-        LensOptics(magnification: 1 + 0.1 * strength, refraction: 0.22 * strength, chroma: 1.2 * strength, frost: strength)
+    /// The chromatic split's direction: mostly along x, tilted 15 degrees.
+    static let chromaAngle = -15.0 * .pi / 180
+
+    static func at(strength: Double, height: Double) -> LensOptics {
+        LensOptics(displacement: 0.2 * height * strength, edgeRefraction: 0.15 * height * strength, edgeBand: 0.1 * height, chroma: 2 * strength)
     }
 
     private static let library = ShaderLibrary.bundle(.module)
@@ -316,10 +321,11 @@ struct LensOptics: Equatable {
         Self.library.liquidLens(
             .float4(rect.minX, rect.minY, rect.width, rect.height),
             .float(min(rect.width, rect.height) / 2),
-            .float(magnification),
-            .float(refraction),
+            .float(displacement),
+            .float(edgeRefraction),
+            .float(edgeBand),
             .float(chroma),
-            .float(frost)
+            .float(Self.chromaAngle)
         )
     }
 }
@@ -366,7 +372,7 @@ struct LiquidLensEffect: ViewModifier, Animatable {
     }
 
     func body(content: Content) -> some View {
-        let optics = LensOptics.at(strength: strength)
+        let optics = LensOptics.at(strength: strength, height: height)
         let rect = lens.offsetBy(dx: overhang, dy: overhang)
         // One path whether or not the lens shows, so the control keeps its identity when it turns on or off.
         content
@@ -377,15 +383,14 @@ struct LiquidLensEffect: ViewModifier, Animatable {
                 maxSampleOffset: CGSize(width: overhang * 4, height: overhang * 2),
                 isEnabled: isActive && strength > 0.001
             )
-            // Real glass behind the control, so the parts of the swollen lens past the track refract and
-            // frost the window behind it; the shader only sees the control's own layer. The track is
-            // material, so this isn't glass under glass.
+            // The ring shadow under the swollen lens, behind the control like the system's.
             .background(alignment: .topLeading) {
                 if isActive, strength > 0.001 {
-                    Color.clear
-                        .glassEffect(.clear, in: Capsule(style: .continuous))
+                    Capsule(style: .continuous)
+                        .stroke(Color.black.opacity(0.1), lineWidth: 4)
+                        .blur(radius: 3)
                         .frame(width: rect.width, height: rect.height)
-                        .offset(x: rect.minX, y: rect.minY)
+                        .offset(x: rect.minX, y: rect.minY + 8)
                         .opacity(strength)
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
@@ -402,49 +407,34 @@ struct LiquidLensEffect: ViewModifier, Animatable {
     }
 }
 
-/// The lens's edge, after the system lens: a thin dark outline, a bright arc along the top inside edge
-/// with a fainter one along the bottom, and a soft inner glow. The highlight leans toward the direction of
-/// travel. Faint at rest, clear mid-move.
+/// The lens's key highlight, after the system lens: a thin, slightly cool arc lit from the top, spread
+/// over the top quarter and fading down the sides. It leans toward the direction of travel. Faint at rest,
+/// clear mid-move.
 struct LensRim: View {
     let strength: Double
     let tilt: Double
 
-    /// Where the highlight's light comes from: the top left at rest, leaning up to a quarter of the width
+    /// Where the highlight's light comes from: straight above at rest, leaning up to a quarter of the width
     /// either way with the travel.
     static func highlightStart(tilt: Double) -> UnitPoint {
-        UnitPoint(x: 0.25 + 0.25 * min(max(tilt, -1), 1), y: 0)
+        UnitPoint(x: 0.5 + 0.25 * min(max(tilt, -1), 1), y: 0)
     }
 
     var body: some View {
-        let shape = Capsule(style: .continuous)
         let start = Self.highlightStart(tilt: tilt)
-        ZStack {
-            // Inner glow.
-            shape
-                .stroke(Color.white.opacity(0.35), lineWidth: 5)
-                .blur(radius: 3)
-                .clipShape(shape)
-            // Top arc bright, bottom arc fainter, clear through the middle.
-            shape
-                .inset(by: 0.75)
-                .strokeBorder(
-                    LinearGradient(
-                        stops: [
-                            .init(color: .white.opacity(0.95), location: 0),
-                            .init(color: .white.opacity(0), location: 0.4),
-                            .init(color: .white.opacity(0), location: 0.65),
-                            .init(color: .white.opacity(0.45), location: 1),
-                        ],
-                        startPoint: start,
-                        endPoint: UnitPoint(x: 1 - start.x, y: 1)
-                    ),
-                    lineWidth: 1.5
-                )
-            shape.strokeBorder(Color.black.opacity(0.2), lineWidth: 0.75)
-        }
-        .opacity(0.3 + 0.7 * strength)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
+        let key = Color(red: 0.88, green: 0.92, blue: 1)
+        Capsule(style: .continuous)
+            .strokeBorder(
+                LinearGradient(
+                    stops: [.init(color: key.opacity(0.5), location: 0), .init(color: key.opacity(0), location: 0.35)],
+                    startPoint: start,
+                    endPoint: UnitPoint(x: 1 - start.x, y: 1)
+                ),
+                lineWidth: 1
+            )
+            .opacity(0.3 + 0.7 * strength)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
     }
 }
 

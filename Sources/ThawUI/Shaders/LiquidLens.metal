@@ -8,14 +8,14 @@ static float roundedRectDistance(float2 p, float2 halfSize, float radius) {
     return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - radius;
 }
 
-// Bends the layer under a rounded-rect lens: magnified in the middle, pulled outward near the rim and
-// squeezed hard in a 4 pt band at the edge, with the red and blue channels split mostly in that band, and frosted: slightly blurred
-// and brightened, as the system lens is.
-// lensRect is x, y, width, height in the layer's coordinates. Zero magnification change, refraction,
-// chroma and frost leave the layer untouched.
-[[ stitchable ]] half4 liquidLens(float2 position, SwiftUI::Layer layer, float4 lensRect,
-                                  float cornerRadius, float magnification, float refraction, float chroma,
-                                  float frost) {
+// A clear lens over the layer, tuned to the system segmented control's lens: no blur, no tint.
+// Content is pulled in toward the middle by up to `displacement` at the rim, the outer `edgeBand` points
+// are pushed back out by up to `edgeRefraction` for the squeeze at the edge, and red and blue split by up
+// to `chroma` points along `chromaAngle` (radians) inside that band. lensRect is x, y, width, height in the
+// layer's coordinates. Zero displacement, edge refraction and chroma leave the layer untouched.
+[[ stitchable ]] half4 liquidLens(float2 position, SwiftUI::Layer layer, float4 lensRect, float cornerRadius,
+                                  float displacement, float edgeRefraction, float edgeBand, float chroma,
+                                  float chromaAngle) {
     float2 halfSize = lensRect.zw * 0.5;
     float2 centre = lensRect.xy + halfSize;
     float2 p = position - centre;
@@ -27,32 +27,28 @@ static float roundedRectDistance(float2 p, float2 halfSize, float radius) {
         return original;
     }
 
-    // 1 at the rim, 0 once a third of the short side in.
-    float band = max(min(halfSize.x, halfSize.y) * 0.66, 1.0);
-    float rim = clamp(1.0 + distance / band, 0.0, 1.0);
-    rim = rim * rim;
+    // The outward normal, from the distance field, so the straight run of a capsule bends straight up and down.
+    float2 e = float2(0.5, 0.0);
+    float2 gradient = float2(roundedRectDistance(p + e.xy, halfSize, radius) - roundedRectDistance(p - e.xy, halfSize, radius),
+                             roundedRectDistance(p + e.yx, halfSize, radius) - roundedRectDistance(p - e.yx, halfSize, radius));
+    float2 normal = length(gradient) > 0.0001 ? normalize(gradient) : float2(0.0);
 
-    // The edge band: the last 4 pt before the rim, where content is squeezed hard and the colours split.
-    float edge = clamp(1.0 + distance / 4.0, 0.0, 1.0);
-    edge = pow(edge, 1.5);
+    // 0 in the middle, 1 at the rim.
+    float depth = clamp(1.0 + distance / max(min(halfSize.x, halfSize.y), 1.0), 0.0, 1.0);
+    // 0 inside the edge band, 1 at the rim.
+    float band = pow(clamp(1.0 + distance / max(edgeBand, 0.5), 0.0, 1.0), 1.5);
 
-    float2 bent = p / max(magnification, 0.01) * (1.0 + refraction * rim + 1.6 * refraction * edge);
-    float2 direction = length(p) > 0.001 ? normalize(p) : float2(0.0);
-    float2 fringe = direction * chroma * (0.3 * rim + edge);
+    float2 offset = -normal * displacement * depth * depth + normal * edgeRefraction * band;
+    float2 source = position + offset;
 
-    float2 source = centre + bent;
+    float2 split = float2(cos(chromaAngle), sin(chromaAngle));
+    float2 fringe = split * chroma * band * dot(normal, split);
+
     half4 lensed = layer.sample(source);
     lensed.r = layer.sample(source + fringe).r;
     lensed.b = layer.sample(source - fringe).b;
 
-    // Frost: average a small cross of samples about 1 pt out, then lift toward white.
-    float spread = 1.0 * frost;
-    half4 blurred = (layer.sample(source + float2(spread, 0.0)) + layer.sample(source - float2(spread, 0.0))
-                     + layer.sample(source + float2(0.0, spread)) + layer.sample(source - float2(0.0, spread))) * 0.25h;
-    lensed.rgb = mix(lensed.rgb, blurred.rgb, half(0.4 * frost));
-    lensed.rgb = mix(lensed.rgb, half3(lensed.a), half(0.06 * frost));
-
-    // Soft edge over about 1.5 pt so the outline doesn't alias.
-    float inside = smoothstep(0.75, -0.75, distance);
+    // Soft edge over about 2 pt.
+    float inside = smoothstep(1.0, -1.0, distance);
     return mix(original, lensed, half(inside));
 }
