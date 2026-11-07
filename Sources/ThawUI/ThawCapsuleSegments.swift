@@ -79,9 +79,43 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     @Namespace private var selectionSpace
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isMoving = false
+    @State private var moveCount = 0
 
-    static func indicatorSurface(reduceTransparency: Bool, increasedContrast: Bool) -> SegmentIndicatorSurface {
-        reduceTransparency || increasedContrast ? .flat : .glass
+    /// How long the lens stays swollen after the last selection change before it settles.
+    static var swellDuration: Duration {
+        .milliseconds(220)
+    }
+
+    /// The clear glass lens needs transparency to read; without it, or with more contrast, the flat fill stands alone.
+    static func showsLens(reduceTransparency: Bool, increasedContrast: Bool) -> Bool {
+        !reduceTransparency && !increasedContrast
+    }
+
+    static func swells(moving: Bool, reduceMotion: Bool) -> Bool {
+        moving && !reduceMotion
+    }
+
+    /// The lens over a segment: the segment itself at rest, wider and taller than the track while it moves.
+    static func lensFrame(around segment: CGRect, moving: Bool) -> CGRect {
+        guard moving else { return segment }
+        let width = segment.width * 1.2
+        let height = segment.height + 11
+        return CGRect(x: segment.midX - width / 2, y: segment.midY - height / 2, width: width, height: height)
+    }
+
+    /// Swells the lens for the move, and settles it once no newer change has come in.
+    private func swell() {
+        guard !reduceMotion else { return }
+        moveCount += 1
+        let count = moveCount
+        withAnimation(ThawMotion.selection) { isMoving = true }
+        Task { @MainActor in
+            try? await Task.sleep(for: Self.swellDuration)
+            guard count == moveCount else { return }
+            withAnimation(ThawMotion.selection) { isMoving = false }
+        }
     }
 
     var body: some View {
@@ -90,11 +124,26 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
                 segmentButton(segment)
             }
         }
-        // One indicator moves between segments; Reduce Motion moves it without the slide.
-        .thawAnimation(ThawMotion.selection, value: selection)
         .padding(sizing.inset)
         .frame(maxWidth: sizing.maxWidth)
-        .thawGlass(.control, in: Capsule(style: .continuous))
+        // Not glass: the lens drawn over the labels has to sample the track, and glass can't sample glass.
+        .thawGlass(.track, in: Capsule(style: .continuous))
+        .overlayPreferenceValue(SegmentAnchorsKey.self) { anchors in
+            GeometryReader { proxy in
+                if Self.showsLens(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased), let anchor = anchors[AnyHashable(selection)] {
+                    let frame = Self.lensFrame(around: proxy[anchor], moving: Self.swells(moving: isMoving, reduceMotion: reduceMotion))
+                    Color.clear
+                        .glassEffect(.clear.interactive(), in: Capsule(style: .continuous))
+                        .frame(width: frame.width, height: frame.height)
+                        .position(x: frame.midX, y: frame.midY)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        // The fill and the lens slide on the selection spring; Reduce Motion moves them without it.
+        .thawAnimation(ThawMotion.selection, value: selection)
+        .onChange(of: selection) { swell() }
         .accessibilityElement(children: .contain)
     }
 
@@ -130,13 +179,11 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
             )
             .background {
                 if isSelected {
-                    SegmentSelectionIndicator(
-                        surface: Self.indicatorSurface(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased),
-                        shape: shape
-                    )
-                    .matchedGeometryEffect(id: "selection", in: selectionSpace)
+                    Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
+                        .matchedGeometryEffect(id: "selection", in: selectionSpace)
                 }
             }
+            .anchorPreference(key: SegmentAnchorsKey.self, value: .bounds) { [AnyHashable(segment.value): $0] }
             .contentShape([.interaction, .focusEffect], shape)
         }
         .buttonStyle(.plain)
@@ -146,28 +193,14 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     }
 }
 
-/// What the sliding selection is drawn with.
-enum SegmentIndicatorSurface: Equatable {
-    /// A clear glass lens under the flat selection fill.
-    case glass
-    /// The flat fill alone, which stays legible without transparency or with more contrast.
-    case flat
-}
+/// Each segment's bounds, so the lens can sit over the selected one.
+private struct SegmentAnchorsKey: PreferenceKey {
+    static var defaultValue: [AnyHashable: Anchor<CGRect>] {
+        [:]
+    }
 
-/// The selected segment's fill. It keeps ThawGlass's flat selection on top, so the label stays legible,
-/// with a clear glass lens under it while transparency and contrast allow.
-private struct SegmentSelectionIndicator<S: InsettableShape>: View {
-    let surface: SegmentIndicatorSurface
-    let shape: S
-
-    var body: some View {
-        let fill = Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
-        switch surface {
-        case .glass:
-            fill.background(Color.clear.glassEffect(.clear.interactive(), in: shape))
-        case .flat:
-            fill
-        }
+    static func reduce(value: inout [AnyHashable: Anchor<CGRect>], nextValue: () -> [AnyHashable: Anchor<CGRect>]) {
+        value.merge(nextValue()) { _, new in new }
     }
 }
 

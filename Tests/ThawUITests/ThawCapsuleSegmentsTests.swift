@@ -48,12 +48,32 @@ struct ThawCapsuleSegmentsTests {
         #expect(ThawMotion.selection == .spring(response: 0.3, dampingFraction: 0.78))
     }
 
-    @Test("The sliding selection is a glass lens only when transparency and contrast allow it")
-    func indicatorSurface() {
+    @Test("A clear glass lens shows over the selection only when transparency and contrast allow it")
+    func lensVisibility() {
         typealias Segments = ThawCapsuleSegments<Int>
-        #expect(Segments.indicatorSurface(reduceTransparency: false, increasedContrast: false) == .glass)
-        #expect(Segments.indicatorSurface(reduceTransparency: true, increasedContrast: false) == .flat)
-        #expect(Segments.indicatorSurface(reduceTransparency: false, increasedContrast: true) == .flat)
+        #expect(Segments.showsLens(reduceTransparency: false, increasedContrast: false))
+        #expect(!Segments.showsLens(reduceTransparency: true, increasedContrast: false))
+        #expect(!Segments.showsLens(reduceTransparency: false, increasedContrast: true))
+    }
+
+    @Test("At rest the lens covers its segment; while moving it swells wider and taller than the track")
+    func lensFrame() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        let segment = CGRect(x: 40, y: 3, width: 80, height: 24)
+        #expect(Segments.lensFrame(around: segment, moving: false) == segment)
+        let moving = Segments.lensFrame(around: segment, moving: true)
+        #expect(moving.width == 96)
+        #expect(moving.height == 35)
+        #expect(moving.midX == segment.midX && moving.midY == segment.midY)
+        #expect(Segments.swellDuration == .milliseconds(220))
+    }
+
+    @Test("Reduce Motion never swells the lens")
+    func reduceMotionNoSwell() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        #expect(Segments.swells(moving: true, reduceMotion: false))
+        #expect(!Segments.swells(moving: true, reduceMotion: true))
+        #expect(!Segments.swells(moving: false, reduceMotion: false))
     }
 
     @MainActor
