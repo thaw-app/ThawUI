@@ -91,8 +91,6 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     /// Where a drag across the track has the lens, in the track's coordinates; nil when not scrubbing.
     @State private var pointerX: CGFloat?
     @State private var trackSize: CGSize = .zero
-    /// Which way the lens is travelling, -1 left to 1 right; the highlight leans with it.
-    @State private var travelTilt: Double = 0
 
     /// Room around the control for the swollen lens, so the effect isn't clipped to the track.
     /// Wide segments swell further sideways, so the room grows with them.
@@ -152,17 +150,6 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         return frames.min { abs($0.value.midX - x) < abs($1.value.midX - x) }?.key
     }
 
-    /// The highlight's lean for a move between two segment centres: full toward the new one, none in place.
-    static nonisolated func travelTilt(from oldX: CGFloat?, to newX: CGFloat?) -> Double {
-        guard let oldX, let newX, oldX != newX else { return 0 }
-        return newX > oldX ? 1 : -1
-    }
-
-    /// The highlight's lean while scrubbing, growing with the drag's speed up to full at 600 pt/s.
-    static nonisolated func travelTilt(velocity: CGFloat) -> Double {
-        min(max(Double(velocity) / 600, -1), 1)
-    }
-
     /// Slides the lens to the new selection and swells it, then settles it once no newer change has come in.
     /// Reduce Motion moves it without either.
     private func moveLens(to value: Value) {
@@ -172,19 +159,14 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         }
         moveCount += 1
         let count = moveCount
-        let tilt = Self.travelTilt(from: segmentFrames[lensTarget ?? value]?.midX, to: segmentFrames[value]?.midX)
         withAnimation(ThawMotion.selection) {
             lensTarget = value
             isMoving = true
-            travelTilt = tilt
         }
         Task { @MainActor in
             try? await Task.sleep(for: Self.swellDuration)
             guard count == moveCount else { return }
-            withAnimation(ThawMotion.selection) {
-                isMoving = false
-                travelTilt = 0
-            }
+            withAnimation(ThawMotion.selection) { isMoving = false }
         }
     }
 
@@ -198,10 +180,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
                     withAnimation(ThawMotion.selection) { isPressed = true }
                 }
                 if abs(drag.translation.width) > Self.scrubThreshold {
-                    withAnimation(ThawMotion.interactive) {
-                        pointerX = drag.location.x
-                        travelTilt = Self.travelTilt(velocity: drag.velocity.width)
-                    }
+                    withAnimation(ThawMotion.interactive) { pointerX = drag.location.x }
                 }
             }
             .onEnded { drag in
@@ -211,7 +190,6 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
                 withAnimation(ThawMotion.selection) {
                     isPressed = false
                     pointerX = nil
-                    travelTilt = 0
                 }
             }
     }
@@ -236,7 +214,6 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         .modifier(LiquidLensEffect(
             lens: lensSegment.map { Self.lensFrame(around: $0, trackSize: trackSize, swollen: swollen, pointerX: pointerX) } ?? .zero,
             strength: swollen ? 1 : 0,
-            tilt: travelTilt,
             overhang: overhang,
             isActive: lensShown && lensSegment != nil
         ))
@@ -298,20 +275,15 @@ private enum SegmentSpace {
 }
 
 /// How strongly the lens bends what's under it, from 0 (a pass-through) to 1 (mid-move).
-/// How strongly the lens bends what's under it, scaled to the lens's height as the system lens is
-/// (at a 44 pt peak: 8.8 pt displacement, 6.6 pt edge refraction over a 4.4 pt band). Strength 0 is a
-/// pass-through, 1 is fully swollen.
 struct LensOptics: Equatable {
-    var displacement: Double
-    var edgeRefraction: Double
-    var edgeBand: Double
+    var magnification: Double
+    var refraction: Double
     var chroma: Double
+    /// Blur and brightening inside the lens, 0 to 1.
+    var frost: Double
 
-    /// The chromatic split's direction: mostly along x, tilted 15 degrees.
-    static let chromaAngle = -15.0 * .pi / 180
-
-    static func at(strength: Double, height: Double) -> LensOptics {
-        LensOptics(displacement: 0.2 * height * strength, edgeRefraction: 0.15 * height * strength, edgeBand: 0.1 * height, chroma: 2 * strength)
+    static func at(strength: Double) -> LensOptics {
+        LensOptics(magnification: 1 + 0.1 * strength, refraction: 0.22 * strength, chroma: 1.2 * strength, frost: strength)
     }
 
     private static let library = ShaderLibrary.bundle(.module)
@@ -321,11 +293,10 @@ struct LensOptics: Equatable {
         Self.library.liquidLens(
             .float4(rect.minX, rect.minY, rect.width, rect.height),
             .float(min(rect.width, rect.height) / 2),
-            .float(displacement),
-            .float(edgeRefraction),
-            .float(edgeBand),
+            .float(magnification),
+            .float(refraction),
             .float(chroma),
-            .float(Self.chromaAngle)
+            .float(frost)
         )
     }
 }
@@ -339,31 +310,28 @@ struct LiquidLensEffect: ViewModifier, Animatable {
     var width: CGFloat
     var height: CGFloat
     var strength: Double
-    var tilt: Double
     let overhang: CGFloat
     let isActive: Bool
 
-    init(lens: CGRect, strength: Double, tilt: Double = 0, overhang: CGFloat, isActive: Bool) {
+    init(lens: CGRect, strength: Double, overhang: CGFloat, isActive: Bool) {
         midY = lens.midY
         midX = lens.midX
         width = lens.width
         height = lens.height
         self.strength = strength
-        self.tilt = tilt
         self.overhang = overhang
         self.isActive = isActive
     }
 
     /// The shader and the rim both read these, so they move together frame by frame and retarget from
     /// wherever they are when a new selection interrupts.
-    nonisolated var animatableData: AnimatablePair<AnimatablePair<CGFloat, CGFloat>, AnimatablePair<CGFloat, AnimatablePair<Double, Double>>> {
-        get { AnimatablePair(AnimatablePair(midX, width), AnimatablePair(height, AnimatablePair(strength, tilt))) }
+    nonisolated var animatableData: AnimatablePair<AnimatablePair<CGFloat, CGFloat>, AnimatablePair<CGFloat, Double>> {
+        get { AnimatablePair(AnimatablePair(midX, width), AnimatablePair(height, strength)) }
         set {
             midX = newValue.first.first
             width = newValue.first.second
             height = newValue.second.first
-            strength = newValue.second.second.first
-            tilt = newValue.second.second.second
+            strength = newValue.second.second
         }
     }
 
@@ -372,7 +340,7 @@ struct LiquidLensEffect: ViewModifier, Animatable {
     }
 
     func body(content: Content) -> some View {
-        let optics = LensOptics.at(strength: strength, height: height)
+        let optics = LensOptics.at(strength: strength)
         let rect = lens.offsetBy(dx: overhang, dy: overhang)
         // One path whether or not the lens shows, so the control keeps its identity when it turns on or off.
         content
@@ -383,22 +351,9 @@ struct LiquidLensEffect: ViewModifier, Animatable {
                 maxSampleOffset: CGSize(width: overhang * 4, height: overhang * 2),
                 isEnabled: isActive && strength > 0.001
             )
-            // The ring shadow under the swollen lens, behind the control like the system's.
-            .background(alignment: .topLeading) {
-                if isActive, strength > 0.001 {
-                    Capsule(style: .continuous)
-                        .stroke(Color.black.opacity(0.1), lineWidth: 4)
-                        .blur(radius: 3)
-                        .frame(width: rect.width, height: rect.height)
-                        .offset(x: rect.minX, y: rect.minY + 8)
-                        .opacity(strength)
-                        .allowsHitTesting(false)
-                        .accessibilityHidden(true)
-                }
-            }
             .overlay(alignment: .topLeading) {
                 if isActive {
-                    LensRim(strength: strength, tilt: tilt)
+                    LensRim(strength: strength)
                         .frame(width: rect.width, height: rect.height)
                         .offset(x: rect.minX, y: rect.minY)
                 }
@@ -407,34 +362,30 @@ struct LiquidLensEffect: ViewModifier, Animatable {
     }
 }
 
-/// The lens's key highlight, after the system lens: a thin, slightly cool arc lit from the top, spread
-/// over the top quarter and fading down the sides. It leans toward the direction of travel. Faint at rest,
-/// clear mid-move.
-struct LensRim: View {
+/// The lens's edge: a specular highlight from the top left, and a faint inner shadow. Faint at rest, clear mid-move.
+private struct LensRim: View {
     let strength: Double
-    let tilt: Double
-
-    /// Where the highlight's light comes from: straight above at rest, leaning up to a quarter of the width
-    /// either way with the travel.
-    static func highlightStart(tilt: Double) -> UnitPoint {
-        UnitPoint(x: 0.5 + 0.25 * min(max(tilt, -1), 1), y: 0)
-    }
 
     var body: some View {
-        let start = Self.highlightStart(tilt: tilt)
-        let key = Color(red: 0.88, green: 0.92, blue: 1)
-        Capsule(style: .continuous)
-            .strokeBorder(
+        let shape = Capsule(style: .continuous)
+        ZStack {
+            shape
+                .stroke(Color.black.opacity(0.12), lineWidth: 2)
+                .blur(radius: 1.5)
+                .clipShape(shape)
+            // Specular: light from the top left, a dimmer bounce at the bottom right.
+            shape.strokeBorder(
                 LinearGradient(
-                    stops: [.init(color: key.opacity(0.5), location: 0), .init(color: key.opacity(0), location: 0.35)],
-                    startPoint: start,
-                    endPoint: UnitPoint(x: 1 - start.x, y: 1)
+                    stops: [.init(color: .white.opacity(0.95), location: 0), .init(color: .white.opacity(0.15), location: 0.45), .init(color: .white.opacity(0.4), location: 1)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 ),
                 lineWidth: 1
             )
-            .opacity(0.3 + 0.7 * strength)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
+        }
+        .opacity(0.3 + 0.7 * strength)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

@@ -90,16 +90,13 @@ struct ThawCapsuleSegmentsTests {
         #expect(Segments.segment(at: 10, in: [:]) == nil)
     }
 
-    @Test("The lens bends nothing at rest and, swollen, bends by the system lens's amounts for its height")
+    @Test("The lens bends nothing at rest and magnifies, refracts, fringes and frosts mid-move")
     func lensOptics() {
-        let rest = LensOptics.at(strength: 0, height: 44)
-        #expect(rest.displacement == 0 && rest.edgeRefraction == 0 && rest.chroma == 0)
-        let peak = LensOptics.at(strength: 1, height: 44)
-        #expect(abs(peak.displacement - 8.8) < 0.001)
-        #expect(abs(peak.edgeRefraction - 6.6) < 0.001)
-        #expect(abs(peak.edgeBand - 4.4) < 0.001)
-        #expect(peak.chroma == 2)
-        #expect(LensOptics.at(strength: 1, height: 22).displacement == peak.displacement / 2)
+        let rest = LensOptics.at(strength: 0)
+        #expect(rest == LensOptics(magnification: 1, refraction: 0, chroma: 0, frost: 0))
+        let moving = LensOptics.at(strength: 1)
+        #expect(moving.magnification > 1.05 && moving.magnification < 1.15)
+        #expect(moving.refraction > 0 && moving.chroma > 0 && moving.frost > 0)
     }
 
     /// ImageRenderer runs layer shaders; an offscreen window's cached display skips them.
@@ -114,7 +111,7 @@ struct ThawCapsuleSegmentsTests {
         .background(Color.white)
         let lens = CGRect(x: 40, y: 5, width: 100, height: 30)
         let view = stripes.layerEffect(
-            (optics ?? .at(strength: 0, height: 30)).shader(lens: lens),
+            (optics ?? .at(strength: 0)).shader(lens: lens),
             maxSampleOffset: CGSize(width: 48, height: 24),
             isEnabled: optics != nil
         )
@@ -126,8 +123,8 @@ struct ThawCapsuleSegmentsTests {
     @Test("The lens shader loads from the module and bends the layer only when it has strength")
     func lensShaderBends() throws {
         let plain = try renderStripes(optics: nil)
-        #expect(try renderStripes(optics: .at(strength: 0, height: 30)) == plain)
-        #expect(try renderStripes(optics: .at(strength: 1, height: 30)) != plain)
+        #expect(try renderStripes(optics: .at(strength: 0)) == plain)
+        #expect(try renderStripes(optics: .at(strength: 1)) != plain)
     }
 
     @Test("Animation frames set the lens rect and strength the shader and rim draw from")
@@ -138,12 +135,10 @@ struct ThawCapsuleSegmentsTests {
         frame.first.first = 100
         frame.first.second = 96
         frame.second.first = 35
-        frame.second.second.first = 0.5
-        frame.second.second.second = -1
+        frame.second.second = 0.5
         effect.animatableData = frame
         #expect(effect.lens == CGRect(x: 52, y: -2.5, width: 96, height: 35))
         #expect(effect.strength == 0.5)
-        #expect(effect.tilt == -1)
         #expect(effect.animatableData == frame)
     }
 
@@ -158,20 +153,6 @@ struct ThawCapsuleSegmentsTests {
             #expect((swollen.height - segment.height) / 2 <= overhang)
             #expect((swollen.width - segment.width) / 2 <= overhang)
         }
-    }
-
-    @Test("The highlight leans toward the direction of travel and settles straight above")
-    func highlightTilt() {
-        typealias Segments = ThawCapsuleSegments<Int>
-        #expect(Segments.travelTilt(from: 40, to: 120) == 1)
-        #expect(Segments.travelTilt(from: 120, to: 40) == -1)
-        #expect(Segments.travelTilt(from: 40, to: 40) == 0)
-        #expect(Segments.travelTilt(from: nil, to: 40) == 0)
-        #expect(Segments.travelTilt(velocity: 300) == 0.5)
-        #expect(Segments.travelTilt(velocity: -2000) == -1)
-        #expect(LensRim.highlightStart(tilt: 0) == UnitPoint(x: 0.5, y: 0))
-        #expect(LensRim.highlightStart(tilt: 1) == UnitPoint(x: 0.75, y: 0))
-        #expect(LensRim.highlightStart(tilt: -3) == UnitPoint(x: 0.25, y: 0))
     }
 
     @Test("Reduce Motion never swells the lens")
