@@ -105,6 +105,21 @@ struct ThawCapsuleSegmentsTests {
         #expect(try renderStripes(optics: .at(strength: 1)) != plain)
     }
 
+    @Test("Animation frames set the lens rect and strength the shader and rim draw from")
+    func lensAnimatableData() {
+        var effect = LiquidLensEffect(lens: CGRect(x: 0, y: 3, width: 80, height: 24), strength: 0, overhang: 12, isActive: true)
+        #expect(effect.lens == CGRect(x: 0, y: 3, width: 80, height: 24))
+        var frame = effect.animatableData
+        frame.first.first = 100
+        frame.first.second = 96
+        frame.second.first = 35
+        frame.second.second = 0.5
+        effect.animatableData = frame
+        #expect(effect.lens == CGRect(x: 52, y: -2.5, width: 96, height: 35))
+        #expect(effect.strength == 0.5)
+        #expect(effect.animatableData == frame)
+    }
+
     @Test("The swollen lens fits inside the effect's drawing area")
     func lensFitsOverhang() {
         typealias Segments = ThawCapsuleSegments<Int>

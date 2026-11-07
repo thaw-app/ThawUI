@@ -83,6 +83,9 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     @State private var isMoving = false
     @State private var moveCount = 0
     @State private var segmentFrames: [Value: CGRect] = [:]
+    /// The segment the lens is over. Moved under an explicit animation, so the lens slides even when the
+    /// caller changes the selection in a transaction that turns implicit animations off.
+    @State private var lensTarget: Value?
 
     /// Room around the control for the swollen lens, so the effect isn't clipped to the track.
     static var lensOverhang: CGFloat {
@@ -111,12 +114,19 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         return CGRect(x: segment.midX - width / 2, y: segment.midY - height / 2, width: width, height: height)
     }
 
-    /// Swells the lens for the move, and settles it once no newer change has come in.
-    private func swell() {
-        guard !reduceMotion else { return }
+    /// Slides the lens to the new selection and swells it, then settles it once no newer change has come in.
+    /// Reduce Motion moves it without either.
+    private func moveLens(to value: Value) {
+        guard !reduceMotion else {
+            lensTarget = value
+            return
+        }
         moveCount += 1
         let count = moveCount
-        withAnimation(ThawMotion.selection) { isMoving = true }
+        withAnimation(ThawMotion.selection) {
+            lensTarget = value
+            isMoving = true
+        }
         Task { @MainActor in
             try? await Task.sleep(for: Self.swellDuration)
             guard count == moveCount else { return }
@@ -127,6 +137,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     var body: some View {
         let lensShown = Self.showsLens(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased)
         let swollen = Self.swells(moving: isMoving, reduceMotion: reduceMotion)
+        let lensSegment = segmentFrames[lensTarget ?? selection]
         HStack(spacing: sizing.spacing) {
             ForEach(segments, id: \.value) { segment in
                 segmentButton(segment)
@@ -138,14 +149,15 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         .thawGlass(.track, in: Capsule(style: .continuous))
         .coordinateSpace(.named(SegmentSpace.name))
         .modifier(LiquidLensEffect(
-            lens: segmentFrames[selection].map { Self.lensFrame(around: $0, moving: swollen) } ?? .zero,
+            lens: lensSegment.map { Self.lensFrame(around: $0, moving: swollen) } ?? .zero,
             strength: swollen ? 1 : 0,
             overhang: Self.lensOverhang,
-            isActive: lensShown && segmentFrames[selection] != nil
+            isActive: lensShown && lensSegment != nil
         ))
         // The fill and the lens slide on the selection spring; Reduce Motion moves them without it.
         .thawAnimation(ThawMotion.selection, value: selection)
-        .onChange(of: selection) { swell() }
+        .onAppear { lensTarget = selection }
+        .onChange(of: selection) { _, value in moveLens(to: value) }
         .accessibilityElement(children: .contain)
     }
 
@@ -180,7 +192,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
                 maxHeight: sizing.maxHeight
             )
             .background {
-                if isSelected {
+                if segment.value == (lensTarget ?? selection) {
                     Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
                         .matchedGeometryEffect(id: "selection", in: selectionSpace)
                 }
@@ -225,19 +237,40 @@ struct LensOptics: Equatable {
 
 /// Bends the control under the selection lens with the liquidLens shader and draws a glass rim over it.
 /// Animatable so the lens rect and strength follow the selection spring, and redirect when interrupted.
-private struct LiquidLensEffect: ViewModifier, Animatable {
-    var lens: CGRect
+struct LiquidLensEffect: ViewModifier, Animatable {
+    /// The lens's centre line; the track doesn't move vertically, so it isn't animated.
+    let midY: CGFloat
+    var midX: CGFloat
+    var width: CGFloat
+    var height: CGFloat
     var strength: Double
     let overhang: CGFloat
     let isActive: Bool
 
-    nonisolated var animatableData: AnimatablePair<AnimatablePair<CGPoint.AnimatableData, CGSize.AnimatableData>, Double> {
-        get { AnimatablePair(AnimatablePair(lens.origin.animatableData, lens.size.animatableData), strength) }
+    init(lens: CGRect, strength: Double, overhang: CGFloat, isActive: Bool) {
+        midY = lens.midY
+        midX = lens.midX
+        width = lens.width
+        height = lens.height
+        self.strength = strength
+        self.overhang = overhang
+        self.isActive = isActive
+    }
+
+    /// The shader and the rim both read these, so they move together frame by frame and retarget from
+    /// wherever they are when a new selection interrupts.
+    nonisolated var animatableData: AnimatablePair<AnimatablePair<CGFloat, CGFloat>, AnimatablePair<CGFloat, Double>> {
+        get { AnimatablePair(AnimatablePair(midX, width), AnimatablePair(height, strength)) }
         set {
-            lens.origin.animatableData = newValue.first.first
-            lens.size.animatableData = newValue.first.second
-            strength = newValue.second
+            midX = newValue.first.first
+            width = newValue.first.second
+            height = newValue.second.first
+            strength = newValue.second.second
         }
+    }
+
+    var lens: CGRect {
+        CGRect(x: midX - width / 2, y: midY - height / 2, width: width, height: height)
     }
 
     func body(content: Content) -> some View {
