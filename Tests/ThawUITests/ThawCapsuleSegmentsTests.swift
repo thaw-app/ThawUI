@@ -65,4 +65,29 @@ struct ThawCapsuleSegmentsTests {
         let last = try OffscreenRender(moved, size: CGSize(width: 260, height: 40)).pixels()
         #expect(first != last)
     }
+
+    @Test("While the selection moves it lifts as a larger glass lens, and it rests as the flat fill")
+    func liftAppearance() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        let lifted = Segments.indicatorAppearance(lifted: true, reduceTransparency: false, increasedContrast: false, reduceMotion: false)
+        #expect(lifted.showsLens)
+        #expect(lifted.scale == 1.12)
+        #expect(lifted.fillOpacity == 0)
+        let resting = Segments.indicatorAppearance(lifted: false, reduceTransparency: false, increasedContrast: false, reduceMotion: false)
+        #expect(!resting.showsLens)
+        #expect(resting.scale == 1)
+        #expect(resting.fillOpacity == 1)
+    }
+
+    @Test("Reduce Transparency, Increase Contrast and Reduce Motion never lift the lens")
+    func liftAccessibility() {
+        typealias Segments = ThawCapsuleSegments<Int>
+        for (transparency, contrast, motion) in [(true, false, false), (false, true, false), (false, false, true)] {
+            let appearance = Segments.indicatorAppearance(lifted: true, reduceTransparency: transparency, increasedContrast: contrast, reduceMotion: motion)
+            #expect(!appearance.showsLens)
+            #expect(appearance.scale == 1)
+            #expect(appearance.fillOpacity == 1)
+        }
+        #expect(Segments.liftDuration == .milliseconds(170))
+    }
 }

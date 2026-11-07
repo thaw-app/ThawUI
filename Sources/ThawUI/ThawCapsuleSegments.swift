@@ -79,9 +79,55 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     @Namespace private var selectionSpace
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var isLifted = false
+    @State private var liftCount = 0
+
+    /// How long the lens stays lifted after the last selection change before it settles.
+    static var liftDuration: Duration {
+        .milliseconds(170)
+    }
 
     static func indicatorSurface(reduceTransparency: Bool, increasedContrast: Bool) -> SegmentIndicatorSurface {
         reduceTransparency || increasedContrast ? .flat : .glass
+    }
+
+    /// While the selection moves, a larger glass lens; at rest, the flat fill. Accessibility settings keep the fill.
+    static func indicatorAppearance(
+        lifted: Bool,
+        reduceTransparency: Bool,
+        increasedContrast: Bool,
+        reduceMotion: Bool
+    ) -> SegmentIndicatorAppearance {
+        let lifts = lifted && !reduceMotion && indicatorSurface(reduceTransparency: reduceTransparency, increasedContrast: increasedContrast) == .glass
+        return lifts ? .lifted : .resting
+    }
+
+    private var appearance: SegmentIndicatorAppearance {
+        Self.indicatorAppearance(
+            lifted: isLifted,
+            reduceTransparency: reduceTransparency,
+            increasedContrast: contrast == .increased,
+            reduceMotion: reduceMotion
+        )
+    }
+
+    /// Lifts the lens for the move, and settles it once no newer change has come in.
+    private func lift() {
+        guard Self.indicatorAppearance(
+            lifted: true,
+            reduceTransparency: reduceTransparency,
+            increasedContrast: contrast == .increased,
+            reduceMotion: reduceMotion
+        ).showsLens else { return }
+        liftCount += 1
+        let count = liftCount
+        withAnimation(ThawMotion.selection) { isLifted = true }
+        Task { @MainActor in
+            try? await Task.sleep(for: Self.liftDuration)
+            guard count == liftCount else { return }
+            withAnimation(.smooth(duration: 0.18)) { isLifted = false }
+        }
     }
 
     var body: some View {
@@ -92,6 +138,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         }
         // One indicator moves between segments; Reduce Motion moves it without the slide.
         .thawAnimation(ThawMotion.selection, value: selection)
+        .onChange(of: selection) { lift() }
         .padding(sizing.inset)
         .frame(maxWidth: sizing.maxWidth)
         .thawGlass(.control, in: Capsule(style: .continuous))
@@ -130,10 +177,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
             )
             .background {
                 if isSelected {
-                    SegmentSelectionIndicator(
-                        surface: Self.indicatorSurface(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased),
-                        shape: shape
-                    )
+                    SegmentSelectionIndicator(appearance: appearance, shape: shape)
                     .matchedGeometryEffect(id: "selection", in: selectionSpace)
                 }
             }
@@ -154,20 +198,33 @@ enum SegmentIndicatorSurface: Equatable {
     case flat
 }
 
-/// The selected segment's fill. It keeps ThawGlass's flat selection on top, so the label stays legible,
-/// with a clear glass lens under it while transparency and contrast allow.
+/// How the selection indicator looks in one phase of a move.
+struct SegmentIndicatorAppearance: Equatable {
+    /// Whether a glass lens shows instead of the flat fill.
+    let showsLens: Bool
+    let scale: CGFloat
+    let fillOpacity: Double
+
+    static let lifted = SegmentIndicatorAppearance(showsLens: true, scale: 1.12, fillOpacity: 0)
+    static let resting = SegmentIndicatorAppearance(showsLens: false, scale: 1, fillOpacity: 1)
+}
+
+/// The selected segment's background: the flat selection fill at rest, a lifted glass lens while it moves.
 private struct SegmentSelectionIndicator<S: InsettableShape>: View {
-    let surface: SegmentIndicatorSurface
+    let appearance: SegmentIndicatorAppearance
     let shape: S
 
     var body: some View {
-        let fill = Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
-        switch surface {
-        case .glass:
-            fill.background(Color.clear.glassEffect(.clear.interactive(), in: shape))
-        case .flat:
-            fill
+        ZStack {
+            if appearance.showsLens {
+                Color.clear.glassEffect(.regular.interactive(), in: shape)
+                    .transition(.opacity)
+            }
+            Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
+                .opacity(appearance.fillOpacity)
         }
+        .scaleEffect(appearance.scale)
+        .shadow(color: .black.opacity(appearance.showsLens ? 0.2 : 0), radius: 6, y: 2)
     }
 }
 
