@@ -85,7 +85,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
 
     /// How long the lens stays lifted after the last selection change before it settles.
     static var liftDuration: Duration {
-        .milliseconds(170)
+        .milliseconds(200)
     }
 
     static func indicatorSurface(reduceTransparency: Bool, increasedContrast: Bool) -> SegmentIndicatorSurface {
@@ -130,18 +130,40 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
         }
     }
 
+    /// The lens around a segment: wider, and taller than the bar so it bulges out, on the same centre.
+    static func lensFrame(around segment: CGRect) -> CGRect {
+        let width = segment.width * 1.15
+        let height = segment.height + 7
+        return CGRect(x: segment.midX - width / 2, y: segment.midY - height / 2, width: width, height: height)
+    }
+
     var body: some View {
-        HStack(spacing: sizing.spacing) {
-            ForEach(segments, id: \.value) { segment in
-                segmentButton(segment)
+        // The bar's glass and the lens share one container, since glass can't sample glass.
+        GlassEffectContainer {
+            HStack(spacing: sizing.spacing) {
+                ForEach(segments, id: \.value) { segment in
+                    segmentButton(segment)
+                }
+            }
+            .padding(sizing.inset)
+            .frame(maxWidth: sizing.maxWidth)
+            .thawGlass(.control, in: Capsule(style: .continuous))
+            .backgroundPreferenceValue(SegmentAnchorsKey.self) { anchors in
+                GeometryReader { proxy in
+                    if appearance.showsLens, let anchor = anchors[AnyHashable(selection)] {
+                        let frame = Self.lensFrame(around: proxy[anchor])
+                        Color.clear
+                            .thawGlass(.lens(.accentColor), in: Capsule(style: .continuous))
+                            .glassEffectID("lens", in: selectionSpace)
+                            .frame(width: frame.width, height: frame.height)
+                            .position(x: frame.midX, y: frame.midY)
+                    }
+                }
             }
         }
-        // One indicator moves between segments; Reduce Motion moves it without the slide.
+        // The fill and the lens move on the selection spring; Reduce Motion moves them without it.
         .thawAnimation(ThawMotion.selection, value: selection)
         .onChange(of: selection) { lift() }
-        .padding(sizing.inset)
-        .frame(maxWidth: sizing.maxWidth)
-        .thawGlass(.control, in: Capsule(style: .continuous))
         .accessibilityElement(children: .contain)
     }
 
@@ -177,10 +199,11 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
             )
             .background {
                 if isSelected {
-                    SegmentSelectionIndicator(appearance: appearance, shape: shape)
+                    Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
                         .matchedGeometryEffect(id: "selection", in: selectionSpace)
                 }
             }
+            .anchorPreference(key: SegmentAnchorsKey.self, value: .bounds) { [AnyHashable(segment.value): $0] }
             .contentShape([.interaction, .focusEffect], shape)
         }
         .buttonStyle(.plain)
@@ -198,33 +221,25 @@ enum SegmentIndicatorSurface: Equatable {
     case flat
 }
 
-/// How the selection indicator looks in one phase of a move.
+/// How the selection looks in one phase of a move.
 struct SegmentIndicatorAppearance: Equatable {
-    /// Whether a glass lens shows instead of the flat fill.
+    /// Whether the glass lens shows behind the selected segment.
     let showsLens: Bool
-    let scale: CGFloat
+    /// The flat selected fill, which stays visible throughout.
     let fillOpacity: Double
 
-    static let lifted = SegmentIndicatorAppearance(showsLens: true, scale: 1.12, fillOpacity: 0)
-    static let resting = SegmentIndicatorAppearance(showsLens: false, scale: 1, fillOpacity: 1)
+    static let lifted = SegmentIndicatorAppearance(showsLens: true, fillOpacity: 1)
+    static let resting = SegmentIndicatorAppearance(showsLens: false, fillOpacity: 1)
 }
 
-/// The selected segment's background: the flat selection fill at rest, a lifted glass lens while it moves.
-private struct SegmentSelectionIndicator<S: InsettableShape>: View {
-    let appearance: SegmentIndicatorAppearance
-    let shape: S
+/// Each segment's bounds, so the lens can sit behind the selected one.
+private struct SegmentAnchorsKey: PreferenceKey {
+    static var defaultValue: [AnyHashable: Anchor<CGRect>] {
+        [:]
+    }
 
-    var body: some View {
-        ZStack {
-            if appearance.showsLens {
-                Color.clear.glassEffect(.regular.interactive(), in: shape)
-                    .transition(.opacity)
-            }
-            Color.clear.thawGlass(.selection(.accentColor, strength: .selected), in: shape)
-                .opacity(appearance.fillOpacity)
-        }
-        .scaleEffect(appearance.scale)
-        .shadow(color: .black.opacity(appearance.showsLens ? 0.2 : 0), radius: 6, y: 2)
+    static func reduce(value: inout [AnyHashable: Anchor<CGRect>], nextValue: () -> [AnyHashable: Anchor<CGRect>]) {
+        value.merge(nextValue()) { _, new in new }
     }
 }
 

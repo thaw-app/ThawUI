@@ -66,28 +66,35 @@ struct ThawCapsuleSegmentsTests {
         #expect(first != last)
     }
 
-    @Test("While the selection moves it lifts as a larger glass lens, and it rests as the flat fill")
+    @Test("While the selection moves a glass lens shows behind the fill, and the gold fill never disappears")
     func liftAppearance() {
         typealias Segments = ThawCapsuleSegments<Int>
         let lifted = Segments.indicatorAppearance(lifted: true, reduceTransparency: false, increasedContrast: false, reduceMotion: false)
         #expect(lifted.showsLens)
-        #expect(lifted.scale == 1.12)
-        #expect(lifted.fillOpacity == 0)
+        #expect(lifted.fillOpacity == 1)
         let resting = Segments.indicatorAppearance(lifted: false, reduceTransparency: false, increasedContrast: false, reduceMotion: false)
         #expect(!resting.showsLens)
-        #expect(resting.scale == 1)
         #expect(resting.fillOpacity == 1)
     }
 
-    @Test("Reduce Transparency, Increase Contrast and Reduce Motion never lift the lens")
+    @Test("Reduce Transparency, Increase Contrast and Reduce Motion never show the lens")
     func liftAccessibility() {
         typealias Segments = ThawCapsuleSegments<Int>
         for (transparency, contrast, motion) in [(true, false, false), (false, true, false), (false, false, true)] {
             let appearance = Segments.indicatorAppearance(lifted: true, reduceTransparency: transparency, increasedContrast: contrast, reduceMotion: motion)
             #expect(!appearance.showsLens)
-            #expect(appearance.scale == 1)
             #expect(appearance.fillOpacity == 1)
         }
-        #expect(Segments.liftDuration == .milliseconds(170))
+        #expect(Segments.liftDuration == .milliseconds(200))
+    }
+
+    @Test("The lens is wider than its segment and taller than the bar, on the same centre, so it bulges out")
+    func lensFrame() {
+        let segment = CGRect(x: 40, y: 3, width: 80, height: 24)
+        let lens = ThawCapsuleSegments<Int>.lensFrame(around: segment)
+        #expect(lens.width == 92)
+        #expect(lens.height == 31)
+        #expect(lens.midX == segment.midX)
+        #expect(lens.midY == segment.midY)
     }
 }

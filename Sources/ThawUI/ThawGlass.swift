@@ -27,6 +27,9 @@ public enum ThawGlass {
     /// The accent wash, graded: .selected is a flat neutral-and-accent fill for rows in a list
     /// that already floats, .hover the lighter, strokeless step.
     case selection(Color, strength: SelectionStrength)
+    /// A moving selection's glass droplet, lightly tinted. It must share a GlassEffectContainer with the
+    /// glass it moves over, since glass can't sample glass; without transparency or with more contrast it draws nothing.
+    case lens(Color)
 
     public enum SelectionStrength {
         case hover
@@ -101,6 +104,12 @@ private struct ThawGlassModifier<S: InsettableShape>: ViewModifier {
         case let .selection(tint, .hover):
             // Flat: a glass layer for each hover pass costs more than the depth is worth.
             content.background(shape.fill(tint.opacity(reduceTransparency ? 0.2 : 0.1)))
+        case let .lens(tint):
+            if reduceTransparency || increasedContrast {
+                content
+            } else {
+                content.glassEffect(.regular.tint(tint.opacity(0.2)).interactive(), in: shape)
+            }
         }
     }
 
