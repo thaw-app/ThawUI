@@ -178,7 +178,7 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
             .background {
                 if isSelected {
                     SegmentSelectionIndicator(appearance: appearance, shape: shape)
-                    .matchedGeometryEffect(id: "selection", in: selectionSpace)
+                        .matchedGeometryEffect(id: "selection", in: selectionSpace)
                 }
             }
             .contentShape([.interaction, .focusEffect], shape)
