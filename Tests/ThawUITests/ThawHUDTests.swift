@@ -71,4 +71,35 @@ struct ThawHUDTests {
 
         #expect(frame.width <= screen.frame.width - 2 * ThawHUDPlacement.edgeInset)
     }
+
+    @Test("A timed dismissal fades the capsule out, and a new capsule during the fade stays up")
+    func fadesOutAndSurvivesAReshow() async throws {
+        let screen = try #require(NSScreen.screens.first)
+        ThawHUD.dismiss()
+        #expect(ThawHUD.fadeDuration == 0.15)
+
+        ThawHUD.show(symbol: "checkmark", text: "Moved", on: screen, displayDuration: .milliseconds(10))
+        let panel = try #require(hudPanels().first)
+        try await Task.sleep(for: .milliseconds(60))
+        ThawHUD.show(symbol: "xmark", text: "Didn't move", tint: .orange, on: screen, displayDuration: .seconds(5))
+        try await Task.sleep(for: .milliseconds(300))
+        #expect(panel.isVisible, "the second capsule cancelled the first one's fade")
+        #expect(panel.alphaValue == 1)
+        ThawHUD.dismiss()
+        #expect(!panel.isVisible)
+    }
+
+    @Test("Showing a capsule asks VoiceOver to read its text, since the capsule itself is hidden from it")
+    func announcesItsText() throws {
+        let screen = try #require(NSScreen.screens.first)
+        let original = ThawHUD.announce
+        defer { ThawHUD.announce = original }
+        var announced: [String] = []
+        ThawHUD.announce = { announced.append($0) }
+
+        ThawHUD.show(symbol: "checkmark", text: "Moved to Hidden", on: screen)
+        ThawHUD.dismiss()
+
+        #expect(announced == ["Moved to Hidden"])
+    }
 }

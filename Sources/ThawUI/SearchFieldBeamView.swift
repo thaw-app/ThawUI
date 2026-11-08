@@ -74,7 +74,7 @@ public struct SearchFieldBeamView<Outline: InsettableShape>: View {
         }
         .opacity(isShown ? 1 : 0)
         .onAppear {
-            withAnimation(.easeOut(duration: 0.6)) { isShown = true }
+            withThawAnimation(ThawMotion.reveal, reduced: .fade) { isShown = true }
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)

@@ -71,4 +71,9 @@ struct ThawSidebarTests {
         #expect(custom.dimmedTitle == .green)
         #expect(custom.icon == .blue)
     }
+
+    @Test("A sidebar icon uses a text style, so it grows with its title instead of staying 15 pt")
+    func iconFollowsTextSize() {
+        #expect(ThawType.sidebarSymbol == Font.system(.title3))
+    }
 }

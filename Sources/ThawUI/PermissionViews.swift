@@ -164,26 +164,29 @@ public struct PermissionStatusControl: View {
                 Button(requestTitle, action: request)
             }
         case .filled:
-            if permission.hasPermission {
+            // One view in both states, so the symbol can swap in place when access is granted.
+            let granted = permission.hasPermission
+            Button(action: request) {
                 Label {
-                    Text(strings.granted)
+                    Text(granted ? strings.granted : requestTitle)
                 } icon: {
-                    Image(systemName: "checkmark.circle.fill")
+                    Image(systemName: Self.symbolName(granted: granted))
+                        .contentTransition(.symbolEffect(.replace))
                 }
-                .font(ThawType.detail.weight(.medium))
-                .foregroundStyle(.green)
+                .font(ThawType.detail.weight(granted ? .medium : .semibold))
+                .foregroundStyle(granted ? AnyShapeStyle(.green) : AnyShapeStyle(.primary))
                 .frame(maxWidth: .infinity)
                 .frame(height: 30)
-            } else {
-                Button(action: request) {
-                    Text(requestTitle)
-                        .font(ThawType.detail.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 30)
-                }
-                .buttonStyle(.glass)
             }
+            .buttonStyle(.glass)
+            .allowsHitTesting(!granted)
+            .accessibilityAddTraits(granted ? .isStaticText : [])
         }
+    }
+
+    /// The card's symbol: an empty circle that fills with a checkmark once access is granted.
+    static func symbolName(granted: Bool) -> String {
+        granted ? "checkmark.circle.fill" : "circle"
     }
 
     /// After a declined prompt macOS will not ask again, so the control leads to System Settings.

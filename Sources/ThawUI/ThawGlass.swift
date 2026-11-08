@@ -27,6 +27,9 @@ public enum ThawGlass {
     /// The accent wash, graded: .selected is a flat neutral-and-accent fill for rows in a list
     /// that already floats, .hover the lighter, strokeless step.
     case selection(Color, strength: SelectionStrength)
+    /// A segmented control's track: translucent material, not glass, so a glass selection drawn over it
+    /// can sample it. Solid under Reduce Transparency, with a stronger edge under Increase Contrast.
+    case track
 
     public enum SelectionStrength {
         case hover
@@ -101,6 +104,10 @@ private struct ThawGlassModifier<S: InsettableShape>: ViewModifier {
         case let .selection(tint, .hover):
             // Flat: a glass layer for each hover pass costs more than the depth is worth.
             content.background(shape.fill(tint.opacity(reduceTransparency ? 0.2 : 0.1)))
+        case .track:
+            content
+                .background(shape.fill(reduceTransparency ? AnyShapeStyle(.background) : AnyShapeStyle(.regularMaterial)))
+                .overlay(shape.strokeBorder(hairline(0.25), lineWidth: hairlineWidth))
         }
     }
 
