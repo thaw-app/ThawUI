@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-/// Choices in one glass capsule, each as wide as its label. Without titles, the
-/// titles become help and VoiceOver labels.
+/// Choices in one glass capsule: the system's tabs control on macOS 27, a capsule drawn by hand on
+/// macOS 26. Without titles, the titles become help and VoiceOver labels.
 public struct ThawPillPicker<Value: Hashable>: View {
     public typealias Option = ThawSegment<Value>
 

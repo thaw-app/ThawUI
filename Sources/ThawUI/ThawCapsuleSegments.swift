@@ -195,11 +195,20 @@ struct ThawCapsuleSegments<Value: Hashable>: View {
     }
 
     var body: some View {
+        if #available(macOS 27, *) {
+            ThawTabSegments(selection: $selection, segments: segments, sizing: sizing)
+        } else {
+            capsule
+        }
+    }
+
+    /// The capsule drawn by hand, for macOS 26, which has no tabs control.
+    private var capsule: some View {
         let lensShown = Self.showsLens(reduceTransparency: reduceTransparency, increasedContrast: contrast == .increased)
         let swollen = Self.swells(pressed: isPressed, moving: isMoving, reduceMotion: reduceMotion)
         let lensSegment = segmentFrames[lensTarget ?? selection]
         let overhang = Self.lensOverhang(widestSegment: segmentFrames.values.map(\.width).max() ?? 0)
-        HStack(spacing: sizing.spacing) {
+        return HStack(spacing: sizing.spacing) {
             ForEach(segments, id: \.value) { segment in
                 segmentButton(segment)
             }
@@ -276,7 +285,7 @@ private enum SegmentSpace {
 
 /// A segment's tooltip, left off entirely when it has none, so an empty one
 /// never covers a tooltip set further out.
-private struct SegmentHelp: ViewModifier {
+struct SegmentHelp: ViewModifier {
     let text: LocalizedStringResource?
 
     func body(content: Content) -> some View {

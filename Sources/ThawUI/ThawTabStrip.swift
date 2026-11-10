@@ -13,8 +13,8 @@ public nonisolated protocol ThawTab: Hashable {
     var systemImage: String { get }
 }
 
-/// Icon-and-title tabs sharing the strip's width; the full-width counterpart to
-/// ThawPillPicker, for Settings pages, where a segmented control is not allowed.
+/// Icon-and-title tabs for Settings pages: the larger counterpart to ThawPillPicker. On macOS 27 it is
+/// the system's tabs control, centred and as wide as its tabs; on macOS 26 the tabs share the strip's width.
 public struct ThawTabStrip<Tab: Hashable>: View {
     public typealias Item = ThawSegment<Tab>
 
