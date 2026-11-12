@@ -27,7 +27,7 @@ public struct ReadingPathItem: Identifiable, Equatable {
 
 /// The scaffold behind long-form windows: a path along the top, a large title, the body in one column,
 /// and outbound links, on the settings glass. It also chromes the host window.
-public struct ReadingPage<Content: View, Links: View>: View {
+public struct ReadingPage<Content: View, Links: View, Accessory: View>: View {
     @Environment(\.dismiss) private var dismiss
 
     public let appName: String
@@ -40,6 +40,8 @@ public struct ReadingPage<Content: View, Links: View>: View {
     public let olderLabel: LocalizedStringResource
     @ViewBuilder public let content: () -> Content
     @ViewBuilder public let links: () -> Links
+    /// A control beside the title, such as a filter for the path; below it when the window is too narrow.
+    @ViewBuilder public let accessory: () -> Accessory
 
     public init(
         appName: String,
@@ -50,7 +52,8 @@ public struct ReadingPage<Content: View, Links: View>: View {
         subtitle: Text? = nil,
         olderLabel: LocalizedStringResource,
         @ViewBuilder content: @escaping () -> Content,
-        @ViewBuilder links: @escaping () -> Links
+        @ViewBuilder links: @escaping () -> Links,
+        @ViewBuilder accessory: @escaping () -> Accessory
     ) {
         self.appName = appName
         self.path = path
@@ -61,6 +64,7 @@ public struct ReadingPage<Content: View, Links: View>: View {
         self.olderLabel = olderLabel
         self.content = content
         self.links = links
+        self.accessory = accessory
     }
 
     public var body: some View {
@@ -72,17 +76,7 @@ public struct ReadingPage<Content: View, Links: View>: View {
                     .padding(.top, 48)
                     .padding(.bottom, 72)
 
-                title
-                    .font(ThawType.hero)
-                    .lineLimit(2)
-                    .accessibilityAddTraits(.isHeader)
-
-                if let subtitle {
-                    subtitle
-                        .font(ThawType.label)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, ThawSpacing.row)
-                }
+                heading
 
                 content()
                     .padding(.top, 44)
@@ -130,6 +124,44 @@ public struct ReadingPage<Content: View, Links: View>: View {
         }
         .onExitCommand {
             dismiss()
+        }
+    }
+
+    // MARK: Heading
+
+    /// The title beside the accessory when both fit on one line, otherwise the accessory under the subtitle.
+    private var heading: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: ThawSpacing.inset) {
+                titleBlock
+                    .fixedSize(horizontal: true, vertical: false)
+                Spacer(minLength: ThawSpacing.inset)
+                // At its own width, so a control that fills its row still sits at the trailing edge.
+                accessory()
+                    .fixedSize()
+            }
+            VStack(alignment: .leading, spacing: 0) {
+                titleBlock
+                accessory()
+                    .fixedSize()
+                    .padding(.top, 28)
+            }
+        }
+    }
+
+    private var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            title
+                .font(ThawType.hero)
+                .lineLimit(2)
+                .accessibilityAddTraits(.isHeader)
+
+            if let subtitle {
+                subtitle
+                    .font(ThawType.label)
+                    .foregroundStyle(.secondary)
+                    .padding(.top, ThawSpacing.row)
+            }
         }
     }
 
@@ -252,5 +284,32 @@ public struct ReadingParagraph: View {
             .font(ReadingPageType.body)
             .lineSpacing(ReadingPageType.lineSpacing)
             .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+public extension ReadingPage where Accessory == EmptyView {
+    init(
+        appName: String,
+        path: [ReadingPathItem],
+        selection: Binding<String?>,
+        visiblePathCount: Int = 5,
+        title: Text,
+        subtitle: Text? = nil,
+        olderLabel: LocalizedStringResource,
+        @ViewBuilder content: @escaping () -> Content,
+        @ViewBuilder links: @escaping () -> Links
+    ) {
+        self.init(
+            appName: appName,
+            path: path,
+            selection: selection,
+            visiblePathCount: visiblePathCount,
+            title: title,
+            subtitle: subtitle,
+            olderLabel: olderLabel,
+            content: content,
+            links: links,
+            accessory: { EmptyView() }
+        )
     }
 }

@@ -109,9 +109,6 @@ public struct WhatsNewView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else if !releases.isEmpty {
                 VStack(alignment: .leading, spacing: 28) {
-                    if info.showsChannels {
-                        channelPicker
-                    }
                     if let release = selectedRelease {
                         updateNotice(for: release)
                         sourceNotice
@@ -136,6 +133,10 @@ public struct WhatsNewView: View {
                 openURL(info.releasesURL)
             }
             .buttonStyle(.settingsGlass)
+        } accessory: {
+            if info.showsChannels, !isLoading, !releases.isEmpty {
+                channelPicker
+            }
         }
         .task(id: TaskKey(fetch: allowFetch, update: pendingUpdateVersion)) {
             // Fetched when the Privacy switch allows it, otherwise the last fetched copy; nothing is bundled.
