@@ -38,6 +38,32 @@ struct ChangelogDocumentTests {
         .joined(separator: "\n")
     }
 
+    @Test("A tip after the intro paragraph is a callout, not a paragraph")
+    func tipAfterIntro() throws {
+        let document = ChangelogDocument.parse("""
+        ## [3.0.0-alpha.14] - 2026-11-11
+
+        **macOS 27 only · Build 125**
+
+        Layout gets a pop-out window.
+
+        > [!TIP]
+        > If you'd like to help, [#1529](https://example.com/1529) lists work that's ready to pick up.
+
+        ### New
+
+        - Something.
+        """)
+        let release = try #require(document.releases.first)
+        #expect(release.intro.count == 2)
+        guard case let .callout(callout) = try #require(release.intro.last) else {
+            Issue.record("The tip was read as plain text")
+            return
+        }
+        #expect(callout.kind == .tip)
+        #expect(plain(callout) == "If you'd like to help, #1529 lists work that's ready to pick up.")
+    }
+
     // MARK: - Document shape
 
     private static let fullDocument = """

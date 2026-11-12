@@ -46,6 +46,18 @@ struct WhatsNewChannelTests {
         #expect(!releases.contains { UpdateChannel(version: $0.version) == .stable })
     }
 
+    @Test("The page opens on the installed version, not a newer release", arguments: [
+        (["3.0.0-beta.7", "3.0.0-beta.6", "3.0.0-beta.5"], "3.0.0-beta.6", "3.0.0-beta.6"),
+        (["3.0.0-beta.6", "3.0.0-beta.5"], "3.0.0-beta.6", "3.0.0-beta.6"),
+        (["3.0.0-beta.6", "3.0.0-beta.5"], "3.0.0-alpha.13", "3.0.0-beta.6"),
+        (["3.0.0-beta.6"], "3.0.0-beta.7", "3.0.0-beta.6"),
+        ([], "3.0.0-beta.6", nil),
+    ] as [([String], String, String?)])
+    @MainActor
+    func opensOnInstalled(versions: [String], installed: String, expected: String?) {
+        #expect(WhatsNewView.openingVersion(in: versions, installed: installed) == expected)
+    }
+
     @Test("Each channel tab has its own icon")
     func channelIcons() {
         #expect(Set(UpdateChannel.allCases.map(\.systemImage)).count == UpdateChannel.allCases.count)

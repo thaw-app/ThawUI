@@ -81,7 +81,7 @@ public struct WhatsNewView: View {
     @State private var selectedVersion: String?
     /// Every shown release, newest first; the path shows the chosen channel's.
     @State private var releases: [ChangelogDocument.Release] = []
-    /// Opens on the running build's channel, so the newest notes for this Mac come first.
+    /// Opens on the running build's channel, so the notes for this Mac come first.
     @State private var channel: UpdateChannel
     @State private var source: ChangelogDocument.Source = .unavailable
     @State private var isLoading = true
@@ -109,9 +109,6 @@ public struct WhatsNewView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             } else if !releases.isEmpty {
                 VStack(alignment: .leading, spacing: 28) {
-                    if info.showsChannels {
-                        channelPicker
-                    }
                     if let release = selectedRelease {
                         updateNotice(for: release)
                         sourceNotice
@@ -136,6 +133,10 @@ public struct WhatsNewView: View {
                 openURL(info.releasesURL)
             }
             .buttonStyle(.settingsGlass)
+        } accessory: {
+            if info.showsChannels, !isLoading, !releases.isEmpty {
+                channelPicker
+            }
         }
         .task(id: TaskKey(fetch: allowFetch, update: pendingUpdateVersion)) {
             // Fetched when the Privacy switch allows it, otherwise the last fetched copy; nothing is bundled.
@@ -148,7 +149,7 @@ public struct WhatsNewView: View {
                 channel = UpdateChannel(version: update)
                 selectedVersion = update
             } else if selectedVersion == nil || !releases.contains(where: { $0.version == selectedVersion }) {
-                selectedVersion = channelReleases.first?.version
+                selectedVersion = Self.openingVersion(in: channelReleases.map(\.version), installed: info.version)
             }
             isLoading = false
         }
@@ -161,11 +162,17 @@ public struct WhatsNewView: View {
                 get: { channel },
                 set: { newChannel in
                     channel = newChannel
-                    selectedVersion = channelReleases.first?.version
+                    selectedVersion = Self.openingVersion(in: channelReleases.map(\.version), installed: info.version)
                 }
             ),
             items: UpdateChannel.allCases.map { .init($0, title: strings.channelName($0), systemImage: $0.systemImage) }
         )
+    }
+
+    /// The installed version's notes when the list has them, so a newer release doesn't hide what this Mac runs;
+    /// otherwise the newest.
+    static func openingVersion(in versions: [String], installed: String) -> String? {
+        versions.contains(installed) ? installed : versions.first
     }
 
     /// Reloads when the Privacy switch flips or an update opens the window,
