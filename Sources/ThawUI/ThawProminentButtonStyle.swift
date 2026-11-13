@@ -38,12 +38,13 @@ public struct ThawProminentButtonStyle: ButtonStyle {
             .contentShape([.interaction, .focusEffect], shape)
     }
 
+    /// Vertical padding keeps each size as tall as the system glass button beside it.
     private var padding: (horizontal: CGFloat, vertical: CGFloat) {
         switch controlSize {
         case .mini: (6, 1)
         case .small: (10, 3)
-        case .large, .extraLarge: (16, 8)
-        default: (12, 5)
+        case .large, .extraLarge: (16, 6)
+        default: (12, 4)
         }
     }
 }
