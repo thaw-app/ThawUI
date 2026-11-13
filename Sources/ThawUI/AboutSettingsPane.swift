@@ -238,7 +238,7 @@ public struct AboutSettingsPane: View {
             updateRow(strings.updateChannel) {
                 ThawPillPicker(strings.updateChannel, selection: updates.channel, values: updates.channels, title: strings.channelName)
             }
-            Divider()
+            rowSeparator
             updateRow(strings.automaticUpdates) {
                 ThawPillPicker(
                     strings.automaticUpdates,
@@ -248,7 +248,7 @@ public struct AboutSettingsPane: View {
                     }
                 )
             }
-            Divider()
+            rowSeparator
             updateRow(strings.footnote(lastCheck: updates.model.lastUpdateCheckDate), isSecondary: true) {
                 Button(strings.checkNow) {
                     updates.model.checkForUpdates()
@@ -263,6 +263,12 @@ public struct AboutSettingsPane: View {
             RoundedRectangle(cornerRadius: ThawRadius.card, style: .continuous)
                 .strokeBorder(.separator.opacity(0.5), lineWidth: 0.5)
         }
+    }
+
+    /// Inset to the rows' text, as a grouped Settings section draws its separators.
+    private var rowSeparator: some View {
+        Divider()
+            .padding(.horizontal, ThawSpacing.inset)
     }
 
     private func updateRow(

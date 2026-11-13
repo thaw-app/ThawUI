@@ -16,10 +16,27 @@ struct ThawTabSegments<Value: Hashable>: View {
     let sizing: ThawCapsuleSegments<Value>.Sizing
 
     var body: some View {
+        // Chosen here: a branch inside a segment's label leaks the picker's selection binding each time it closes.
+        if sizing.showsTitles {
+            picker.labelStyle(.titleAndIcon)
+        } else {
+            picker.labelStyle(.iconOnly)
+        }
+    }
+
+    /// Each segment is one Label, so a symbol alone keeps the title as its name.
+    private var picker: some View {
         Picker(selection: $selection) {
             ForEach(segments, id: \.value) { segment in
-                SegmentLabel(segment: segment, showsTitle: sizing.showsTitles)
-                    .tag(segment.value)
+                Label {
+                    Text(segment.title)
+                } icon: {
+                    if let systemImage = segment.systemImage {
+                        Image(systemName: systemImage)
+                    }
+                }
+                .modifier(SegmentHelp(text: segment.help))
+                .tag(segment.value)
             }
         } label: {
             EmptyView()
@@ -29,32 +46,5 @@ struct ThawTabSegments<Value: Hashable>: View {
         .controlSize(sizing == .filling ? .large : .regular)
         .frame(maxWidth: sizing.maxWidth)
         .fixedSize(horizontal: sizing != .filling, vertical: true)
-    }
-}
-
-/// A segment's symbol, title or both. A symbol alone keeps the title as its name and its help.
-private struct SegmentLabel<Value: Hashable>: View {
-    let segment: ThawSegment<Value>
-    let showsTitle: Bool
-
-    var body: some View {
-        if let systemImage = segment.systemImage {
-            if showsTitle {
-                Label {
-                    Text(segment.title)
-                } icon: {
-                    Image(systemName: systemImage)
-                }
-                .labelStyle(.titleAndIcon)
-                .modifier(SegmentHelp(text: segment.help))
-            } else {
-                Image(systemName: systemImage)
-                    .accessibilityLabel(Text(segment.title))
-                    .modifier(SegmentHelp(text: segment.help))
-            }
-        } else {
-            Text(segment.title)
-                .modifier(SegmentHelp(text: segment.help))
-        }
     }
 }

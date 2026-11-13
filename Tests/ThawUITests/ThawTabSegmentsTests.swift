@@ -10,6 +10,17 @@ import SwiftUI
 import Testing
 @testable import ThawUI
 
+/// A pill picker bound to state, as settings pages bind it; a constant binding can't form the cycle.
+private struct StatefulPillPicker: View {
+    let options: [ThawSegment<Int>]
+    let showsTitles: Bool
+    @State private var selection = 1
+
+    var body: some View {
+        ThawPillPicker(selection: $selection, options: options, showsTitles: showsTitles)
+    }
+}
+
 @MainActor
 @Suite("Tab segments")
 struct ThawTabSegmentsTests {
@@ -48,6 +59,45 @@ struct ThawTabSegmentsTests {
         let pill = Self.fittingSize(of: Self.segments(.fitted(showsTitles: true)))
         let strip = Self.fittingSize(of: Self.segments(.filling))
         #expect(strip.height > pill.height)
+    }
+
+    /// Retain cycles in this process that hold a segment, as /usr/bin/leaks reports them; nil when leaks can't run.
+    private static func segmentCycles() -> Int? {
+        let leaks = Process()
+        leaks.executableURL = URL(fileURLWithPath: "/usr/bin/leaks")
+        leaks.arguments = ["\(getpid())"]
+        let output = Pipe()
+        leaks.standardOutput = output
+        leaks.standardError = Pipe()
+        guard (try? leaks.run()) != nil else { return nil }
+        let report = String(decoding: output.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+        leaks.waitUntilExit()
+        // 0 is no leaks and 1 is leaks found; anything else means the scan didn't run.
+        guard leaks.terminationStatus <= 1 else { return nil }
+        return report.split(separator: "\n").count { $0.contains("ROOT CYCLE") && $0.contains("ThawSegment") }
+    }
+
+    @Test("Closing a tab strip leaves nothing behind, with titles, symbols or both")
+    func closingLeavesNoCycle() async throws {
+        let before = try #require(Self.segmentCycles())
+        let titled = Self.options.map { ThawSegment($0.value, title: $0.title) }
+        for _ in 0 ..< 4 {
+            for showsTitles in [true, false] {
+                for options in [Self.options, titled] {
+                    var render: OffscreenRender<StatefulPillPicker>? = OffscreenRender(
+                        StatefulPillPicker(options: options, showsTitles: showsTitles),
+                        size: CGSize(width: 420, height: 44)
+                    )
+                    // The cycle forms only once SwiftUI has finished updating the picker, and frees on a later turn.
+                    await render?.settle(within: .milliseconds(100)) { false }
+                    _ = try render?.pixels()
+                    render = nil
+                    try await Task.sleep(for: .milliseconds(100))
+                }
+            }
+        }
+        try await Task.sleep(for: .seconds(1))
+        #expect(Self.segmentCycles() == before)
     }
 
     @Test("The pickers draw the system control, with the selection shown")
