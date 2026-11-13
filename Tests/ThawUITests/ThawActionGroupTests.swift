@@ -33,7 +33,7 @@ struct ThawActionGroupTests {
         #expect(ThawGroupedButtonStyle.fillOpacity(isPressed: false, isHovered: false, isEnabled: true) == nil)
     }
 
-    @Test("Each button adds width, and the capsule is at least a grouped button tall")
+    @Test("Each button adds width")
     func layout() {
         let one = Self.renderedSize(of: ThawActionGroup {
             Button("First") { /* never pressed here */ }
@@ -43,7 +43,20 @@ struct ThawActionGroupTests {
             Button("Second") { /* never pressed here */ }
         }.buttonStyle(.thawGrouped))
         #expect(two.width > one.width)
-        #expect(one.height >= 26)
+    }
+
+    @Test("A group and a prominent button are as tall as the glass button beside them", arguments: [ControlSize.small, .regular, .large])
+    func matchesGlassHeight(size: ControlSize) {
+        let glass = Self.renderedSize(of: Button("Glass") { /* never pressed here */ }.buttonStyle(.glass).controlSize(size))
+        let prominent = Self.renderedSize(of: Button("Prominent") { /* never pressed here */ }.buttonStyle(.thawProminent).controlSize(size))
+        #expect(prominent.height == glass.height, "prominent \(prominent.height) pt, glass \(glass.height) pt")
+        if size == .regular {
+            let group = Self.renderedSize(of: ThawActionGroup {
+                Button("First") { /* never pressed here */ }
+                Button("Second") { /* never pressed here */ }
+            }.buttonStyle(.thawGrouped))
+            #expect(group.height == glass.height)
+        }
     }
 
     @Test("A disabled group still lays out")

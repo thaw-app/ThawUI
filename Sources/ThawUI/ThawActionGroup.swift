@@ -52,6 +52,9 @@ public struct ThawGroupedButtonStyle: ButtonStyle {
         return isHovered && isEnabled ? 0.07 : nil
     }
 
+    /// Short enough that the group's capsule, with its inset, is as tall as a regular glass button.
+    static let height: CGFloat = 24 - 2 * ThawSpacing.capsuleInset
+
     private struct GroupedButton: View {
         let configuration: Configuration
         @State private var isHovered = false
@@ -61,8 +64,10 @@ public struct ThawGroupedButtonStyle: ButtonStyle {
             let shape = Capsule(style: .continuous)
             configuration.label
                 .font(ThawType.body)
+                // Its own ink, as a glass button has: a Settings row draws its value side in grey.
+                .foregroundStyle(.primary)
                 .padding(.horizontal, ThawSpacing.inset)
-                .frame(minHeight: 26)
+                .frame(minHeight: ThawGroupedButtonStyle.height)
                 .background {
                     if let opacity = ThawGroupedButtonStyle.fillOpacity(
                         isPressed: configuration.isPressed,
