@@ -64,6 +64,8 @@ public struct ThawGroupedButtonStyle: ButtonStyle {
             let shape = Capsule(style: .continuous)
             configuration.label
                 .font(ThawType.body)
+                // Its own ink, as a glass button has: a Settings row draws its value side in grey.
+                .foregroundStyle(.primary)
                 .padding(.horizontal, ThawSpacing.inset)
                 .frame(minHeight: ThawGroupedButtonStyle.height)
                 .background {
