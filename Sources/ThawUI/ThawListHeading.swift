@@ -28,3 +28,14 @@ public struct ThawListHeading: View {
             .accessibilityAddTraits(.isHeader)
     }
 }
+
+#if DEBUG
+    #Preview("List heading") {
+        VStack(alignment: .leading, spacing: 8) {
+            ThawListHeading("Shown")
+            ThawListHeading("A heading that is far too long to fit on a single line of this narrow preview")
+        }
+        .padding()
+        .frame(width: 260)
+    }
+#endif

@@ -65,3 +65,21 @@ public struct ThawBadge: View {
         }
     }
 }
+
+#if DEBUG
+    #Preview("Badges") {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                ThawBadge("Notch")
+                ThawBadge("Disconnected")
+                ThawBadge("Customized", tone: .tinted(.accentColor))
+            }
+            HStack {
+                ThawBadge.alpha("ALPHA")
+                ThawBadge.beta("BETA")
+            }
+            ThawBadge("A much longer status that still stays on one line")
+        }
+        .padding()
+    }
+#endif
