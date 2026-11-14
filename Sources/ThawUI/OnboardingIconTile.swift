@@ -43,3 +43,15 @@ public struct OnboardingIconTile: View {
             .accessibilityHidden(true)
     }
 }
+
+#if DEBUG
+    #Preview("Icon tiles") {
+        HStack(spacing: 12) {
+            OnboardingIconTile(symbol: "hand.raised", tint: .blue)
+            OnboardingIconTile(symbol: "keyboard", tint: .orange)
+            OnboardingIconTile(symbol: "macwindow", tint: .green, side: 44)
+            OnboardingIconTile(image: Image(systemName: "star.fill"), tint: .purple, side: 64)
+        }
+        .padding()
+    }
+#endif

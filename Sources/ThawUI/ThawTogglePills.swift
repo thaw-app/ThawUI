@@ -56,3 +56,31 @@ struct ThawTogglePillStyle: ToggleStyle {
         }
     }
 }
+
+#if DEBUG
+    private struct ThawTogglePillsPreview: View {
+        @State private var mon = true
+        @State private var tue = false
+        @State private var wed = true
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 16) {
+                ThawTogglePills {
+                    Toggle("Mon", isOn: $mon)
+                    Toggle("Tue", isOn: $tue)
+                    Toggle("Wed", isOn: $wed)
+                }
+                ThawTogglePills {
+                    Toggle("Disabled on", isOn: .constant(true))
+                    Toggle("Disabled off", isOn: .constant(false))
+                }
+                .disabled(true)
+            }
+            .padding()
+        }
+    }
+
+    #Preview("Toggle pills") {
+        ThawTogglePillsPreview()
+    }
+#endif

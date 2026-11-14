@@ -33,3 +33,14 @@ public struct OnboardingStepIndicator: View {
         .accessibilityLabel(Text(label))
     }
 }
+
+#if DEBUG
+    #Preview("Step indicator") {
+        VStack(spacing: 16) {
+            OnboardingStepIndicator(step: 1, total: 3, label: "Step 1 of 3")
+            OnboardingStepIndicator(step: 2, total: 3, label: "Step 2 of 3")
+            OnboardingStepIndicator(step: 5, total: 5, label: "Step 5 of 5")
+        }
+        .padding()
+    }
+#endif

@@ -78,3 +78,24 @@ public struct ThawEmptyState: View {
         }
     }
 }
+
+#if DEBUG
+    #Preview("Empty states") {
+        HStack(alignment: .top, spacing: 0) {
+            ThawEmptyState(
+                systemImage: "tray",
+                title: "Nothing here yet",
+                caption: "Items you add will show up in this list."
+            )
+            ThawEmptyState(systemImage: "tray", title: "Loading", isLoading: true)
+            ThawEmptyState(
+                systemImage: "exclamationmark.triangle",
+                title: "Something went wrong",
+                caption: "A longer caption that wraps onto a second line to show how the placeholder centres its text.",
+                actionTitle: "Try Again",
+                action: {}
+            )
+        }
+        .frame(width: 720, height: 220)
+    }
+#endif
