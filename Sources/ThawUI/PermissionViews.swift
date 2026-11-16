@@ -206,3 +206,95 @@ public struct PermissionStatusControl: View {
         }
     }
 }
+
+#if DEBUG
+    private struct SamplePermission: PermissionPresentable {
+        var titleText: Text
+        var iconName: String
+        var iconColor: Color
+        var isRequired: Bool
+        var hasPermission: Bool
+        var wasDeclined = false
+        var hasSettingsPane = true
+
+        // The sample does nothing: the preview must not ask the system for anything.
+        func performRequest() { /* Preview only. */ }
+        func openSettingsPane() { /* Preview only. */ }
+    }
+
+    private enum PermissionPreviewData {
+        static let strings = PermissionStrings(
+            optional: "Optional",
+            granted: "Granted",
+            grantAccess: "Grant access",
+            openSettings: "Open Settings"
+        )
+
+        static let samples = [
+            SamplePermission(
+                titleText: Text("Accessibility"),
+                iconName: "accessibility",
+                iconColor: .blue,
+                isRequired: true,
+                hasPermission: false
+            ),
+            SamplePermission(
+                titleText: Text("Screen recording"),
+                iconName: "record.circle",
+                iconColor: .red,
+                isRequired: false,
+                hasPermission: true
+            ),
+            SamplePermission(
+                titleText: Text("Notifications"),
+                iconName: "bell.badge",
+                iconColor: .orange,
+                isRequired: false,
+                hasPermission: false,
+                wasDeclined: true
+            ),
+        ]
+    }
+
+    #Preview("Permission rows") {
+        Form {
+            ForEach(Array(PermissionPreviewData.samples.enumerated()), id: \.offset) { _, permission in
+                LabeledContent {
+                    PermissionStatusControl(permission: permission, strings: PermissionPreviewData.strings)
+                } label: {
+                    PermissionLabel(
+                        permission: permission,
+                        strings: PermissionPreviewData.strings,
+                        badgePlacement: .trailing
+                    )
+                }
+            }
+        }
+        .formStyle(.grouped)
+        .frame(width: 520, height: 260)
+    }
+
+    #Preview("Permission cards") {
+        HStack(alignment: .top, spacing: ThawSpacing.inset) {
+            ForEach(Array(PermissionPreviewData.samples.enumerated()), id: \.offset) { _, permission in
+                VStack(alignment: .leading, spacing: ThawSpacing.inset) {
+                    PermissionLabel(
+                        permission: permission,
+                        strings: PermissionPreviewData.strings,
+                        titleFont: ThawType.heading,
+                        badgePlacement: .below
+                    )
+                    PermissionStatusControl(
+                        permission: permission,
+                        strings: PermissionPreviewData.strings,
+                        layout: .filled
+                    )
+                }
+                .padding(ThawSpacing.inset)
+                .onboardingCard()
+            }
+        }
+        .padding()
+        .frame(width: 640)
+    }
+#endif

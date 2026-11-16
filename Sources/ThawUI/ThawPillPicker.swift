@@ -62,3 +62,43 @@ public struct ThawPillPicker<Value: Hashable>: View {
         )
     }
 }
+
+#if DEBUG
+    private struct ThawPillPickerPreview: View {
+        enum Mode: CaseIterable {
+            case hidden, shown, always
+        }
+
+        @State private var mode = Mode.shown
+        @State private var icon = Mode.hidden
+
+        var body: some View {
+            VStack(alignment: .leading, spacing: 16) {
+                ThawPillPicker("Visibility", selection: $mode, values: Mode.allCases) { mode in
+                    switch mode {
+                    case .hidden: "Hidden"
+                    case .shown: "Shown"
+                    case .always: "Always shown, even with a long name"
+                    }
+                }
+                ThawPillPicker(
+                    selection: $icon,
+                    options: [
+                        .init(Mode.hidden, title: "Hidden", systemImage: "eye.slash"),
+                        .init(Mode.shown, title: "Shown", systemImage: "eye"),
+                        .init(Mode.always, title: "Always", systemImage: "pin"),
+                    ],
+                    showsTitles: false
+                )
+                ThawPillPicker("Disabled", selection: .constant(Mode.shown), values: Mode.allCases) { _ in "Option" }
+                    .disabled(true)
+            }
+            .padding()
+            .frame(width: 520)
+        }
+    }
+
+    #Preview("Pill picker") {
+        ThawPillPickerPreview()
+    }
+#endif

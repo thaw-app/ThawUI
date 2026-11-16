@@ -37,3 +37,17 @@ public struct ThawRowLabel: View {
         }
     }
 }
+
+#if DEBUG
+    #Preview("Row label") {
+        Form {
+            ThawRowLabel("Title only")
+            ThawRowLabel("With detail", detail: "One line of detail under the title.")
+            ThawRowLabel("Verbatim detail", verbatimDetail: "com.example.app")
+            ThawRowLabel("Descriptions hidden", detail: "This detail is not shown.")
+                .environment(\.settingsDescriptionsVisible, false)
+        }
+        .formStyle(.grouped)
+        .frame(width: 400, height: 260)
+    }
+#endif

@@ -24,3 +24,31 @@ public struct PanelBottomBar<Content: View>: View {
         .padding(.vertical, ThawSpacing.row)
     }
 }
+
+#if DEBUG
+    #Preview("Panel bottom bar") {
+        PanelBottomBar {
+            Text("12 items")
+                .font(ThawType.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button { /* Preview only. */ } label: {
+                HStack(spacing: 4) {
+                    Text("Open")
+                    KeyCapView(systemImage: "return")
+                }
+            }
+            Button { /* Preview only. */ } label: {
+                HStack(spacing: 4) {
+                    Text("Actions")
+                    KeyCapView(text: "⌘K")
+                }
+            }
+            Button { /* Preview only. */ } label: {
+                Text("Disabled")
+            }
+            .disabled(true)
+        }
+        .frame(width: 440)
+    }
+#endif

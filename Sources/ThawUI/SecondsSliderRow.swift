@@ -136,3 +136,34 @@ private struct SliderLabelAlignmentModifier: ViewModifier {
             }
     }
 }
+
+#if DEBUG
+    private struct SliderRowPreview: View {
+        @State private var delay = 2.5
+        @State private var short = 0.5
+        @State private var opacity = 0.7
+
+        var body: some View {
+            Form {
+                SecondsSliderRow("Show delay", value: $delay, in: 0 ... 5, step: 0.5)
+                SecondsSliderRow("Hide", value: $short, in: 0 ... 5, step: 0.5)
+                SliderRow("Opacity", value: $opacity, in: 0 ... 1, step: 0.1) { value in
+                    Text(value, format: .percent.precision(.fractionLength(0)))
+                }
+                LabeledContent("More") {
+                    MoreActionsMenu(label: "More actions") {
+                        Button("Reset") { /* Preview only. */ }
+                        Button("Copy") { /* Preview only. */ }
+                    }
+                }
+            }
+            .formStyle(.grouped)
+            .sliderLabelAlignment()
+            .frame(width: 520, height: 260)
+        }
+    }
+
+    #Preview("Slider rows") {
+        SliderRowPreview()
+    }
+#endif

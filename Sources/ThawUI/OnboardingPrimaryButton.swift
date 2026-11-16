@@ -29,3 +29,17 @@ public struct OnboardingPrimaryButton<Label: View>: View {
         .keyboardShortcut(.defaultAction)
     }
 }
+
+#if DEBUG
+    #Preview("Primary button") {
+        VStack(spacing: 16) {
+            OnboardingPrimaryButton(action: { /* Preview only. */ }) {
+                Text("Continue")
+            }
+            OnboardingPrimaryButton(action: { /* Preview only. */ }) {
+                Text("Get started with a much longer title")
+            }
+        }
+        .padding()
+    }
+#endif

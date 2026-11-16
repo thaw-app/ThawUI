@@ -113,3 +113,35 @@ public struct ThawSection<Header: View, Content: View, Footer: View>: View {
         }
     }
 }
+
+#if DEBUG
+    private struct ThawSectionPreview: View {
+        @State private var isOn = true
+
+        var body: some View {
+            Form {
+                ThawSection("Titled section") {
+                    Toggle("Show icons", isOn: $isOn)
+                    Toggle("Disabled toggle", isOn: $isOn)
+                        .disabled(true)
+                }
+                ThawSection {
+                    Text("Header text")
+                } content: {
+                    Toggle("Header and footer", isOn: $isOn)
+                } footer: {
+                    Text("A footer explains the setting above it.")
+                }
+                ThawSection(isBordered: false) {
+                    Text("An unbordered section drops the card behind its rows.")
+                }
+            }
+            .formStyle(.grouped)
+            .frame(width: 440, height: 400)
+        }
+    }
+
+    #Preview("Section") {
+        ThawSectionPreview()
+    }
+#endif

@@ -35,3 +35,26 @@ public struct ThawTabStrip<Tab: Hashable>: View {
         ThawCapsuleSegments(selection: $selection, segments: items, sizing: .filling)
     }
 }
+
+#if DEBUG
+    private struct ThawTabStripPreview: View {
+        @State private var selection = 0
+
+        var body: some View {
+            ThawTabStrip(
+                selection: $selection,
+                items: [
+                    .init(0, title: "General", systemImage: "gearshape"),
+                    .init(1, title: "Appearance", systemImage: "paintbrush"),
+                    .init(2, title: "Advanced", systemImage: "slider.horizontal.3"),
+                ]
+            )
+            .padding()
+            .frame(width: 480)
+        }
+    }
+
+    #Preview("Tab strip") {
+        ThawTabStripPreview()
+    }
+#endif
