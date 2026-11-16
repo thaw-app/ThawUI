@@ -313,3 +313,51 @@ public extension ReadingPage where Accessory == EmptyView {
         )
     }
 }
+
+#if DEBUG
+    private struct ReadingPagePreview: View {
+        @State private var selection: String? = "3"
+        let stopCount: Int
+
+        private var path: [ReadingPathItem] {
+            (1 ... stopCount).map { ReadingPathItem(id: "\($0)", label: "Release \($0)") }
+        }
+
+        var body: some View {
+            ReadingPage(
+                appName: "Sample",
+                path: path,
+                selection: $selection,
+                visiblePathCount: 4,
+                title: Text("Release \(selection ?? "")"),
+                subtitle: Text("Sample notes, not from a real app"),
+                olderLabel: "Older",
+                content: {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text("What changed").font(ReadingPageType.heading)
+                        ReadingParagraph(
+                            "A paragraph at reading size. It wraps at the column's width and keeps its line spacing."
+                        )
+                        ReadingParagraph("A second, shorter paragraph.")
+                    }
+                },
+                links: {
+                    Button("Website") { /* Preview only. */ }
+                    Button("Source") { /* Preview only. */ }
+                },
+                accessory: {
+                    Button("Filter") { /* Preview only. */ }
+                }
+            )
+            .frame(width: 900, height: 600)
+        }
+    }
+
+    #Preview("Reading page") {
+        ReadingPagePreview(stopCount: 4)
+    }
+
+    #Preview("Reading page, long path") {
+        ReadingPagePreview(stopCount: 9)
+    }
+#endif

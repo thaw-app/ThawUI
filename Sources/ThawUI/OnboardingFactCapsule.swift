@@ -58,3 +58,18 @@ public struct OnboardingFactRow<Content: View>: View {
         .frame(maxWidth: maxWidth)
     }
 }
+
+#if DEBUG
+    #Preview("Fact capsules") {
+        OnboardingFactRow {
+            OnboardingFactCapsule(symbol: "lock", label: Text(verbatim: "Private"), spoken: Text(verbatim: "Nothing leaves your Mac"))
+            OnboardingFactCapsule(symbol: "bolt", label: Text(verbatim: "Fast"), spoken: Text(verbatim: "Opens instantly"))
+            OnboardingFactCapsule(
+                symbol: "gift",
+                label: Text(verbatim: "Free and open source forever, for everyone"),
+                spoken: Text(verbatim: "Free and open source")
+            )
+        }
+        .padding()
+    }
+#endif

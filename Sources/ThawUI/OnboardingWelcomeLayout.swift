@@ -151,3 +151,37 @@ private struct OnboardingStepAnimation<Value: Equatable>: ViewModifier {
             }
     }
 }
+
+#if DEBUG
+    private struct OnboardingWelcomePreview: View {
+        var body: some View {
+            OnboardingWelcomeLayout(
+                continueTitle: Text("Continue"),
+                onContinue: { /* Preview only. */ },
+                hero: {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 64))
+                        .foregroundStyle(.tint)
+                },
+                copy: {
+                    OnboardingHeader(
+                        title: Text("Welcome to Sample"),
+                        message: Text("A short paragraph under the title, centred, that says what the app does.")
+                    )
+                },
+                exit: {
+                    OnboardingQuietButton(
+                        title: Text("Not now"),
+                        help: Text("Closes setup and leaves everything off"),
+                        action: { /* Preview only. */ }
+                    )
+                }
+            )
+            .frame(width: 640, height: 460)
+        }
+    }
+
+    #Preview("Welcome layout") {
+        OnboardingWelcomePreview()
+    }
+#endif
