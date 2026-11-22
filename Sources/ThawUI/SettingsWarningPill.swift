@@ -117,3 +117,28 @@ public struct SettingsWarningPill: View {
         RoundedRectangle(cornerRadius: ThawRadius.card, style: .continuous)
     }
 }
+
+#if DEBUG
+    #Preview("Warning pill") {
+        VStack(alignment: .leading, spacing: 12) {
+            SettingsWarningPill(message: "A single message, with no title.")
+            SettingsWarningPill(
+                title: "Permission needed",
+                message: "A title and a message that is long enough to wrap onto a second line in a narrow window.",
+                tint: .orange,
+                actionTitle: "Grant access",
+                action: { /* Preview only. */ },
+                secondaryActionTitle: "Open Settings",
+                secondaryAction: { /* Preview only. */ }
+            )
+            SettingsWarningPill(
+                title: "Up to date",
+                message: "Nothing to do.",
+                systemImage: "checkmark.circle.fill",
+                tint: .green
+            )
+        }
+        .padding()
+        .frame(width: 460)
+    }
+#endif

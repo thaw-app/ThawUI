@@ -75,3 +75,49 @@ public struct OnboardingPermissionCard<Label: View, Details: View, Control: View
         .thawAnimation(ThawMotion.settle, value: isGranted)
     }
 }
+
+#if DEBUG
+    private struct OnboardingCardPreview: View {
+        let surface: OnboardingCardSurface
+        @State private var isGranted = false
+
+        var body: some View {
+            HStack(spacing: ThawSpacing.inset) {
+                OnboardingPermissionCard(surface: surface, isGranted: isGranted) {
+                    Label("Accessibility", systemImage: "accessibility")
+                        .font(ThawType.heading)
+                } details: {
+                    Text("Lets the app read the menu bar's items. Sample text for the preview.")
+                        .font(ThawType.detail)
+                        .foregroundStyle(.secondary)
+                } control: {
+                    Button(isGranted ? "Granted" : "Grant access") {
+                        isGranted.toggle()
+                    }
+                }
+                OnboardingPermissionCard(surface: surface, isGranted: true) {
+                    Label("Screen recording", systemImage: "record.circle")
+                        .font(ThawType.heading)
+                } details: {
+                    Text("Short.")
+                        .font(ThawType.detail)
+                        .foregroundStyle(.secondary)
+                } control: {
+                    Label("Granted", systemImage: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                }
+            }
+            .padding()
+            .frame(width: 520, height: 200)
+            .background(VisualEffectBackground())
+        }
+    }
+
+    #Preview("Permission cards, flat") {
+        OnboardingCardPreview(surface: .flat)
+    }
+
+    #Preview("Permission cards, glass") {
+        OnboardingCardPreview(surface: .glass)
+    }
+#endif

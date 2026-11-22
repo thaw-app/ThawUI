@@ -32,3 +32,16 @@ public struct SettingsPrivacyNotice: View {
         }
     }
 }
+
+#if DEBUG
+    #Preview("Privacy notice") {
+        Form {
+            SettingsPrivacyNotice(
+                title: "Your data stays on this Mac",
+                message: "Sample text for the preview: nothing is collected or sent anywhere."
+            )
+        }
+        .formStyle(.grouped)
+        .frame(width: 520, height: 180)
+    }
+#endif

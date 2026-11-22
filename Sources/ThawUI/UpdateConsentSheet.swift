@@ -114,3 +114,22 @@ public extension View {
         }
     }
 }
+
+#if DEBUG
+    #Preview("Update consent sheet") {
+        UpdateConsentSheet(
+            strings: UpdateConsentStrings(
+                title: "Check for updates automatically?",
+                message: "Sample text for the preview. The app can look for new versions in the background.",
+                downloadAutomatically: "Download updates automatically",
+                checkManually: "Not now",
+                checkAutomatically: "Check automatically",
+                checkboxOn: "On",
+                checkboxOff: "Off"
+            ),
+            // The answers are not stored: the preview must leave the app's real settings alone.
+            onEnable: { _ in /* Preview only. */ },
+            onDisable: { /* Preview only. */ }
+        )
+    }
+#endif

@@ -93,3 +93,28 @@ public struct ThawFirstRunHint: View {
         .listRowBackground(Color.clear)
     }
 }
+
+#if DEBUG
+    #Preview("First-run hint") {
+        VStack(spacing: 12) {
+            ThawFirstRunHint(systemImage: "lightbulb", "Drag an item to rearrange it.", dismissLabel: "Dismiss", onDismiss: { /* Preview only. */ })
+            ThawFirstRunHint(
+                systemImage: "hand.tap",
+                "A longer hint that wraps instead of truncating when the window is narrow.",
+                dismissLabel: "Dismiss",
+                actionTitle: "Show me",
+                action: { /* Preview only. */ },
+                onDismiss: { /* Preview only. */ }
+            )
+            ThawFirstRunHint(
+                image: Image(systemName: "star"),
+                title: Text("Lead line"),
+                text: Text("The sentence under a bold lead line."),
+                dismissLabel: "Dismiss",
+                onDismiss: { /* Preview only. */ }
+            )
+        }
+        .padding()
+        .frame(width: 420)
+    }
+#endif
