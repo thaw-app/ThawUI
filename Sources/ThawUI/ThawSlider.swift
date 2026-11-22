@@ -167,3 +167,30 @@ public struct ThawSlider<Value: BinaryFloatingPoint, ValueLabel: View>: View {
         Double(bounds.lowerBound) ... Double(bounds.upperBound)
     }
 }
+
+#if DEBUG
+    private struct ThawSliderPreview: View {
+        @State private var plain = 0.5
+        @State private var stepped = 3.0
+        @State private var reversed = 0.3
+        @State private var centered = 0.0
+        @State private var disabled = 0.6
+
+        var body: some View {
+            Form {
+                ThawSlider("Plain", value: $plain, in: 0 ... 1)
+                ThawSlider("Stepped with value", value: $stepped, in: 0 ... 10, step: 1, showsValue: true, unit: "s")
+                ThawSlider("Reversed", value: $reversed, in: 0 ... 1, reversed: true)
+                ThawSlider("From center", value: $centered, in: -1 ... 1, fillsFromCenter: true)
+                ThawSlider("Disabled", value: $disabled, in: 0 ... 1)
+                    .disabled(true)
+            }
+            .formStyle(.grouped)
+            .frame(width: 460, height: 320)
+        }
+    }
+
+    #Preview("Slider") {
+        ThawSliderPreview()
+    }
+#endif

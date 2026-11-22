@@ -95,3 +95,28 @@ public struct NoMatchesState: View {
         )
     }
 }
+
+#if DEBUG
+    private struct FilterFieldPreview: View {
+        @State private var empty = ""
+        @State private var filled = "menu"
+
+        var body: some View {
+            VStack(spacing: 16) {
+                SettingsFilterField(prompt: "Filter items", clearLabel: "Clear filter", text: $empty)
+                SettingsFilterField(prompt: "Filter items", clearLabel: "Clear filter", text: $filled)
+                NoMatchesState(
+                    query: filled,
+                    title: { "No results for \"\($0)\"" },
+                    caption: "Check the spelling or try a different search."
+                )
+            }
+            .padding()
+            .frame(width: 420)
+        }
+    }
+
+    #Preview("Filter field") {
+        FilterFieldPreview()
+    }
+#endif

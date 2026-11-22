@@ -205,3 +205,27 @@ private struct SectionedListItemView<ItemID: Hashable, ItemContent: View>: View 
         }
     }
 }
+
+#if DEBUG
+    private struct SectionedListPreview: View {
+        @State private var selection: Int? = 2
+        @State private var items: [SectionedListItem<Int, Text>] = [
+            .init(content: Text("Visible").font(.caption.weight(.semibold)).foregroundStyle(.secondary), id: 0, isSelectable: false),
+            .init(content: Text("Wi-Fi"), id: 1, isSelectable: true, action: { /* Preview only. */ }),
+            .init(content: Text("Battery"), id: 2, isSelectable: true, action: { /* Preview only. */ }),
+            .init(content: Text("Hidden").font(.caption.weight(.semibold)).foregroundStyle(.secondary), id: 3, isSelectable: false),
+            .init(content: Text("Clock"), id: 4, isSelectable: true, action: { /* Preview only. */ }),
+            .init(content: Text("Bluetooth"), id: 5, isSelectable: true, action: { /* Preview only. */ }),
+        ]
+
+        var body: some View {
+            SectionedList(selection: $selection, items: $items, openLabel: "Open")
+                .contentPadding(8)
+                .frame(width: 280, height: 240)
+        }
+    }
+
+    #Preview("Sectioned list") {
+        SectionedListPreview()
+    }
+#endif

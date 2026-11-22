@@ -58,3 +58,38 @@ enum ThawFocusRingRule {
         isShown && activeState == .key
     }
 }
+
+#if DEBUG
+    private struct KeyboardListPreview: View {
+        @FocusState private var isFocused: Bool
+        @State private var selection = 1
+        private let rows = ["First", "Second", "Third"]
+
+        var body: some View {
+            VStack(spacing: 6) {
+                ForEach(rows.indices, id: \.self) { index in
+                    let shape = RoundedRectangle(cornerRadius: ThawRadius.control, style: .continuous)
+                    Text(rows[index])
+                        .padding(.horizontal, 12)
+                        .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+                        .background(index == selection ? Color.accentColor.opacity(0.2) : .clear, in: shape)
+                        .thawFocusRing(isFocused && index == selection, in: shape)
+                        .onTapGesture { selection = index }
+                }
+            }
+            .padding()
+            .thawKeyboardList(isFocused: $isFocused) { direction in
+                switch direction {
+                case .up: selection = max(selection - 1, 0)
+                case .down: selection = min(selection + 1, rows.count - 1)
+                default: break
+                }
+            }
+            .frame(width: 260)
+        }
+    }
+
+    #Preview("Keyboard list") {
+        KeyboardListPreview()
+    }
+#endif

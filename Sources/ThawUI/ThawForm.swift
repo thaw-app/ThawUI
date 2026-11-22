@@ -91,3 +91,38 @@ private struct ThawFormWidthKey: PreferenceKey {
         value = nextValue()
     }
 }
+
+#if DEBUG
+    private struct ThawFormPreview: View {
+        @State private var isOn = true
+        @State private var name = "Thaw"
+
+        var body: some View {
+            ThawForm {
+                Section("General") {
+                    Toggle("Launch at login", isOn: $isOn)
+                    TextField("Name", text: $name)
+                }
+                Section("Other") {
+                    Toggle("Disabled", isOn: $isOn)
+                        .disabled(true)
+                }
+            }
+            .frame(width: 480, height: 320)
+        }
+    }
+
+    #Preview("Form") {
+        ThawFormPreview()
+    }
+
+    #Preview("Form with pane title") {
+        ThawForm(readingWidth: .full) {
+            Section {
+                Text("Hosts such as the What's New window set a pane title.")
+            }
+        }
+        .environment(\.settingsPaneTitle, "What's New")
+        .frame(width: 480, height: 240)
+    }
+#endif

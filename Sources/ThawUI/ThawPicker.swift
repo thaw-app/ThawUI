@@ -52,3 +52,35 @@ public struct ThawPicker<Label: View, SelectionValue: Hashable, Content: View>: 
         }
     }
 }
+
+#if DEBUG
+    private struct ThawPickerPreview: View {
+        @State private var position = "top"
+        @State private var style = "plain"
+
+        var body: some View {
+            Form {
+                ThawPicker("Position", selection: $position) {
+                    Text("Top").tag("top")
+                    Text("Bottom").tag("bottom")
+                    Text("Center").tag("center")
+                }
+                ThawPicker("With icons", selection: $style) {
+                    Label("Plain", systemImage: "circle").tag("plain")
+                    Label("Glass", systemImage: "square.on.square").tag("glass")
+                }
+                ThawPicker("Disabled", selection: $position) {
+                    Text("Top").tag("top")
+                    Text("Bottom").tag("bottom")
+                }
+                .disabled(true)
+            }
+            .formStyle(.grouped)
+            .frame(width: 420, height: 220)
+        }
+    }
+
+    #Preview("Picker") {
+        ThawPickerPreview()
+    }
+#endif

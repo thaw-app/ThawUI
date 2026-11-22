@@ -61,3 +61,37 @@ public struct EditorPanelChrome<Content: View, BottomBar: View>: View {
         .padding(.bottom, ThawSpacing.base)
     }
 }
+
+#if DEBUG
+    #Preview("Editor panel chrome") {
+        EditorPanelChrome("Layout", subtitle: "Drag items to rearrange them.") {
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(1 ... 12, id: \.self) { index in
+                        Text("Row \(index)")
+                            .frame(maxWidth: .infinity, minHeight: 28, alignment: .leading)
+                            .padding(.horizontal, 12)
+                            .background(.quaternary, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        } bottomBar: {
+            Button("Reset") { /* Preview only. */ }
+            Spacer()
+            Button("Done") { /* Preview only. */ }
+                .buttonStyle(.borderedProminent)
+        }
+        .frame(width: 360, height: 360)
+    }
+
+    #Preview("Editor panel chrome, no subtitle") {
+        EditorPanelChrome("Appearance") {
+            Text("Content")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        } bottomBar: {
+            Button("Close") { /* Preview only. */ }
+        }
+        .frame(width: 360, height: 200)
+    }
+#endif

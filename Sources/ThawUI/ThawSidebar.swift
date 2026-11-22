@@ -247,3 +247,59 @@ struct SelectionFill<S: InsettableShape>: ViewModifier {
         }
     }
 }
+
+#if DEBUG
+    private enum SidebarPreviewPage: String, Hashable, CaseIterable {
+        case general = "General"
+        case appearance = "Appearance"
+        case hotkeys = "Hotkeys"
+        case advanced = "Advanced"
+        case about = "About"
+
+        var symbol: String {
+            switch self {
+            case .general: "gearshape"
+            case .appearance: "paintbrush"
+            case .hotkeys: "keyboard"
+            case .advanced: "slider.horizontal.3"
+            case .about: "info.circle"
+            }
+        }
+    }
+
+    private struct ThawSidebarPreview: View {
+        let showsSelection: Bool
+        @State private var current = SidebarPreviewPage.appearance
+
+        private let rows: [ThawSidebarRow<SidebarPreviewPage>] = [
+            .page(.general),
+            .page(.appearance),
+            .heading("Input"),
+            .page(.hotkeys),
+            .gap,
+            .page(.advanced),
+            .page(.about),
+        ]
+
+        var body: some View {
+            ThawSidebar(
+                rows: rows,
+                current: current,
+                showsSelection: showsSelection,
+                select: { current = $0 },
+                title: { Text(verbatim: $0.rawValue) },
+                isDimmed: { $0 == .advanced },
+                icon: { Image(systemName: $0.symbol) }
+            )
+            .frame(width: ThawSidebar<SidebarPreviewPage, Image>.width, height: 360)
+        }
+    }
+
+    #Preview("Sidebar") {
+        ThawSidebarPreview(showsSelection: true)
+    }
+
+    #Preview("Sidebar, no selection shown") {
+        ThawSidebarPreview(showsSelection: false)
+    }
+#endif
