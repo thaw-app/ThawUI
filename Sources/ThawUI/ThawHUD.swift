@@ -70,8 +70,18 @@ public enum ThawHUD {
         }
 
         let host = NSHostingView(rootView: ThawHUDCard(symbol: symbol, text: text, tint: tint))
-        panel.contentView = host
-        let frame = placement.frame(fitting: host.fittingSize, screenFrame: screen.frame, menuBarHeight: menuBarHeight(screen))
+        // Only this function sizes the panel. A hosting view that is the panel's content view also resizes the
+        // panel after each layout pass, and for some text widths the two never agree: AppKit gives up the
+        // constraint pass and raises an uncaught exception. So the view is measured, then hosted inside a plain
+        // view that fills the panel, where it sizes nothing.
+        let fitted = host.fittingSize
+        let container = NSView(frame: CGRect(origin: .zero, size: fitted))
+        host.frame = container.bounds
+        host.autoresizingMask = [.width, .height]
+        container.addSubview(host)
+        panel.contentView = container
+        // Whole points, so the panel and its content agree on one size.
+        let frame = placement.frame(fitting: fitted, screenFrame: screen.frame, menuBarHeight: menuBarHeight(screen)).integral
         panel.setFrame(frame, display: true)
         // A confirmation often arrives while another app is in front.
         panel.orderFrontRegardless()
