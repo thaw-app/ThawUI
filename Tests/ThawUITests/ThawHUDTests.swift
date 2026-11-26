@@ -39,6 +39,39 @@ struct ThawHUDTests {
         #expect(!panel.hasShadow)
     }
 
+    @Test(
+        "A capsule keeps the frame show() gave it through layout passes, whatever its text width",
+        arguments: [
+            "Moved Item to Visible", "Moved Item to Hidden", "Moved Items to Visible", "Moved Itemss to Visible",
+            "Moved Itemsss to Visible", "Moved C1 to Visible", "Item didn\u{2019}t stay in Hidden", "Moved",
+        ]
+    )
+    func keepsItsFrameThroughLayout(text: String) async throws {
+        let screen = try #require(NSScreen.screens.first)
+        ThawHUD.dismiss()
+        let before = Set(hudPanels().map(ObjectIdentifier.init))
+        defer { ThawHUD.dismiss() }
+
+        ThawHUD.show(symbol: "checkmark", text: LocalizedStringResource(stringLiteral: text), on: screen, displayDuration: .seconds(5))
+        let panel = try #require(hudPanels().first { !before.contains(ObjectIdentifier($0)) })
+        let shown = panel.frame
+        #expect(shown == shown.integral, "the panel is sized in whole points")
+
+        // The hosting view is not the panel's content view, so it can't resize the panel.
+        let content = try #require(panel.contentView)
+        #expect(type(of: content) == NSView.self)
+        #expect(content.frame.size == shown.size)
+        #expect(content.subviews.count == 1)
+
+        for _ in 0..<3 {
+            panel.contentView?.needsLayout = true
+            panel.layoutIfNeeded()
+            panel.displayIfNeeded()
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        #expect(panel.frame == shown, "nothing but show() resized the panel")
+    }
+
     @Test("A second capsule reuses the panel instead of stacking another")
     func reusesPanel() throws {
         let screen = try #require(NSScreen.screens.first)
